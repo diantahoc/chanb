@@ -1,8 +1,8 @@
 ﻿Imports System.Data.OleDb
 
 Public Module GlobalFunctions
-    
-    Dim ConnectionString As String = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=D:\d\tiny.accdb" ' Replace D:\d\tiny.accdb with your physical database path
+
+    Dim ConnectionString As String = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=D:\d\tiny.accdb" 'Replace D:\d\tiny.accdb with your physical database path
 
     Function GetUserSelectedStyle(ByVal session As Web.SessionState.HttpSessionState) As String
         If session.Item("SS") = "" Then
@@ -129,7 +129,7 @@ Public Module GlobalFunctions
     Function GetThreadChildrenPosts(ByVal id As Long) As Integer()
         Dim ila As New List(Of Integer)
         Dim cnx As New OleDbConnection(ConnectionString)
-        Dim queryString As String = "SELECT ID FROM(board) WHERE (parentT = '" & id & "') ORDER BY ID"
+        Dim queryString As String = "SELECT ID FROM(board) WHERE (parentT = " & id & ") ORDER BY ID"
         Dim queryObject As New OleDbCommand(queryString, cnx)
         cnx.Open()
         Dim reader As OleDbDataReader = queryObject.ExecuteReader()

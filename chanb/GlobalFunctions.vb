@@ -66,7 +66,7 @@ Public Module GlobalFunctions
 
     Private Function GetThreadsCount() As Integer
         Dim cnx As New OleDbConnection(ConnectionString)
-        Dim queryString As String = "SELECT ID FROM(board) WHERE(type = '0')"
+        Dim queryString As String = "SELECT ID FROM(board) WHERE(type = 0)"
         Dim queryObject As New OleDbCommand(queryString, cnx)
         cnx.Open()
         Dim i As Integer = 0
@@ -144,7 +144,7 @@ Public Module GlobalFunctions
     Function GetThreads(ByVal startIndex As Integer, ByVal count As Integer) As Integer()
         Dim ila As New List(Of Integer)
         Dim cnx As New OleDbConnection(ConnectionString)
-        Dim queryString As String = "SELECT ID FROM(board) WHERE (type = '0') ORDER BY bumplevel DESC"
+        Dim queryString As String = "SELECT ID FROM(board) WHERE (type = 0) ORDER BY bumplevel DESC"
         Dim queryObject As New OleDbCommand(queryString, cnx)
         cnx.Open()
         Dim reader As OleDbDataReader = queryObject.ExecuteReader

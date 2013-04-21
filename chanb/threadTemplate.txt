@@ -1,0 +1,4 @@
+﻿<div class="thread" id="t%ID%">
+%POST HTML%
+</div>
+<br />

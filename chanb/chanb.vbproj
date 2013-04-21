@@ -87,10 +87,14 @@
     <Content Include="dispatcher.aspx" />
     <Content Include="formtemplate.htm" />
     <Content Include="imageTemplate.txt" />
+    <Content Include="mainpageTE.htm" />
+    <Content Include="opPostTemplate.txt" />
     <Content Include="post.aspx" />
     <Content Include="postTemplate.txt" />
     <Content Include="scripts.js" />
+    <Content Include="threadTemplate.txt" />
     <Content Include="Web.config" />
+    <Content Include="yotsubab.css" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Default.aspx.vb">

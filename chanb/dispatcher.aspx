@@ -67,7 +67,6 @@
     
     <% 
         Dim opID As Integer = Request.Item("id")
-        
         Dim po As WPost = FetchPostData(opID)
         
         If po.type Is Nothing Then
@@ -76,19 +75,10 @@
         
         ' Check if it is a reply or a thread , 0 = thread, 1 = reply
         ' If it is a reply, redirect to parent thread.
-        If po.type = 1 Then
-            'opID = po.parent
-
-            'po = FetchPOSTData(opID)
-            
-            Response.Redirect("dispatcher.aspx?id=" & po.parent & "#p" & po.PostID)
-        End If
-         
-        'Write OP Post
-        Response.Write("<div class='postContainer'><a target='_blank' href='" & GetImageWEBPATH(po._imageP.Split(":").ElementAt(0)) & "'><img class='image' alt='' src='" & GetImageWEBPATHRE(po._imageP.Split(":").ElementAt(0)) & "' /></a><label class='text'>No." & po.PostID & "  " & po.time & "</label><label class='text'>" & po.subject & "</label><br /><label class='text'><a href='mailto:" & po.email & "'></a>" & po.name & "</label><br/><label>" & po.comment & "</label></div>")
-
-        Response.Write("<br />")
-           
+        If po.type = 1 Then Response.Redirect("dispatcher.aspx?id=" & po.parent & "#p" & po.PostID)
+    
+        'Write OP Post        
+        Response.Write(GetOPPostHTML(opID, False))   
         'Write replies, if any.  
         Response.Write(GetRepliesHTML(opID))           
 %>   

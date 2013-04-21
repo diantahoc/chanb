@@ -2,7 +2,7 @@
 
 Public Module GlobalFunctions
 
-    Dim ConnectionString As String = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=D:\d\tiny.accdb" 'Replace D:\d\tiny.accdb with your physical database path
+    Dim ConnectionString As String = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=D:\d\tiny.accdb" ' Replace d:\d\tiny.accdb with your physical database path
 
     Function GetUserSelectedStyle(ByVal session As Web.SessionState.HttpSessionState) As String
         If session.Item("SS") = "" Then
@@ -400,11 +400,54 @@ Public Module GlobalFunctions
     End Function
 
     Private Function MD5(ByVal s As IO.Stream) As String
-        Return "MD5"
+        Dim md5s As New System.Security.Cryptography.MD5CryptoServiceProvider()
+        Dim hash() As Byte = md5s.ComputeHash(s)
+        Return ByteArrayToString(hash)
+    End Function
+
+    Private Function ByteArrayToString(ByVal arrInput() As Byte) As String
+        Dim sb As New System.Text.StringBuilder(arrInput.Length * 2)
+        For i As Integer = 0 To arrInput.Length - 1
+            sb.Append(arrInput(i).ToString("X2"))
+        Next
+        Return sb.ToString().ToLower
     End Function
 
     Private Function ProcessComment(ByVal comment As String) As String
         Return comment
+    End Function
+
+    Function GetOPPostHTML(ByVal id As Integer, ByVal replyButton As Boolean) As String
+        Dim po As WPost = FetchPostData(id)
+        Dim imageData As WPostImage = GetWPOSTIMAGE(po._imageP)
+        Dim postHTML As String = opPostTemplate
+        If replyButton Then
+            postHTML = postHTML.Replace("%REPLY BUTTON%", replyButtonHTML)
+        Else
+            postHTML = postHTML.Replace("%REPLY BUTTON%", "")
+        End If
+        postHTML = postHTML.Replace("%ID%", po.PostID)
+        postHTML = postHTML.Replace("%IMAGE LINK%", GetImageWEBPATH(imageData.chanbName))
+        postHTML = postHTML.Replace("%CHANB FILE NAME%", imageData.chanbName)
+        postHTML = postHTML.Replace("%FILE NAME%", imageData.realname)
+        postHTML = postHTML.Replace("%FILE SIZE%", imageData.size)
+        postHTML = postHTML.Replace("%IMAGE DIMENSIONS%", imageData.dimensions)
+        postHTML = postHTML.Replace("%THUMB LINK%", GetImageWEBPATHRE(imageData.chanbName))
+        postHTML = postHTML.Replace("%MD5%", imageData.md5)
+        postHTML = postHTML.Replace("%SUBJECT%", po.subject)
+        postHTML = postHTML.Replace("%NAME%", po.name)
+        postHTML = postHTML.Replace("%DATE UTC UNIX%", po.time.ToFileTime)
+        postHTML = postHTML.Replace("%DATE UTC TEXT%", po.time)
+        postHTML = postHTML.Replace("%POST LINK%", "dispatcher.aspx?id=" & po.PostID & "#" & po.PostID)
+        postHTML = postHTML.Replace("%POST TEXT%", ProcessComment(po.comment))
+        Return postHTML
+    End Function
+
+    Function GetThreadHTML(ByVal threadID As Integer) As String
+        Dim postHtml As String = threadTemplate
+        postHtml = postHtml.Replace("%ID%", threadID)
+        postHtml = postHtml.Replace("%POST HTML%", GetOPPostHTML(threadID, True))
+        Return postHtml
     End Function
 
     Function GetRepliesHTML(ByVal threadID As Integer) As String

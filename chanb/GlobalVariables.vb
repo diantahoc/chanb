@@ -4,6 +4,7 @@
     Public BoardTitle As String = "ChanBoard"
     Public BoardLetter As String = "c"
     Public BoardDesc As String = "VB.NET Imageboard"
+    Public TimeBetweenRequestes As Integer = 15 ' in seconds
 
     'Server related
     Public STORAGEFOLDER As String = "PHYSICAL PATH TO\dtin" ' Make sure that the directory is write-able first

@@ -11,4 +11,6 @@
     Public AnonName As String = "Anonymous"
     Public FileToBig As String = "The provided file is too large"
 
+    Public FloodDetected As String = "Flood detected, please allow " & TimeBetweenRequestes & " seconds before posting, reporting and deleting"
+
 End Module

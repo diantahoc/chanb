@@ -85,9 +85,7 @@
     <Content Include="chan.css" />
     <Content Include="Default.aspx" />
     <Content Include="dispatcher.aspx" />
-    <Content Include="formtemplate.htm" />
     <Content Include="imageTemplate.txt" />
-    <Content Include="mainpageTE.htm" />
     <Content Include="opPostTemplate.txt" />
     <Content Include="post.aspx" />
     <Content Include="postTemplate.txt" />

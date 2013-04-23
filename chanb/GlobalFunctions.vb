@@ -1,8 +1,10 @@
-﻿Imports System.Data.OleDb
+﻿'Imports System.Data.OleDb
+Imports System.Data.SqlClient
 
 Public Module GlobalFunctions
 
-    Dim ConnectionString As String = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=D:\d\tiny.accdb" ' Replace d:\d\tiny.accdb with your physical database path
+    'Dim ConnectionString As String = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=D:\d\tiny.accdb" ' Never mind any thing related to OLE
+    Dim SQLConnectionString As String = "Data Source=;Initial Catalog=chanbsql;Integrated Security=True" ' Replace with your connection string
 
     Function GetUserSelectedStyle(ByVal session As Web.SessionState.HttpSessionState) As String
         If session.Item("SS") = "" Then
@@ -31,12 +33,15 @@ Public Module GlobalFunctions
     End Function
 
     Function FetchPostData(ByVal id As Long) As WPost
-        Dim cnx As New OleDbConnection(ConnectionString)
-
-        Dim queryString As String = "SELECT type, [time], comment, postername, email, [password], parentT, subject, imagename, IP FROM(board) WHERE(id = " & id & ")"
-        Dim queryObject As New OleDbCommand(queryString, cnx)
+        'Dim cnx As New OleDbConnection(ConnectionString)
+        Dim cnx As New SqlConnection(SQLConnectionString)
+        'Dim queryString As String = "SELECT (type, [time], comment, postername, email, [password], parentT, subject, imagename, IP FROM(board) WHERE(id = " & id & ")"
+        Dim queryString As String = "SELECT type, time, comment, postername, email, password, parentT, subject, imagename, IP FROM  board  WHERE (id = " & id & ")"
+        'Dim queryObject As New OleDbCommand(queryString, cnx)
+        Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
-        Dim reader As OleDbDataReader = queryObject.ExecuteReader
+        'Dim reader As OleDbDataReader = queryObject.ExecuteReader
+        Dim reader As SqlDataReader = queryObject.ExecuteReader
         Dim po As New WPost(id)
         While reader.Read
             po.type = ConvertNoNull(reader(0))
@@ -56,21 +61,28 @@ Public Module GlobalFunctions
     End Function
 
     Sub MakeThread(ByVal data As OPDATA)
-        Dim cnx As New OleDbConnection(ConnectionString)
-        Dim queryString As String = "INSERT INTO board(type, [time], comment, postername, email, [password], subject, imagename, IP, bumplevel) VALUES ('0', " & ConvertTimeToOLETIME(data.time) & ", '" & data.Comment & "', '" & data.name & "', '" & data.email & "', '" & data.password & "', '" & data.subject & "', '" & data.imageName & "','" & data.IP & "', " & CInt(GetThreadsCount() + 1) & ") "
-        Dim queryObject As New OleDbCommand(queryString, cnx)
+        'Dim cnx As New OleDbConnection(ConnectionString)
+        Dim cnx As New SqlConnection(SQLConnectionString)
+        'Dim queryString As String = "INSERT INTO board(type, [time], comment, postername, email, [password], subject, imagename, IP, bumplevel) VALUES ('0', " & ConvertTimeToOLETIME(data.time) & ", '" & data.Comment & "', '" & data.name & "', '" & data.email & "', '" & data.password & "', '" & data.subject & "', '" & data.imageName & "','" & data.IP & "', " & CInt(GetThreadsCount() + 1) & ") "
+        Dim queryString As String = "INSERT INTO board (type, time, comment, postername, email, password, subject, imagename, IP, bumplevel) VALUES ('0', " & ConvertTimeToSQLTIME(data.time) & ", '" & data.Comment & "', '" & data.name & "', '" & data.email & "', '" & data.password & "', '" & data.subject & "', '" & data.imageName & "','" & data.IP & "', " & CInt(GetThreadsCount() + 1) & ") "
+        '  Dim queryObject As New OleDbCommand(queryString, cnx)
+        Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         queryObject.ExecuteNonQuery()
         cnx.Close()
     End Sub
 
     Private Function GetThreadsCount() As Integer
-        Dim cnx As New OleDbConnection(ConnectionString)
-        Dim queryString As String = "SELECT ID FROM(board) WHERE(type = 0)"
-        Dim queryObject As New OleDbCommand(queryString, cnx)
+        'Dim cnx As New OleDbConnection(ConnectionString)
+        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim queryString As String = "SELECT ID FROM board  WHERE(type = 0)"
+        'Dim queryObject As New OleDbCommand(queryString, cnx)
+        Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         Dim i As Integer = 0
-        Dim reader As OleDbDataReader = queryObject.ExecuteReader
+        '        Dim reader As OleDbDataReader = queryObject.ExecuteReader
+        Dim reader As SqlDataReader = queryObject.ExecuteReader
+
         While reader.Read
             i += 1
         End While
@@ -78,16 +90,30 @@ Public Module GlobalFunctions
         Return i
     End Function
 
-    Private Function ConvertTimeToOLETIME(ByVal d As Date) As String
-        '#12/12/2012 8:51:00 AM#
-        '#MM/DD/YYYY H:MM:SS PMAM#
-        Dim s As String = "#" & d.Month & "/" & d.Day & "/" & d.Year & " "
+    'Private Function ConvertTimeToOLETIME(ByVal d As Date) As String
+    '    '#12/12/2012 8:51:00 AM#
+    '    '#MM/DD/YYYY H:MM:SS PMAM#
+    '    Dim s As String = "#" & d.Month & "/" & d.Day & "/" & d.Year & " "
+    '    If d.Hour > 12 Then
+    '        Dim t As String = d.Hour - 12 & ":" & d.Minute & ":" & d.Second & " PM"
+    '        s = s & t & "#"
+    '    Else
+    '        Dim t As String = d.Hour & ":" & d.Minute & ":" & d.Second & " AM"
+    '        s = s & t & "#"
+    '    End If
+    '    Return s
+    'End Function
+
+    Private Function ConvertTimeToSQLTIME(ByVal d As Date) As String
+        ''4/23/2013 5:45:45 PM'
+        ' 'MM/DD/YYY H:MM:SS AMPM'
+        Dim s As String = "'" & d.Month & "/" & d.Day & "/" & d.Year & " " '& d.Hour & ":" & d.Minute & ":" & d.Second & "'"
         If d.Hour > 12 Then
             Dim t As String = d.Hour - 12 & ":" & d.Minute & ":" & d.Second & " PM"
-            s = s & t & "#"
+            s = s & t & "'"
         Else
             Dim t As String = d.Hour & ":" & d.Minute & ":" & d.Second & " AM"
-            s = s & t & "#"
+            s = s & t & "'"
         End If
         Return s
     End Function
@@ -100,9 +126,11 @@ Public Module GlobalFunctions
     ''' <param name="data"></param>
     ''' <remarks></remarks>
     Private Sub ReplyTo(ByVal id As Long, ByVal data As OPDATA)
-        Dim cnx As New OleDbConnection(ConnectionString)
-        Dim queryString As String = "INSERT INTO board (type, [time], comment, postername, email, [password], parentT, subject, imagename, IP) VALUES      ('1', " & ConvertTimeToOLETIME(data.time) & ", '" & data.Comment & "', '" & data.name & "', '" & data.email & "', '" & data.password & "', '" & id & "', '" & data.subject & "', '" & data.imageName & "' , '" & data.IP & "' )"
-        Dim queryObject As New OleDbCommand(queryString, cnx)
+        'Dim cnx As New OleDbConnection(ConnectionString)
+        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim queryString As String = "INSERT INTO board (type, [time], comment, postername, email, [password], parentT, subject, imagename, IP) VALUES      ('1', " & ConvertTimeToSQLTIME(data.time) & ", '" & data.Comment & "', '" & data.name & "', '" & data.email & "', '" & data.password & "', '" & id & "', '" & data.subject & "', '" & data.imageName & "' , '" & data.IP & "' )"
+        ' Dim queryObject As New OleDbCommand(queryString, cnx)
+        Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         queryObject.ExecuteNonQuery()
         cnx.Close()
@@ -110,29 +138,41 @@ Public Module GlobalFunctions
     End Sub
 
     Private Sub BumpThread(ByVal id As Integer, ByVal howmuch As Integer)
-        Dim cnx As New OleDbConnection(ConnectionString)
-        Dim queryString As String = "SELECT bumplevel FROM(board) WHERE(id = " & id & ")"
-        Dim queryObject As New OleDbCommand(queryString, cnx)
+        '   Dim cnx As New OleDbConnection(ConnectionString)
+        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim queryString As String = "SELECT bumplevel FROM board  WHERE(id = " & id & ")"
+        '        Dim queryObject As New OleDbCommand(queryString, cnx)
+        Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
-        Dim reader As OleDbDataReader = queryObject.ExecuteReader
+        'Dim reader As OleDbDataReader = queryObject.ExecuteReader
+        Dim reader As SqlDataReader = queryObject.ExecuteReader
+
         Dim bumplevel As Integer = 0
         While reader.Read
             bumplevel = reader(0)
         End While
         bumplevel += howmuch
+        reader.Close()
         Dim updateQueryString As String = "UPDATE board SET bumplevel = " & bumplevel & " WHERE(board.ID = " & id & ")"
-        Dim q As New OleDbCommand(updateQueryString, cnx)
+        '        Dim q As New OleDbCommand(updateQueryString, cnx)
+        Dim q As New SqlCommand(updateQueryString, cnx)
         q.ExecuteNonQuery()
         cnx.Close()
     End Sub
 
     Function GetThreadChildrenPosts(ByVal id As Long) As Integer()
         Dim ila As New List(Of Integer)
-        Dim cnx As New OleDbConnection(ConnectionString)
-        Dim queryString As String = "SELECT ID FROM(board) WHERE (parentT = " & id & ") ORDER BY ID"
-        Dim queryObject As New OleDbCommand(queryString, cnx)
+        'Dim cnx As New OleDbConnection(ConnectionString)
+        Dim cnx As New SqlConnection(SQLConnectionString)
+
+        Dim queryString As String = "SELECT ID FROM board  WHERE (parentT = " & id & ") ORDER BY ID"
+        'Dim queryObject As New OleDbCommand(queryString, cnx)
+        Dim queryObject As New SqlCommand(queryString, cnx)
+
         cnx.Open()
-        Dim reader As OleDbDataReader = queryObject.ExecuteReader()
+        'Dim reader As OleDbDataReader = queryObject.ExecuteReader()
+        Dim reader As SqlDataReader = queryObject.ExecuteReader()
+
         While reader.Read
             ila.Add(reader.Item(0))
         End While
@@ -143,11 +183,17 @@ Public Module GlobalFunctions
 
     Function GetThreads(ByVal startIndex As Integer, ByVal count As Integer) As Integer()
         Dim ila As New List(Of Integer)
-        Dim cnx As New OleDbConnection(ConnectionString)
-        Dim queryString As String = "SELECT ID FROM(board) WHERE (type = 0) ORDER BY bumplevel DESC"
-        Dim queryObject As New OleDbCommand(queryString, cnx)
+        'Dim cnx As New OleDbConnection(ConnectionString)
+        Dim cnx As New SqlConnection(SQLConnectionString)
+
+        Dim queryString As String = "SELECT ID FROM board  WHERE (type = 0) ORDER BY bumplevel DESC"
+        ' Dim queryObject As New OleDbCommand(queryString, cnx)
+        Dim queryObject As New sqlCommand(queryString, cnx)
+
         cnx.Open()
-        Dim reader As OleDbDataReader = queryObject.ExecuteReader
+        'Dim reader As OleDbDataReader = queryObject.ExecuteReader
+        Dim reader As SqlDataReader = queryObject.ExecuteReader
+
         While reader.Read
             ila.Add(reader.Item(0))
         End While
@@ -302,7 +348,7 @@ Public Module GlobalFunctions
     '    Next
     'End Sub
 
-    Function ProcessPost(ByVal request As HttpRequest) As String
+    Function ProcessPost(ByVal request As HttpRequest, ByVal seesion As Web.SessionState.HttpSessionState) As String
         Dim sb As New StringBuilder
         sb.Append("<html><head>")
         Select Case request.Item("mode")
@@ -335,6 +381,9 @@ Public Module GlobalFunctions
                         er.imageName = s
                         er.password = request.Item("password")
                         er.IP = request.UserHostAddress
+
+                        seesion.Item("pass") = request.Item("password")
+
                         MakeThread(er)
 
                         sb.Append(SuccessfulPostString)
@@ -363,16 +412,18 @@ Public Module GlobalFunctions
                 er.imageName = s
                 er.password = request.Item("password")
                 er.IP = request.UserHostAddress
+                seesion.Item("pass") = request.Item("password")
                 ReplyTo(request.Item("threadid"), er)
 
                 sb.Append(SuccessfulPostString)
                 sb.Append("<meta HTTP-EQUIV='REFRESH' content='2; url=dispatcher.aspx?id=" & request.Item("threadid") & "'>")
-            Case "report"  
+            Case "report"
                 For Each x As String In request.QueryString
                     If x.StartsWith("proc") Then
                         ReportPost(CInt(x.Replace("proc", "")), request.UserHostAddress, Date.UtcNow)
+                        sb.Append(ReportedSucess.Replace("%", x))
                     End If
-                Next     
+                Next
             Case "delete"
                 Dim li As New List(Of String)
                 Dim deletPass As String = request.Item("deletePass")
@@ -381,16 +432,20 @@ Public Module GlobalFunctions
                         li.Add(x.Replace("proc", ""))
                     End If
                 Next
-                For Each x In li
-                    Dim p As WPost = FetchPostData(x)
-                    If p.password = deletPass Then
-                        DeletePost(x)
-                        sb.Append("Post number " & x & " has been deleted")
-                    Else
-                        sb.Append("Cannot delete post " & x & " , bad password")
-                    End If
-                    sb.Append("<br/>")
-                Next
+                If li.Count = 0 Then
+                    sb.Append(NoPostWasSelected)
+                Else
+                    For Each x In li
+                        Dim p As WPost = FetchPostData(x)
+                        If p.password = deletPass Then
+                            DeletePost(x)
+                            sb.Append(PostDeletedSuccess.Replace("%", x))
+                        Else
+                            sb.Append(CannotDeletePostBadPassword.Replace("%", x))
+                        End If
+                        sb.Append("<br/>")
+                    Next
+                End If
             Case Else
                 sb.Append("Invalid Posting mode")
                 sb.Append("<meta HTTP-EQUIV='REFRESH' content='2; url=default.aspx'>")
@@ -437,9 +492,10 @@ Public Module GlobalFunctions
         postHTML = postHTML.Replace("%SUBJECT%", po.subject)
         postHTML = postHTML.Replace("%NAME%", po.name)
         postHTML = postHTML.Replace("%DATE UTC UNIX%", po.time.ToFileTime)
-        postHTML = postHTML.Replace("%DATE UTC TEXT%", po.time)
+        postHTML = postHTML.Replace("%DATE UTC TEXT%", GetTimeString(po.time))
         postHTML = postHTML.Replace("%POST LINK%", "dispatcher.aspx?id=" & po.PostID & "#" & po.PostID)
         postHTML = postHTML.Replace("%POST TEXT%", ProcessComment(po.comment))
+        postHTML = postHTML.Replace("%REPLY COUNT%", GetRepliesCount(id))
         Return postHTML
     End Function
 
@@ -450,6 +506,24 @@ Public Module GlobalFunctions
         Return postHtml
     End Function
 
+    Private Function GetTimeString(ByVal d As Date) As String
+        Return d.ToString
+    End Function
+
+    Private Function GetRepliesCount(ByVal threadID As Integer) As Integer
+        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim queryString As String = "SELECT   type   FROM board WHERE (parentT=" & threadID & ")"
+        Dim queryObject As New SqlCommand(queryString, cnx)
+        cnx.Open()
+        Dim i As Integer = 0
+        Dim reader As SqlDataReader = queryObject.ExecuteReader
+        While reader.Read
+            i += 1
+        End While
+        cnx.Close()
+        Return i
+    End Function
+
     Function GetRepliesHTML(ByVal threadID As Integer) As String
         Dim sa As New StringBuilder
         For Each x In GetThreadChildrenPosts(threadID)
@@ -457,11 +531,11 @@ Public Module GlobalFunctions
             Dim postHTML As String = postTemplate
             postHTML = postHTML.Replace("%ID%", po.PostID)
             postHTML = postHTML.Replace("%POST TEXT%", ProcessComment(po.comment))
-            postHTML = postHTML.Replace("%DATE TEXT UTC%", po.time)
+            postHTML = postHTML.Replace("%DATE TEXT UTC%", GetTimeString(po.time))
             postHTML = postHTML.Replace("%SUBJECT%", po.subject)
             postHTML = postHTML.Replace("%NAME%", po.name)
             postHTML = postHTML.Replace("%DATE UTC UNIX%", po.time.ToFileTime)
-            postHTML = postHTML.Replace("%POST LINK%", "dispatcher.aspx?id=" & po.PostID)
+            postHTML = postHTML.Replace("%POST LINK%", "dispatcher.aspx?id=" & po.parent & "#" & po.PostID)
             Dim imagesHTML As String = ""
             Dim sb As New StringBuilder
             If Not (po._imageP = "") Then
@@ -487,27 +561,35 @@ Public Module GlobalFunctions
     End Function
 
     Private Sub DeleteAllPosts()
-        Dim cnx As New OleDbConnection(ConnectionString)
-        Dim queryString As String = "DELETE FROM board"
-        Dim queryObject As New OleDbCommand(queryString, cnx)
+        'Dim cnx As New OleDbConnection(ConnectionString)
+        'Dim queryString As String = "DELETE FROM board"
+        'Dim queryObject As New OleDbCommand(queryString, cnx)
+        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim queryString As String = "TRUNCATE TABLE board"
+        Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         queryObject.ExecuteNonQuery()
         cnx.Close()
     End Sub
 
     Private Sub ReportPost(ByVal id As Integer, ByVal reporterIP As String, ByVal time As Date)
-        Dim cnx As New OleDbConnection(ConnectionString)
-        Dim queryString As String = "INSERT INTO reports  postID, reporterIP, [time]) VALUES (" & id & ", '" & reporterIP & "', " & ConvertTimeToOLETIME(time) & ")"
-        Dim queryObject As New OleDbCommand(queryString, cnx)
+        'Dim cnx As New OleDbConnection(ConnectionString)
+        Dim cnx As New SqlConnection(SQLConnectionString)
+        'Dim queryString As String = "INSERT INTO reports  postID, reporterIP, [time] VALUES (" & id & ", '" & reporterIP & "', " & ConvertTimeToOLETIME(time) & ")"
+        Dim queryString As String = "INSERT INTO reports  (postID, reporterIP, time) VALUES (" & id & ", '" & reporterIP & "', " & ConvertTimeToSQLTIME(time) & ")"
+        'Dim queryObject As New OleDbCommand(queryString, cnx)
+        Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         queryObject.ExecuteNonQuery()
         cnx.Close()
     End Sub
 
     Private Sub DeletePost(ByVal id As Integer)
-        Dim cnx As New OleDbConnection(ConnectionString)
+        'Dim cnx As New OleDbConnection(ConnectionString)
+        Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = "DELETE FROM board WHERE(id = " & id & ")"
-        Dim queryObject As New OleDbCommand(queryString, cnx)
+        'Dim queryObject As New OleDbCommand(queryString, cnx)
+        Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         queryObject.ExecuteNonQuery()
         cnx.Close()

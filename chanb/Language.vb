@@ -13,4 +13,9 @@
 
     Public FloodDetected As String = "Flood detected, please allow " & TimeBetweenRequestes & " seconds before posting, reporting and deleting"
 
+    Public CannotDeletePostBadPassword As String = "Cannot delete post % , bad password" ' keep the %
+    Public PostDeletedSuccess As String = "Post number % has been deleted"
+    Public NoPostWasSelected As String = "No post was selected"
+    Public ReportedSucess As String = "Reported post no. %"
+
 End Module

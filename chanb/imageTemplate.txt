@@ -4,6 +4,6 @@
 <a href="%IMAGE SRC%" target="_top">%FILE NAME%</a></span>
 <a href="http://www.google.com/searchbyimage?image_url=%THUMB_LINK%" target="_top">google</a>
 </div>
-<a class="fileThumb" href="%IMAGE SRC%" target="_top">
+<a class="fileThumb" href="%IMAGE SRC%" target="_blank">
 <img src="%THUMB_LINK%" alt="%IMAGE SIZE%" data-md5="%IMAGE MD5%"></a>
 </div>

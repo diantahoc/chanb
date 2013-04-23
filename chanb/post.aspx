@@ -5,7 +5,7 @@
 <% 
     If Session.Item("lastpost") = "" Then
         Session.Item("lastpost") = Now.ToString
-        Response.Write(ProcessPost(Request))
+        Response.Write(ProcessPost(Request, Session))
        
     Else
         
@@ -14,7 +14,7 @@
         If (Now - i).TotalSeconds < TimeBetweenRequestes Then
             Response.Write(FloodDetected)
         Else
-            Response.Write(ProcessPost(Request))
+            Response.Write(ProcessPost(Request, Session))
             Session.Item("lastpost") = Now.ToString
         End If
         

@@ -8,7 +8,7 @@
 
     'Server related
     Public STORAGEFOLDER As String = "PHYSICAL PATH TO\dtin" ' Make sure that the directory is write-able first
-    Public StoragefolderWEB As String = "/dtin/" ' The STORAGE FOLDER MUST BE ACCESSIBLE FROM THE WEB
+    Public StoragefolderWEB As String = "http://HOSTNAME/dtin/" ' The storage folder must be accessible from the web
     Public MaximumFileSize As Long = 15 * 1024 * 1024 ' 15 MB
 
     Public replyButtonHTML As String = "&nbsp;<span>[<a href='%POST LINK%' class='replylink'>Reply</a>]</span>"
@@ -18,6 +18,5 @@
     Public ReadOnly imageTemplate As String = IO.File.ReadAllText("PHYSICAL PATH TO\imageTemplate.txt")
     Public ReadOnly opPostTemplate As String = IO.File.ReadAllText("PHYSICAL PATH TO\opPostTemplate.txt")
     Public ReadOnly threadTemplate As String = IO.File.ReadAllText("PHYSICAL PATH TO\threadTemplate.txt")
-
 
 End Module

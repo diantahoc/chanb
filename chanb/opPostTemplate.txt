@@ -11,7 +11,7 @@
 <span title="%FILE NAME%">%FILE NAME%</span>)
 </span>
 </div>
-<a class="fileThumb" href="%IMAGE LINK%" target="_blank">
+<a class="fileThumb" href="%POST LINK%" target="_blank">
 <img src="%THUMB LINK%" alt="%FILE SIZE%" data-md5="%MD5%">
 </a>
 </div>
@@ -27,8 +27,10 @@
    <a href="javascript:quote('%ID%');" title="Quote this post">%ID%</a>
 %REPLY BUTTON%
 </span>
+<b>%REPLY COUNT%</b><span> reply.</span>
 </div>
 <blockquote class="postMessage" id="m%ID%">%POST TEXT%</blockquote>
 </div>
 
 </div>
+<br/>

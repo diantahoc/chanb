@@ -1,5 +1,5 @@
-﻿<%@ Import Namespace = "chanb.GlobalVariables" %>
-<%@ Import Namespace="chanb" %>
+﻿<%@ Import Namespace="chanb" %>
+<%@ Import Namespace = "chanb.GlobalVariables" %>
 <%@ Import Namespace = "chanb.GlobalFunctions" %>
 <%@ Import Namespace = "chanb.Language" %>
 
@@ -14,16 +14,13 @@
     <link rel="Stylesheet" href=<% Response.Write("'" & GetUserSelectedStyle(Session) & ".css'")%> />
     </head> 
 <body>
-    <div class="main">
-        
-    <div class="menu"><% Response.Write("Page generated in " & Request.CurrentExecutionFilePath)%></div>
+   
+   <div class="boardBanner"> 
+   <div class="boardTitle"><% Response.Write(BoardTitle)%></div>
+   <div class="boardSubtitle"><% Response.Write(BoardDesc)%></div>
+   </div>
     
-    <div class="Bdesc">
-    <label class="headertext"><% Response.Write(BoardTitle & " - " & BoardDesc)%></label>
-    </div>
-    
-    
-    <div class="postdiv" align="center">
+<div class="postdiv" align="center">
     
     <form name="form" action="post.aspx" method="post" enctype="multipart/form-data" title="New thread">
     
@@ -53,9 +50,8 @@
     
     </div>
     
-    
-<div class="threadstream">
-<form name="deletation">
+<form name="deletation" action="post.aspx" enctype="application/x-www-form-urlencoded" method="get">
+<div class="board">
  <%    
      Dim startIndex As Integer = 0
         If Not (Request.Item("startPos") = "") Then startIndex = Request.Item("startPos")
@@ -64,10 +60,15 @@
             Response.Write(GetThreadHTML(x))
         Next
 %>
+</div>
 
-    </form>
-    </div>
-    
-    </div>
+<div style="float: right;">
+<div class="deleteform desktop">
+<input type="text" name="deletePass" value="<% Response.Write(GetSessionPassword(Session)) %>" />
+<input type="submit" name="mode" value="delete" />
+<input type="submit" name="mode" value="report" /></div>
+</div>
+</form>
+<div id="bottom"></div>
 </body>
 </html>

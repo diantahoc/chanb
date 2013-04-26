@@ -18,5 +18,4 @@
     Public ReadOnly imageTemplate As String = IO.File.ReadAllText("PHYSICAL PATH TO\imageTemplate.txt")
     Public ReadOnly opPostTemplate As String = IO.File.ReadAllText("PHYSICAL PATH TO\opPostTemplate.txt")
     Public ReadOnly threadTemplate As String = IO.File.ReadAllText("PHYSICAL PATH TO\threadTemplate.txt")
-
 End Module

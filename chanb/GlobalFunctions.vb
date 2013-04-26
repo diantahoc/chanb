@@ -3,8 +3,7 @@ Imports System.Data.SqlClient
 
 Public Module GlobalFunctions
 
-    'Dim ConnectionString As String = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=D:\d\tiny.accdb" ' Never mind any thing related to OLE
-    Dim SQLConnectionString As String = "Data Source=;Initial Catalog=chanbsql;Integrated Security=True" ' Replace with your connection string
+    Dim SQLConnectionString As String = "" ' Replace with your connection string
 
     Function GetUserSelectedStyle(ByVal session As Web.SessionState.HttpSessionState) As String
         If session.Item("SS") = "" Then
@@ -240,7 +239,11 @@ Public Module GlobalFunctions
         Dim p As String = STORAGEFOLDER & "\" & dd & "." & f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1)
         Dim thumb As String = STORAGEFOLDER & "\th" & dd & ".png"
         Dim w As Drawing.Image = Drawing.Image.FromStream(f.InputStream)
-        ResizeImage(w, 250).Save(thumb)
+        If w.Width < 250 Then
+            w.Save(thumb)
+        Else
+            ResizeImage(w, 250).Save(thumb)
+        End If
         f.SaveAs(p)
         'chanb name : size in bytes : dimensions : realname 
         Dim sp As String = dd & "." & f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1) & ":" & f.ContentLength & ":" & w.Size.ToString & ":" & f.FileName & ":" & MD5(f.InputStream)
@@ -290,7 +293,11 @@ Public Module GlobalFunctions
                     Dim p As String = STORAGEFOLDER & "\" & dd & "." & f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1)
                     Dim thumb As String = STORAGEFOLDER & "\th" & dd & ".png"
                     Dim i As Drawing.Image = Drawing.Image.FromStream(f.InputStream)
-                    ResizeImage(i, 250).Save(thumb)
+                    If i.Width < 250 Then
+                        i.Save(thumb)
+                    Else
+                        ResizeImage(i, 250).Save(thumb)
+                    End If
                     f.SaveAs(p)
                     'chanb name : size in bytes : dimensions : realname 
                     Dim sp As String = dd & "." & f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1) & ":" & f.ContentLength & ":" & i.Size.ToString & ":" & f.FileName & ":" & MD5(f.InputStream)
@@ -309,9 +316,9 @@ Public Module GlobalFunctions
         Return s.ToString
     End Function
 
-    Private Function DownSizeWithAspectRatio(ByVal targetMax As Integer, ByVal iSi As Drawing.Size) As Drawing.Size
-        Dim ratioP As Integer = iSi.Width / targetMax
-        Return New Drawing.Size(Fix(iSi.Width / ratioP), Fix(iSi.Height / ratioP))
+    Private Function DownSizeWithAspectRatio(ByVal targetMax As Integer, ByVal isi As Drawing.Size) As Drawing.Size
+        Dim ratioP As Integer = isi.Width / targetMax
+        Return New Drawing.Size(Fix(isi.Width / ratioP), Fix(isi.Height / ratioP))
     End Function
 
     Private Function ResizeImage(ByVal i As Drawing.Image, ByVal targetS As Integer) As Drawing.Image
@@ -416,7 +423,7 @@ Public Module GlobalFunctions
                 ReplyTo(request.Item("threadid"), er)
 
                 sb.Append(SuccessfulPostString)
-                sb.Append("<meta HTTP-EQUIV='REFRESH' content='2; url=dispatcher.aspx?id=" & request.Item("threadid") & "'>")
+                sb.Append("<meta HTTP-EQUIV='REFRESH' content='2; url=default.aspx?id=" & request.Item("threadid") & "'>")
             Case "report"
                 For Each x As String In request.QueryString
                     If x.StartsWith("proc") Then
@@ -469,7 +476,17 @@ Public Module GlobalFunctions
     End Function
 
     Private Function ProcessComment(ByVal comment As String) As String
-        Return comment
+        Dim sb As New StringBuilder
+
+        For Each x In comment.Split(vbNewLine)
+            If x.StartsWith(">") And Not x.StartsWith(">>") Then
+                sb.Append("<span class='quote'>&gt;" & x.Replace(">", "") & "</span>")
+            Else
+                sb.Append(x)
+            End If
+            sb.Append(vbNewLine)
+        Next
+        Return sb.ToString
     End Function
 
     Function GetOPPostHTML(ByVal id As Integer, ByVal replyButton As Boolean) As String
@@ -493,7 +510,7 @@ Public Module GlobalFunctions
         postHTML = postHTML.Replace("%NAME%", po.name)
         postHTML = postHTML.Replace("%DATE UTC UNIX%", po.time.ToFileTime)
         postHTML = postHTML.Replace("%DATE UTC TEXT%", GetTimeString(po.time))
-        postHTML = postHTML.Replace("%POST LINK%", "dispatcher.aspx?id=" & po.PostID & "#" & po.PostID)
+        postHTML = postHTML.Replace("%POST LINK%", "default.aspx?id=" & po.PostID & "#p" & po.PostID)
         postHTML = postHTML.Replace("%POST TEXT%", ProcessComment(po.comment))
         postHTML = postHTML.Replace("%REPLY COUNT%", GetRepliesCount(id))
         Return postHTML
@@ -529,13 +546,19 @@ Public Module GlobalFunctions
         For Each x In GetThreadChildrenPosts(threadID)
             Dim po As WPost = (FetchPostData(x))
             Dim postHTML As String = postTemplate
+            If po.email = "" Then
+                postHTML = postHTML.Replace("%NAMESPAN%", "<span class='name'>%NAME%</span>")
+            Else
+                postHTML = postHTML.Replace("%NAMESPAN%", "<a href='mailto:%EMAIL%' class='useremail'><span class='name'>%NAME%</span></a>")
+            End If
+            postHTML = postHTML.Replace("%EMAIL%", po.email)
             postHTML = postHTML.Replace("%ID%", po.PostID)
             postHTML = postHTML.Replace("%POST TEXT%", ProcessComment(po.comment))
             postHTML = postHTML.Replace("%DATE TEXT UTC%", GetTimeString(po.time))
             postHTML = postHTML.Replace("%SUBJECT%", po.subject)
             postHTML = postHTML.Replace("%NAME%", po.name)
             postHTML = postHTML.Replace("%DATE UTC UNIX%", po.time.ToFileTime)
-            postHTML = postHTML.Replace("%POST LINK%", "dispatcher.aspx?id=" & po.parent & "#" & po.PostID)
+            postHTML = postHTML.Replace("%POST LINK%", "default.aspx?id=" & po.parent & "#p" & po.PostID)
             Dim imagesHTML As String = ""
             Dim sb As New StringBuilder
             If Not (po._imageP = "") Then

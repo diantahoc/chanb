@@ -9,12 +9,14 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml" >
+
 <head>
     <title><% Response.Write(BoardTitle)%></title>
     <link rel="Stylesheet" href=<% Response.Write("'" & GetUserSelectedStyle(Session) & ".css'")%> />
+    <script src="scripts.js" type="text/javascript" language="javascript"></script>
     </head> 
-<body>
-   
+<body >
+ 
    <div class="boardBanner"> 
    <div class="boardTitle"><% Response.Write(BoardTitle)%></div>
    <div class="boardSubtitle"><% Response.Write(BoardDesc)%></div>
@@ -24,8 +26,8 @@
     
     <form name="form" action="post.aspx" method="post" enctype="multipart/form-data" title="New thread">
     
-    <input type="hidden" name="mode" value="thread" />
-    
+    <input type="hidden" name="mode" value="<% If not request.item("id") = "" then Response.write("reply") else Response.write("thread") %>" />
+    <input type="hidden" name="threadid" value="<% Response.Write(Request.Item("id")) %>" />
     <label class="text"><% Response.Write(NAMEString)%></label>
     <input type="text" class="inputfield" name="postername" />
     <br class="br" />
@@ -36,29 +38,54 @@
     <input type="text" class="inputfield" name="email" />
     <br class="br" />
     <label class="text"><% Response.Write(COMMENTString)%></label>
-    <textarea cols="13" rows="10" class="texto" name="comment" ></textarea>
+    <textarea id="commentfield" cols="25" rows="10" class="texto" name="comment" ></textarea>
     <br class="br" />
     <label class="text"><% Response.Write(PASSWORDString)%></label>
     <input type="text" class="inputfield" name="password" value="<% Response.Write(GetSessionPassword(Session)) %>" />
-    <br class="br" />  
-    <input type="file" name="ufile" class="file" maxlength="<% response.write(maximumfilesize / 1024) %>" id="file" />
-    <br class="br" />
+    <br class="br" />   
+    <div id="files" >
+    <input type="file" name="ufile" class="file" maxlength="<% response.write(maximumfilesize / 1024) %>" id="file1" />
+    </div>  
+  <%If Not Request.Item("id") = "" Then Response.Write("<input class='button' type='button'  value='Add another file'  onclick='createUf();' />")%>    
     <input type="submit" value="submit" />
     </form>
-    
-    <label class="text">Maximum file size is <% Response.Write((MaximumFileSize / 1024 / 1024) & " MB")%></label>
-    
-    </div>
-    
+    <label class="text">Maximum file size is <% Response.Write((MaximumFileSize / 1024 / 1024) & " MB")%></label>   
+    </div>  
 <form name="deletation" action="post.aspx" enctype="application/x-www-form-urlencoded" method="get">
 <div class="board">
  <%    
-     Dim startIndex As Integer = 0
-        If Not (Request.Item("startPos") = "") Then startIndex = Request.Item("startPos")
+     
+     If Not (Request.Item("id") = "") Then
+         'Display thread or post thread
+         Dim opID As Integer = Request.Item("id")
+         Dim po As WPost = FetchPostData(opID)
         
-        For Each x In GetThreads(startIndex, 10)
-            Response.Write(GetThreadHTML(x))
-        Next
+         If po.type Is Nothing Then
+             Response.Redirect("default.aspx")
+         End If
+        
+         ' Check if it is a reply or a thread , 0 = thread, 1 = reply
+         ' If it is a reply, redirect to parent thread.
+         If po.type = 1 Then Response.Redirect("default.aspx?id=" & po.parent & "#p" & po.PostID)
+    
+         'Write OP Post        
+         Response.Write(GetOPPostHTML(opID, False))
+         'Write replies, if any.  
+         Response.Write(GetRepliesHTML(opID))
+                 
+     Else
+         
+         'Display a list of current threads
+         Dim startIndex As Integer = 0
+         If Not (Request.Item("startPos") = "") Then startIndex = Request.Item("startPos")
+        
+         For Each x In GetThreads(startIndex, 100)
+             Response.Write(GetThreadHTML(x))
+         Next
+         
+     End If
+     
+   
 %>
 </div>
 
@@ -70,5 +97,6 @@
 </div>
 </form>
 <div id="bottom"></div>
+
 </body>
 </html>

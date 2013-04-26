@@ -9,10 +9,8 @@ function createUf() {
     divTag.setAttribute("name", "d" + Math.random().toString(10));
 
     divTag.setAttribute("type", "file");
-
-    document.getElementsByName("form").item(0).appendChild(divTag);
-
+    document.getElementById("files").appendChild(divTag);
+    
     var br = document.createElement("br");
-
-    document.getElementsByName("form").item(0).appendChild(br);
+    document.getElementById("files").appendChild(br);
 } 

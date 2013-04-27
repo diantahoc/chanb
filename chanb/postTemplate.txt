@@ -12,6 +12,7 @@
 <span class="postNum desktop">
 <a href="%POST LINK%" title="Highlight this post">No.</a>
 <a href="javascript:quote('%ID%');" title="Quote this post">%ID%</a>
+%MODPANEL%
 </span>
 </span>
 <span id="blc%ID%" class="container">

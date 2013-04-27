@@ -26,6 +26,7 @@
    <a href="%POST LINK%" title="Highlight this post">No.</a>
    <a href="javascript:quote('%ID%');" title="Quote this post">%ID%</a>
 %REPLY BUTTON%
+%MODPANEL%
 </span>
 <b>%REPLY COUNT%</b><span> reply.</span>
 </div>

@@ -211,6 +211,21 @@ Public Module GlobalFunctions
         il.Clear()
     End Function
 
+    Function IsModLoginValid(ByVal name As String, ByVal password As String)
+        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim queryString As String = "SELECT password FROM mods  WHERE (username LIKE '" & name & "')"
+        Dim queryObject As New SqlCommand(queryString, cnx)
+        cnx.Open()
+        Dim sqlPassMd5 As String = ""
+        Dim reader As SqlDataReader = queryObject.ExecuteReader
+        While reader.Read
+            sqlPassMd5 = ConvertNoNull(reader(0))
+        End While
+        reader.Close()
+        cnx.Close()
+        Return (MD5(password) = sqlPassMd5)
+    End Function
+
     ''' <summary>
     ''' Save single file
     ''' </summary>
@@ -271,6 +286,7 @@ Public Module GlobalFunctions
         Dim s As New StringBuilder
         Dim list As New List(Of String)
         For Each a As String In li.Keys
+
             Dim f As HttpPostedFile = li.Item(a)
             'Check for valid image
             Dim er As Boolean = False
@@ -308,7 +324,7 @@ Public Module GlobalFunctions
             End If
         Next
         'Remove the last ';'
-        list.RemoveAt(list.Count - 1)
+        If list.Count > 1 Then list.RemoveAt(list.Count - 1)
         For Each x In list
             s.Append(x)
         Next
@@ -345,6 +361,15 @@ Public Module GlobalFunctions
         Return StoragefolderWEB & "th" & name.Split(".").ElementAt(0) & ".png"
     End Function
 
+    Sub NewMod(ByVal name As String, ByVal pas As String)
+        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim queryString As String = "INSERT INTO mods (username, password) VALUES ('" & name & "', '" & MD5(pas) & "')"
+        Dim queryObject As New SqlCommand(queryString, cnx)
+        cnx.Open()
+        queryObject.ExecuteNonQuery()
+        cnx.Close()
+    End Sub
+
     'Sub GenerateThumbsForOldImages()
     '    For Each x As IO.FileInfo In FileIO.FileSystem.GetDirectoryInfo(STORAGEFOLDER).GetFiles
     '        If x.Name.StartsWith("th") Then
@@ -355,108 +380,176 @@ Public Module GlobalFunctions
     '    Next
     'End Sub
 
-    Function ProcessPost(ByVal request As HttpRequest, ByVal seesion As Web.SessionState.HttpSessionState) As String
+    Private Function IsIPBanned(ByVal IP As String) As Boolean
+        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim queryString As String = "SELECT ID FROM bans WHERE (IP LIKE '" & IP & "')"
+        Dim queryObject As New SqlCommand(queryString, cnx)
+        cnx.Open()
+        Dim reader As SqlDataReader = queryObject.ExecuteReader
+        Dim banned As Boolean = False
+        While reader.Read
+            If TypeOf reader(0) Is DBNull Then
+                banned = False
+                'User is not banned since there is no ID entry for the specified IP address
+            Else
+                banned = True
+            End If
+        End While
+        reader.Close()
+        cnx.Close()
+        Return banned
+    End Function
+
+    Private Function GetBanData(ByVal IP As String) As BanData
+        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim queryString As String = "SELECT ID, perm, expiry, comment, post FROM bans WHERE (IP LIKE '" & IP & "')"
+        Dim queryObject As New SqlCommand(queryString, cnx)
+        cnx.Open()
+        Dim reader As SqlDataReader = queryObject.ExecuteReader
+        Dim data As New BanData
+        While reader.Read
+            data.ID = ConvertNoNull(reader(0))
+            data.PERM = ConvertNoNull(reader(1))
+            data.EXPIRY = ConvertNoNull(reader(2))
+            data.COMMENT = ConvertNoNull(reader(3))
+            data.POSTNO = ConvertNoNull(reader(4))
+        End While
+        data.IP = IP
+        reader.Close()
+        cnx.Close()
+        Return data
+    End Function
+
+    Private Function MakeBannedMessage(ByVal IP As String) As String
+        Return "You are banned!"
+    End Function
+
+    Function ProcessPost(ByVal request As HttpRequest, ByVal Session As Web.SessionState.HttpSessionState) As String
         Dim sb As New StringBuilder
         sb.Append("<html><head>")
-        Select Case request.Item("mode")
-            Case "thread"
-                If request.Files.Count = 0 Then
-                    sb.Append(ImageRequired)
-                    sb.Append("<meta HTTP-EQUIV='REFRESH' content='2; url=default.aspx'>")
-                Else
-                    'Save file.
-                    If request.Files("ufile").ContentLength = 0 Then
-                        sb.Append("Bad or no image")
-                    Else
-                        'Check file size before saving.
-                        If request.Files("ufile").ContentLength > MaximumFileSize Then
-                            sb.Append(FileToBig)
-                            sb.Append("<meta HTTP-EQUIV='REFRESH' content='10; url=default.aspx'>")
-                            Exit Select
-                        End If
+        Dim cont As Boolean = True
+        If Session.Item("lastpost") = "" Then
+            Session.Item("lastpost") = Now.ToString
+        Else
+            Dim i As Date = Date.Parse(Session.Item("lastpost"))
+            If (Now - i).TotalSeconds < TimeBetweenRequestes Then
+                sb.Append(FloodDetected)
+                cont = False
+            Else
+                Session.Item("lastpost") = Now.ToString
+            End If
 
-                        Dim s As String = saveFile(request.Files("ufile"), False)
-
-                        Dim er As New OPDATA
-
-                        er.Comment = request.Item("comment")
-                        er.email = request.Item("email")
-                        If request.Item("postername") = "" Then er.name = AnonName Else er.name = request.Item("postername")
-                        er.subject = request.Item("subject")
-
-                        er.time = Date.UtcNow
-                        er.imageName = s
-                        er.password = request.Item("password")
-                        er.IP = request.UserHostAddress
-
-                        seesion.Item("pass") = request.Item("password")
-
-                        MakeThread(er)
-
-                        sb.Append(SuccessfulPostString)
-                        sb.Append("<meta HTTP-EQUIV='REFRESH' content='2; url=default.aspx'>")
-
-                    End If
-                End If
-            Case "reply"
-                Dim s As String = ""
-                If request.Files.Count = 0 Then
-                    s = ""
-                Else
-                    If request.Files.Count = 1 Then
-                        s = saveFile(request.Files(0), True)
-                    ElseIf request.Files.Count > 1 Then
-                        s = saveMFile(request.Files)
-                    End If
-                End If
-                Dim er As New OPDATA
-                er.Comment = request.Item("comment")
-                er.email = request.Item("email")
-                If request.Item("postername") = "" Then er.name = AnonName Else er.name = request.Item("postername")
-                er.subject = request.Item("subject")
-
-                er.time = Date.UtcNow
-                er.imageName = s
-                er.password = request.Item("password")
-                er.IP = request.UserHostAddress
-                seesion.Item("pass") = request.Item("password")
-                ReplyTo(request.Item("threadid"), er)
-
-                sb.Append(SuccessfulPostString)
-                sb.Append("<meta HTTP-EQUIV='REFRESH' content='2; url=default.aspx?id=" & request.Item("threadid") & "'>")
-            Case "report"
-                For Each x As String In request.QueryString
-                    If x.StartsWith("proc") Then
-                        ReportPost(CInt(x.Replace("proc", "")), request.UserHostAddress, Date.UtcNow)
-                        sb.Append(ReportedSucess.Replace("%", x))
-                    End If
-                Next
-            Case "delete"
-                Dim li As New List(Of String)
-                Dim deletPass As String = request.Item("deletePass")
-                For Each x As String In request.QueryString
-                    If x.StartsWith("proc") Then
-                        li.Add(x.Replace("proc", ""))
-                    End If
-                Next
-                If li.Count = 0 Then
-                    sb.Append(NoPostWasSelected)
-                Else
-                    For Each x In li
-                        Dim p As WPost = FetchPostData(x)
-                        If p.password = deletPass Then
-                            DeletePost(x)
-                            sb.Append(PostDeletedSuccess.Replace("%", x))
+        End If
+        ''Post processing begin here 
+        If cont Then
+            If IsIPBanned(request.UserHostAddress) Then
+                sb.Append(MakeBannedMessage(request.UserHostAddress))
+            Else
+                Select Case request.Item("mode")
+                    Case "thread"
+                        If request.Files.Count = 0 Then
+                            sb.Append(ImageRequired)
+                            sb.Append("<meta HTTP-EQUIV='REFRESH' content='2; url=default.aspx'>")
                         Else
-                            sb.Append(CannotDeletePostBadPassword.Replace("%", x))
+                            'Save file.
+                            If request.Files("ufile").ContentLength = 0 Then
+                                sb.Append("Bad or no image")
+                            Else
+                                'Check file size before saving.
+                                If request.Files("ufile").ContentLength > MaximumFileSize Then
+                                    sb.Append(FileToBig)
+                                    sb.Append("<meta HTTP-EQUIV='REFRESH' content='10; url=default.aspx'>")
+                                    Exit Select
+                                End If
+
+                                Dim s As String = saveFile(request.Files("ufile"), False)
+
+                                Dim er As New OPData
+
+                                er.Comment = request.Item("comment")
+                                er.email = request.Item("email")
+                                If request.Item("postername") = "" Then er.name = AnonName Else er.name = request.Item("postername")
+                                er.subject = request.Item("subject")
+
+                                er.time = Date.UtcNow
+                                er.imageName = s
+                                er.password = request.Item("password")
+                                er.IP = request.UserHostAddress
+
+                                Session.Item("pass") = request.Item("password")
+
+                                MakeThread(er)
+
+                                sb.Append(SuccessfulPostString)
+                                sb.Append("<meta HTTP-EQUIV='REFRESH' content='2; url=default.aspx'>")
+
+                            End If
                         End If
-                        sb.Append("<br/>")
-                    Next
-                End If
-            Case Else
-                sb.Append("Invalid Posting mode")
-                sb.Append("<meta HTTP-EQUIV='REFRESH' content='2; url=default.aspx'>")
-        End Select
+                    Case "reply"
+                        Dim s As String = ""
+                        If request.Files.Count = 0 Then
+                            s = ""
+                        Else
+                            If request.Files.Count = 1 Then
+                                s = saveFile(request.Files(0), True)
+                            ElseIf request.Files.Count > 1 Then
+                                s = saveMFile(request.Files)
+                            End If
+                        End If
+                        Dim er As New OPData
+                        If request.Item("comment") = "" And s = "" Then
+                            'no image and no text
+                            'blank post
+                            sb.Append("Blank post are not allowed")
+                        Else
+                            er.Comment = request.Item("comment")
+                            er.email = request.Item("email")
+                            If request.Item("postername") = "" Then er.name = AnonName Else er.name = request.Item("postername")
+                            er.subject = request.Item("subject")
+                            er.time = Date.UtcNow
+                            er.imageName = s
+                            er.password = request.Item("password")
+                            er.IP = request.UserHostAddress
+                            Session.Item("pass") = request.Item("password")
+                            ReplyTo(request.Item("threadid"), er)
+                            sb.Append(SuccessfulPostString)
+                        End If
+                        sb.Append("<meta HTTP-EQUIV='REFRESH' content='2; url=default.aspx?id=" & request.Item("threadid") & "'>")
+                    Case "report"
+                        For Each x As String In request.QueryString
+                            If x.StartsWith("proc") Then
+                                ReportPost(CInt(x.Replace("proc", "")), request.UserHostAddress, Date.UtcNow)
+                                sb.Append(ReportedSucess.Replace("%", x))
+                            End If
+                        Next
+                    Case "delete"
+                        Dim li As New List(Of String)
+                        Dim deletPass As String = request.Item("deletePass")
+                        For Each x As String In request.QueryString
+                            If x.StartsWith("proc") Then
+                                li.Add(x.Replace("proc", ""))
+                            End If
+                        Next
+                        If li.Count = 0 Then
+                            sb.Append(NoPostWasSelected)
+                        Else
+                            For Each x In li
+                                Dim p As WPost = FetchPostData(x)
+                                If p.password = deletPass Then
+                                    DeletePost(x)
+                                    sb.Append(PostDeletedSuccess.Replace("%", x))
+                                Else
+                                    sb.Append(CannotDeletePostBadPassword.Replace("%", x))
+                                End If
+                                sb.Append("<br/>")
+                            Next
+                        End If
+                    Case Else
+                        sb.Append("Invalid Posting mode")
+                        sb.Append("<meta HTTP-EQUIV='REFRESH' content='2; url=default.aspx'>")
+                End Select
+            End If
+        End If
         sb.Append("</head></html>")
         Return sb.ToString
     End Function
@@ -464,6 +557,12 @@ Public Module GlobalFunctions
     Private Function MD5(ByVal s As IO.Stream) As String
         Dim md5s As New System.Security.Cryptography.MD5CryptoServiceProvider()
         Dim hash() As Byte = md5s.ComputeHash(s)
+        Return ByteArrayToString(hash)
+    End Function
+
+    Private Function MD5(ByVal s As String) As String
+        Dim md5s As New System.Security.Cryptography.MD5CryptoServiceProvider()
+        Dim hash() As Byte = System.Text.Encoding.ASCII.GetBytes(s)
         Return ByteArrayToString(hash)
     End Function
 
@@ -477,19 +576,27 @@ Public Module GlobalFunctions
 
     Private Function ProcessComment(ByVal comment As String) As String
         Dim sb As New StringBuilder
-
-        For Each x In comment.Split(vbNewLine)
+        Dim li As String() = comment.Split(vbNewLine)
+        For Each x In li
+            'Check if greentext
             If x.StartsWith(">") And Not x.StartsWith(">>") Then
-                sb.Append("<span class='quote'>&gt;" & x.Replace(">", "") & "</span>")
-            Else
+                sb.Append("<span class='quote'>&gt;" & x.Replace(">", "") & "</span></br>")
+            End If
+            'Check if quote
+            If x.StartsWith(">>") Then
+                sb.Append("<a href='#'>" & x & "</a><br/>")
+            End If
+            'Check if normal
+            If Not x.StartsWith(">") Then
                 sb.Append(x)
             End If
+            sb.Append("</br>")
             sb.Append(vbNewLine)
         Next
         Return sb.ToString
     End Function
 
-    Function GetOPPostHTML(ByVal id As Integer, ByVal replyButton As Boolean) As String
+    Function GetOPPostHTML(ByVal id As Integer, ByVal replyButton As Boolean, ByVal isMod As Boolean) As String
         Dim po As WPost = FetchPostData(id)
         Dim imageData As WPostImage = GetWPOSTIMAGE(po._imageP)
         Dim postHTML As String = opPostTemplate
@@ -513,13 +620,41 @@ Public Module GlobalFunctions
         postHTML = postHTML.Replace("%POST LINK%", "default.aspx?id=" & po.PostID & "#p" & po.PostID)
         postHTML = postHTML.Replace("%POST TEXT%", ProcessComment(po.comment))
         postHTML = postHTML.Replace("%REPLY COUNT%", GetRepliesCount(id))
+        If isMod Then postHTML = postHTML.Replace("%MODPANEL%", "<a href='modaction.aspx?action=banpost&postid=" & po.PostID & "'>Ban</a>") Else postHTML = postHTML.Replace("%MODPANEL%", "")
         Return postHTML
     End Function
 
-    Function GetThreadHTML(ByVal threadID As Integer) As String
+    Sub BanPosterByPost(ByVal postID As Integer)
+        Dim po As WPost = FetchPostData(postID)
+        If IsIPBanned(po.ip) = False Then
+            Dim newText As String = po.comment & vbNewLine & "<br/><strong style='color: red;'>USER WAS BANNED FOR THIS POST</strong>"
+            BanPoster(po.ip, postID)
+            UpdatePostText(postID, newText)
+        End If
+    End Sub
+
+    Private Sub UpdatePostText(ByVal postID As Integer, ByVal newText As String)
+        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim queryString As String = "UPDATE board SET comment = '\" & newText.Replace("'", "") & "' WHERE(ID = " & postID & ")"
+        Dim queryObject As New SqlCommand(queryString, cnx)
+        cnx.Open()
+        queryObject.ExecuteNonQuery()
+        cnx.Close()
+    End Sub
+
+    Private Sub BanPoster(ByVal IP As String, ByVal postID As Integer)
+        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim queryString As String = "INSERT INTO bans (perm, post, IP) VALUES (0, " & postID & ", '" & IP & "')"
+        Dim queryObject As New SqlCommand(queryString, cnx)
+        cnx.Open()
+        queryObject.ExecuteNonQuery()
+        cnx.Close()
+    End Sub
+
+    Function GetThreadHTML(ByVal threadID As Integer, ByVal isMod As Boolean) As String
         Dim postHtml As String = threadTemplate
         postHtml = postHtml.Replace("%ID%", threadID)
-        postHtml = postHtml.Replace("%POST HTML%", GetOPPostHTML(threadID, True))
+        postHtml = postHtml.Replace("%POST HTML%", GetOPPostHTML(threadID, True, isMod))
         Return postHtml
     End Function
 
@@ -541,7 +676,7 @@ Public Module GlobalFunctions
         Return i
     End Function
 
-    Function GetRepliesHTML(ByVal threadID As Integer) As String
+    Function GetRepliesHTML(ByVal threadID As Integer, ByVal isMod As Boolean) As String
         Dim sa As New StringBuilder
         For Each x In GetThreadChildrenPosts(threadID)
             Dim po As WPost = (FetchPostData(x))
@@ -559,6 +694,7 @@ Public Module GlobalFunctions
             postHTML = postHTML.Replace("%NAME%", po.name)
             postHTML = postHTML.Replace("%DATE UTC UNIX%", po.time.ToFileTime)
             postHTML = postHTML.Replace("%POST LINK%", "default.aspx?id=" & po.parent & "#p" & po.PostID)
+            If isMod Then postHTML = postHTML.Replace("%MODPANEL%", "<a href='modaction.aspx?action=banpost&postid=" & po.PostID & "'>Ban</a>") Else postHTML = postHTML.Replace("%MODPANEL%", "")
             Dim imagesHTML As String = ""
             Dim sb As New StringBuilder
             If Not (po._imageP = "") Then
@@ -619,3 +755,4 @@ Public Module GlobalFunctions
     End Sub
 
 End Module
+

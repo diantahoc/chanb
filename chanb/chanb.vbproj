@@ -84,8 +84,9 @@
   <ItemGroup>
     <Content Include="chan.css" />
     <Content Include="Default.aspx" />
-    <Content Include="dispatcher.aspx" />
     <Content Include="imageTemplate.txt" />
+    <Content Include="mod.aspx" />
+    <Content Include="modaction.aspx" />
     <Content Include="opPostTemplate.txt" />
     <Content Include="post.aspx" />
     <Content Include="postTemplate.txt" />
@@ -95,6 +96,7 @@
     <Content Include="yotsubab.css" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BanData.vb" />
     <Compile Include="Default.aspx.vb">
       <SubType>ASPXCodeBehind</SubType>
       <DependentUpon>Default.aspx</DependentUpon>
@@ -102,16 +104,23 @@
     <Compile Include="Default.aspx.designer.vb">
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
-    <Compile Include="dispatcher.aspx.designer.vb">
-      <DependentUpon>dispatcher.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="dispatcher.aspx.vb">
-      <DependentUpon>dispatcher.aspx</DependentUpon>
-      <SubType>ASPXCodebehind</SubType>
-    </Compile>
     <Compile Include="GlobalFunctions.vb" />
     <Compile Include="GlobalVariables.vb" />
     <Compile Include="Language.vb" />
+    <Compile Include="mod.aspx.designer.vb">
+      <DependentUpon>mod.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="mod.aspx.vb">
+      <DependentUpon>mod.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="modaction.aspx.designer.vb">
+      <DependentUpon>modaction.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="modaction.aspx.vb">
+      <DependentUpon>modaction.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>

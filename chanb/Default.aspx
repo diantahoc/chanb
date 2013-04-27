@@ -20,6 +20,7 @@
    <div class="boardBanner"> 
    <div class="boardTitle"><% Response.Write(BoardTitle)%></div>
    <div class="boardSubtitle"><% Response.Write(BoardDesc)%></div>
+ <% If Not Request.Item("id") = "" Then Response.Write("<div class='postingMode desktop'><span>Posting mode: Reply</span><a href='/'>[Return]</a></div><br/>")%>
    </div>
     
 <div class="postdiv" align="center">
@@ -55,6 +56,8 @@
 <div class="board">
  <%    
      
+     If Session.Item("mod") Is "" Or Session.Item("mod") Is Nothing Then Session("mod") = CStr(False)
+     
      If Not (Request.Item("id") = "") Then
          'Display thread or post thread
          Dim opID As Integer = Request.Item("id")
@@ -69,9 +72,9 @@
          If po.type = 1 Then Response.Redirect("default.aspx?id=" & po.parent & "#p" & po.PostID)
     
          'Write OP Post        
-         Response.Write(GetOPPostHTML(opID, False))
+         Response.Write(GetOPPostHTML(opID, False, CBool(Session("mod"))))
          'Write replies, if any.  
-         Response.Write(GetRepliesHTML(opID))
+         Response.Write(GetRepliesHTML(opID, CBool(Session("mod"))))
                  
      Else
          
@@ -80,7 +83,7 @@
          If Not (Request.Item("startPos") = "") Then startIndex = Request.Item("startPos")
         
          For Each x In GetThreads(startIndex, 100)
-             Response.Write(GetThreadHTML(x))
+             Response.Write(GetThreadHTML(x, CBool(Session("mod"))))
          Next
          
      End If

@@ -428,7 +428,7 @@ Public Module GlobalFunctions
         Dim sb As New StringBuilder
         sb.Append("<html><head>")
         Dim cont As Boolean = True
-        If Session.Item("lastpost") = "" Then
+        If Session.Item("lastpost") Is "" Or Session.Item("lastpost") Is Nothing Then
             Session.Item("lastpost") = Now.ToString
         Else
             Dim i As Date = Date.Parse(Session.Item("lastpost"))
@@ -438,7 +438,6 @@ Public Module GlobalFunctions
             Else
                 Session.Item("lastpost") = Now.ToString
             End If
-
         End If
         ''Post processing begin here 
         If cont Then
@@ -624,6 +623,20 @@ Public Module GlobalFunctions
         Return postHTML
     End Function
 
+    Private Function GetLastXPosts(ByVal threadID As Integer, ByVal x As Integer) As Integer()
+        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim query As New SqlCommand("SELECT TOP " & x & " ID FROM board WHERE(parentT = " & threadID & ") ORDER BY ID DESC", cnx)
+        cnx.Open()
+        Dim il As New List(Of Integer)
+        Dim reader As SqlDataReader = query.ExecuteReader
+        While reader.Read
+            il.Add(reader(0))
+        End While
+        reader.Close()
+        cnx.Close()
+        Return il.ToArray
+    End Function
+
     Sub BanPosterByPost(ByVal postID As Integer)
         Dim po As WPost = FetchPostData(postID)
         If IsIPBanned(po.ip) = False Then
@@ -651,10 +664,26 @@ Public Module GlobalFunctions
         cnx.Close()
     End Sub
 
-    Function GetThreadHTML(ByVal threadID As Integer, ByVal isMod As Boolean) As String
+    Function GetThreadHTML(ByVal threadID As Integer, ByVal isMod As Boolean, ByVal trailposts As Integer) As String
         Dim postHtml As String = threadTemplate
         postHtml = postHtml.Replace("%ID%", threadID)
+        If trailposts > 0 Then
+            Dim sb As New StringBuilder
+            For Each x In GetLastXPosts(threadID, trailposts).Reverse
+                sb.Append(GetSingleReplyHTML(x, isMod))
+            Next
+            postHtml = postHtml.Replace("%TRAILS%", sb.ToString)
+        Else
+            postHtml = postHtml.Replace("%TRAILS%", "")
+        End If
         postHtml = postHtml.Replace("%POST HTML%", GetOPPostHTML(threadID, True, isMod))
+        Dim repC As Integer = GetRepliesCount(threadID)
+        If repC - trailposts <= 0 Then
+            postHtml = postHtml.Replace("%COUNT%", 0)
+        Else
+            postHtml = postHtml.Replace("%COUNT%", repC - trailposts)
+        End If
+        postHtml = postHtml.Replace("%POSTLINK%", "default.aspx?id=" & threadID)
         Return postHtml
     End Function
 
@@ -679,44 +708,47 @@ Public Module GlobalFunctions
     Function GetRepliesHTML(ByVal threadID As Integer, ByVal isMod As Boolean) As String
         Dim sa As New StringBuilder
         For Each x In GetThreadChildrenPosts(threadID)
-            Dim po As WPost = (FetchPostData(x))
-            Dim postHTML As String = postTemplate
-            If po.email = "" Then
-                postHTML = postHTML.Replace("%NAMESPAN%", "<span class='name'>%NAME%</span>")
-            Else
-                postHTML = postHTML.Replace("%NAMESPAN%", "<a href='mailto:%EMAIL%' class='useremail'><span class='name'>%NAME%</span></a>")
-            End If
-            postHTML = postHTML.Replace("%EMAIL%", po.email)
-            postHTML = postHTML.Replace("%ID%", po.PostID)
-            postHTML = postHTML.Replace("%POST TEXT%", ProcessComment(po.comment))
-            postHTML = postHTML.Replace("%DATE TEXT UTC%", GetTimeString(po.time))
-            postHTML = postHTML.Replace("%SUBJECT%", po.subject)
-            postHTML = postHTML.Replace("%NAME%", po.name)
-            postHTML = postHTML.Replace("%DATE UTC UNIX%", po.time.ToFileTime)
-            postHTML = postHTML.Replace("%POST LINK%", "default.aspx?id=" & po.parent & "#p" & po.PostID)
-            If isMod Then postHTML = postHTML.Replace("%MODPANEL%", "<a href='modaction.aspx?action=banpost&postid=" & po.PostID & "'>Ban</a>") Else postHTML = postHTML.Replace("%MODPANEL%", "")
-            Dim imagesHTML As String = ""
-            Dim sb As New StringBuilder
-            If Not (po._imageP = "") Then
-                For Each ima In po._imageP.Split(CChar(";"))
-
-                    Dim r As String = imageTemplate
-                    Dim wpi As WPostImage = GetWPOSTIMAGE(ima.Replace(";", ""))
-                    r = r.Replace("%ID%", po.PostID)
-                    r = r.Replace("%FILE NAME%", wpi.realname)
-                    r = r.Replace("%IMAGE SRC%", GetImageWEBPATH(wpi.chanbName))
-                    r = r.Replace("%FILE SIZE%", wpi.size)
-                    r = r.Replace("%IMAGE SIZE%", wpi.dimensions)
-                    r = r.Replace("%THUMB_LINK%", GetImageWEBPATHRE(wpi.chanbName))
-                    r = r.Replace("%IMAGE MD5%", wpi.md5)
-                    sb.Append(r)
-                Next
-                imagesHTML = sb.ToString
-            End If
-            postHTML = postHTML.Replace("%IMAGES%", imagesHTML)
-            sa.Append(postHTML)
+            sa.Append(GetSingleReplyHTML(x, isMod))
         Next
         Return sa.ToString
+    End Function
+
+    Private Function GetSingleReplyHTML(ByVal postid As Integer, ByVal isMod As Boolean) As String
+        Dim po As WPost = (FetchPostData(postid))
+        Dim postHTML As String = postTemplate
+        If po.email = "" Then
+            postHTML = postHTML.Replace("%NAMESPAN%", "<span class='name'>%NAME%</span>")
+        Else
+            postHTML = postHTML.Replace("%NAMESPAN%", "<a href='mailto:%EMAIL%' class='useremail'><span class='name'>%NAME%</span></a>")
+        End If
+        postHTML = postHTML.Replace("%EMAIL%", po.email)
+        postHTML = postHTML.Replace("%ID%", po.PostID)
+        postHTML = postHTML.Replace("%POST TEXT%", ProcessComment(po.comment))
+        postHTML = postHTML.Replace("%DATE TEXT UTC%", GetTimeString(po.time))
+        postHTML = postHTML.Replace("%SUBJECT%", po.subject)
+        postHTML = postHTML.Replace("%NAME%", po.name)
+        postHTML = postHTML.Replace("%DATE UTC UNIX%", po.time.ToFileTime)
+        postHTML = postHTML.Replace("%POST LINK%", "default.aspx?id=" & po.parent & "#p" & po.PostID)
+        If isMod Then postHTML = postHTML.Replace("%MODPANEL%", "<a href='modaction.aspx?action=banpost&postid=" & po.PostID & "'>Ban</a>") Else postHTML = postHTML.Replace("%MODPANEL%", "")
+        Dim imagesHTML As String = ""
+        Dim sb As New StringBuilder
+        If Not (po._imageP = "") Then
+            For Each ima In po._imageP.Split(CChar(";"))
+                Dim r As String = imageTemplate
+                Dim wpi As WPostImage = GetWPOSTIMAGE(ima.Replace(";", ""))
+                r = r.Replace("%ID%", po.PostID)
+                r = r.Replace("%FILE NAME%", wpi.realname)
+                r = r.Replace("%IMAGE SRC%", GetImageWEBPATH(wpi.chanbName))
+                r = r.Replace("%FILE SIZE%", wpi.size)
+                r = r.Replace("%IMAGE SIZE%", wpi.dimensions)
+                r = r.Replace("%THUMB_LINK%", GetImageWEBPATHRE(wpi.chanbName))
+                r = r.Replace("%IMAGE MD5%", wpi.md5)
+                sb.Append(r)
+            Next
+            imagesHTML = sb.ToString
+        End If
+        postHTML = postHTML.Replace("%IMAGES%", imagesHTML)
+        Return postHTML
     End Function
 
     Private Sub DeleteAllPosts()
@@ -755,4 +787,3 @@ Public Module GlobalFunctions
     End Sub
 
 End Module
-

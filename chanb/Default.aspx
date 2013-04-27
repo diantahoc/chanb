@@ -83,7 +83,7 @@
          If Not (Request.Item("startPos") = "") Then startIndex = Request.Item("startPos")
         
          For Each x In GetThreads(startIndex, 100)
-             Response.Write(GetThreadHTML(x, CBool(Session("mod"))))
+             Response.Write(GetThreadHTML(x, CBool(Session("mod")), 3))
          Next
          
      End If

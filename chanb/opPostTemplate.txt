@@ -9,6 +9,7 @@
 <span class="fileText" id="fT%ID%">File: <a href="%IMAGE LINK%" target="_blank">%CHANB FILE NAME%</a>
 -(%FILE SIZE%, %IMAGE DIMENSIONS%, 
 <span title="%FILE NAME%">%FILE NAME%</span>)
+<a href="http://www.google.com/searchbyimage?image_url=%THUMB LINK%" target="_top">google</a>
 </span>
 </div>
 <a class="fileThumb" href="%IMAGE LINK%" target="_blank">

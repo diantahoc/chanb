@@ -5,6 +5,8 @@ Public Module GlobalFunctions
 
     Dim SQLConnectionString As String = "" ' Replace with your connection string
 
+    Dim htmlElements As String() = {"<!--", "<!DOCTYPE>", "<a>", "<abbr>", "<acronym>", "<address>", "<applet>", "<area>", "<article>", "<aside>", "<audio>", "<b>", "<base>", "<basefont>", "<bdi>", "<bdo>", "<big>", "<blockquote>", "<body>", "<br>", "<canvas>", "<caption>", "<center>", "<cite>", "<code>", "<col>", "<colgroup>", "<command>", "<datalist>", "<dd>", "<del>", "<details>", "<dfn>", "<dialog>", "<dir>", "<div>", "<dl>", "<dt>", "<em>", "<embed>", "<fieldset>", "<figcaption>", "<figure", "<font>", "<footer>", "<form>", "<frame>", "<frameset>", "<h1>", "<h2>", "<h3>", "<h4>", "<h5>", "<h6>", "<head>", "<header>", "<hgroup>", "<hr>", "<html>", "<i>", "<iframe>", "<img>", "<input>", "<ins>", "<kbd>", "<keygen>", "<label>", "<legend>", "<li>", "<link>", "<map>", "<mark>", "<menu>", "<meta>", "<meter>", "<nav>", "<noframes>", "<noscript>", "<object>", "<ol>", "<optgroup>", "<option>", "<output>", "<p>", "<param>", "<pre>", "<progress>", "<q>", "<rp>", "<rt>", "<ruby>", "<s>", "<samp>", "<script>", "<section>", "<select>", "<small>", "<source>", "<span>", "<strike>", "<strong>", "<style>", "<sub>", "<summary>", "<sup>", "<table>", "<tbody>", "<td>", "<textarea>", "<tfoot>", "<th>", "<thead>", "<time>", "<title>", "<tr>", "<track>", "<tt>", "<u>", "<ul>", "<var>", "<video>", "<wbr>", "</a>", "</abbr>", "</acronym>", "</address>", "</applet>", "</area>", "</article>", "</aside>", "</audio>", "</b>", "</base>", "</basefont>", "</bdi>", "</bdo>", "</big>", "</blockquote>", "</body>", "</br>", "</canvas>", "</caption>", "</center>", "</cite>", "</code>", "</col>", "</colgroup>", "</command>", "</datalist>", "</dd>", "</del>", "</details>", "</dfn>", "</dialog>", "</dir>", "</div>", "</dl>", "</dt>", "</em>", "</embed>", "</fieldset>", "</figcaption>", "</figure", "</font>", "</footer>", "</form>", "</frame>", "</frameset>", "</h1>", "</h2>", "</h3>", "</h4>", "</h5>", "</h6>", "</head>", "</header>", "</hgroup>", "</hr>", "</html>", "</i>", "</iframe>", "</img>", "</input>", "</ins>", "</kbd>", "</keygen>", "</label>", "</legend>", "</li>", "</link>", "</map>", "</mark>", "</menu>", "</meta>", "</meter>", "</nav>", "</noframes>", "</noscript>", "</object>", "</ol>", "</optgroup>", "</option>", "</output>", "</p>", "</param>", "</pre>", "</progress>", "</q>", "</rp>", "</rt>", "</ruby>", "</s>", "</samp>", "</script>", "</section>", "</select>", "</small>", "</source>", "</span>", "</strike>", "</strong>", "</style>", "</sub>", "</summary>", "</sup>", "</table>", "</tbody>", "</td>", "</textarea>", "</tfoot>", "</th>", "</thead>", "</time>", "</title>", "</tr>", "</track>", "</tt>", "</u>", "</ul>", "</var>", "</video>", "</wbr>"}
+
     Function GetUserSelectedStyle(ByVal session As Web.SessionState.HttpSessionState) As String
         If session.Item("SS") = "" Then
             session.Item("SS") = "chan"
@@ -31,15 +33,27 @@ Public Module GlobalFunctions
         End If
     End Function
 
+    Private Function ProcessInputs(ByVal x As String) As String
+        Dim sqlElements As String() = {"'+", "+'", "'<", "<'", "'>", ">'", "'+'", "'<'", "'>'", "'", "/'", "'/'", "'/", "<script>", "</script>"}
+        Dim lowcaseX As String = x
+        For Each a In htmlElements
+            lowcaseX = lowcaseX.Replace(a.ToLower, "")
+            lowcaseX = lowcaseX.Replace(a, "")
+            lowcaseX = lowcaseX.Replace(a.ToUpper, "")
+        Next
+        For Each a In sqlElements
+            lowcaseX = lowcaseX.Replace(a.ToLower, "")
+            lowcaseX = lowcaseX.Replace(a.ToUpper, "")
+        Next
+        lowcaseX = lowcaseX.Replace(My.Resources.doublequotes, "")
+        Return lowcaseX
+    End Function
+
     Function FetchPostData(ByVal id As Long) As WPost
-        'Dim cnx As New OleDbConnection(ConnectionString)
         Dim cnx As New SqlConnection(SQLConnectionString)
-        'Dim queryString As String = "SELECT (type, [time], comment, postername, email, [password], parentT, subject, imagename, IP FROM(board) WHERE(id = " & id & ")"
         Dim queryString As String = "SELECT type, time, comment, postername, email, password, parentT, subject, imagename, IP FROM  board  WHERE (id = " & id & ")"
-        'Dim queryObject As New OleDbCommand(queryString, cnx)
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
-        'Dim reader As OleDbDataReader = queryObject.ExecuteReader
         Dim reader As SqlDataReader = queryObject.ExecuteReader
         Dim po As New WPost(id)
         While reader.Read
@@ -60,11 +74,8 @@ Public Module GlobalFunctions
     End Function
 
     Sub MakeThread(ByVal data As OPDATA)
-        'Dim cnx As New OleDbConnection(ConnectionString)
         Dim cnx As New SqlConnection(SQLConnectionString)
-        'Dim queryString As String = "INSERT INTO board(type, [time], comment, postername, email, [password], subject, imagename, IP, bumplevel) VALUES ('0', " & ConvertTimeToOLETIME(data.time) & ", '" & data.Comment & "', '" & data.name & "', '" & data.email & "', '" & data.password & "', '" & data.subject & "', '" & data.imageName & "','" & data.IP & "', " & CInt(GetThreadsCount() + 1) & ") "
         Dim queryString As String = "INSERT INTO board (type, time, comment, postername, email, password, subject, imagename, IP, bumplevel) VALUES ('0', " & ConvertTimeToSQLTIME(data.time) & ", '" & data.Comment & "', '" & data.name & "', '" & data.email & "', '" & data.password & "', '" & data.subject & "', '" & data.imageName & "','" & data.IP & "', " & CInt(GetThreadsCount() + 1) & ") "
-        '  Dim queryObject As New OleDbCommand(queryString, cnx)
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         queryObject.ExecuteNonQuery()
@@ -72,16 +83,12 @@ Public Module GlobalFunctions
     End Sub
 
     Private Function GetThreadsCount() As Integer
-        'Dim cnx As New OleDbConnection(ConnectionString)
         Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = "SELECT ID FROM board  WHERE(type = 0)"
-        'Dim queryObject As New OleDbCommand(queryString, cnx)
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         Dim i As Integer = 0
-        '        Dim reader As OleDbDataReader = queryObject.ExecuteReader
         Dim reader As SqlDataReader = queryObject.ExecuteReader
-
         While reader.Read
             i += 1
         End While
@@ -125,10 +132,8 @@ Public Module GlobalFunctions
     ''' <param name="data"></param>
     ''' <remarks></remarks>
     Private Sub ReplyTo(ByVal id As Long, ByVal data As OPDATA)
-        'Dim cnx As New OleDbConnection(ConnectionString)
         Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = "INSERT INTO board (type, [time], comment, postername, email, [password], parentT, subject, imagename, IP) VALUES      ('1', " & ConvertTimeToSQLTIME(data.time) & ", '" & data.Comment & "', '" & data.name & "', '" & data.email & "', '" & data.password & "', '" & id & "', '" & data.subject & "', '" & data.imageName & "' , '" & data.IP & "' )"
-        ' Dim queryObject As New OleDbCommand(queryString, cnx)
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         queryObject.ExecuteNonQuery()
@@ -137,15 +142,11 @@ Public Module GlobalFunctions
     End Sub
 
     Private Sub BumpThread(ByVal id As Integer, ByVal howmuch As Integer)
-        '   Dim cnx As New OleDbConnection(ConnectionString)
         Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = "SELECT bumplevel FROM board  WHERE(id = " & id & ")"
-        '        Dim queryObject As New OleDbCommand(queryString, cnx)
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
-        'Dim reader As OleDbDataReader = queryObject.ExecuteReader
         Dim reader As SqlDataReader = queryObject.ExecuteReader
-
         Dim bumplevel As Integer = 0
         While reader.Read
             bumplevel = reader(0)
@@ -153,7 +154,6 @@ Public Module GlobalFunctions
         bumplevel += howmuch
         reader.Close()
         Dim updateQueryString As String = "UPDATE board SET bumplevel = " & bumplevel & " WHERE(board.ID = " & id & ")"
-        '        Dim q As New OleDbCommand(updateQueryString, cnx)
         Dim q As New SqlCommand(updateQueryString, cnx)
         q.ExecuteNonQuery()
         cnx.Close()
@@ -161,17 +161,11 @@ Public Module GlobalFunctions
 
     Function GetThreadChildrenPosts(ByVal id As Long) As Integer()
         Dim ila As New List(Of Integer)
-        'Dim cnx As New OleDbConnection(ConnectionString)
         Dim cnx As New SqlConnection(SQLConnectionString)
-
         Dim queryString As String = "SELECT ID FROM board  WHERE (parentT = " & id & ") ORDER BY ID"
-        'Dim queryObject As New OleDbCommand(queryString, cnx)
         Dim queryObject As New SqlCommand(queryString, cnx)
-
         cnx.Open()
-        'Dim reader As OleDbDataReader = queryObject.ExecuteReader()
         Dim reader As SqlDataReader = queryObject.ExecuteReader()
-
         While reader.Read
             ila.Add(reader.Item(0))
         End While
@@ -182,23 +176,17 @@ Public Module GlobalFunctions
 
     Function GetThreads(ByVal startIndex As Integer, ByVal count As Integer) As Integer()
         Dim ila As New List(Of Integer)
-        'Dim cnx As New OleDbConnection(ConnectionString)
         Dim cnx As New SqlConnection(SQLConnectionString)
-
         Dim queryString As String = "SELECT ID FROM board  WHERE (type = 0) ORDER BY bumplevel DESC"
-        ' Dim queryObject As New OleDbCommand(queryString, cnx)
         Dim queryObject As New sqlCommand(queryString, cnx)
-
         cnx.Open()
-        'Dim reader As OleDbDataReader = queryObject.ExecuteReader
         Dim reader As SqlDataReader = queryObject.ExecuteReader
-
         While reader.Read
             ila.Add(reader.Item(0))
         End While
         reader.Close()
         cnx.Close()
-        'Ole does not seem to support the SQL Limit function
+        'MS SQL does not seem to support the MySQL Limit 0, 10 function
         Dim il As New List(Of Integer)
         For i As Integer = startIndex To count Step 1
             Try
@@ -380,7 +368,7 @@ Public Module GlobalFunctions
     '    Next
     'End Sub
 
-    Private Function IsIPBanned(ByVal IP As String) As Boolean
+    Function IsIPBanned(ByVal IP As String) As Boolean
         Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = "SELECT ID FROM bans WHERE (IP LIKE '" & IP & "')"
         Dim queryObject As New SqlCommand(queryString, cnx)
@@ -465,14 +453,14 @@ Public Module GlobalFunctions
 
                                 Dim er As New OPData
 
-                                er.Comment = request.Item("comment")
-                                er.email = request.Item("email")
-                                If request.Item("postername") = "" Then er.name = AnonName Else er.name = request.Item("postername")
-                                er.subject = request.Item("subject")
+                                er.Comment = ProcessInputs(request.Item("comment"))
+                                er.email = ProcessInputs(request.Item("email"))
+                                If request.Item("postername") = "" Then er.name = AnonName Else er.name = ProcessInputs(request.Item("postername"))
+                                er.subject = ProcessInputs(request.Item("subject"))
 
                                 er.time = Date.UtcNow
                                 er.imageName = s
-                                er.password = request.Item("password")
+                                er.password = ProcessInputs(request.Item("password"))
                                 er.IP = request.UserHostAddress
 
                                 Session.Item("pass") = request.Item("password")
@@ -496,21 +484,21 @@ Public Module GlobalFunctions
                             End If
                         End If
                         Dim er As New OPData
-                        If request.Item("comment") = "" And s = "" Then
+                        If ProcessInputs(request.Item("comment")) = "" And s = "" Then
                             'no image and no text
                             'blank post
                             sb.Append("Blank post are not allowed")
                         Else
-                            er.Comment = request.Item("comment")
-                            er.email = request.Item("email")
-                            If request.Item("postername") = "" Then er.name = AnonName Else er.name = request.Item("postername")
-                            er.subject = request.Item("subject")
+                            er.Comment = ProcessInputs(request.Item("comment"))
+                            er.email = ProcessInputs(request.Item("email"))
+                            If request.Item("postername") = "" Then er.name = AnonName Else er.name = ProcessInputs(request.Item("postername"))
+                            er.subject = ProcessInputs(request.Item("subject"))
                             er.time = Date.UtcNow
                             er.imageName = s
-                            er.password = request.Item("password")
+                            er.password = ProcessInputs(request.Item("password"))
                             er.IP = request.UserHostAddress
-                            Session.Item("pass") = request.Item("password")
-                            ReplyTo(request.Item("threadid"), er)
+                            Session.Item("pass") = ProcessInputs(request.Item("password"))
+                            ReplyTo(CInt(request.Item("threadid")), er)
                             sb.Append(SuccessfulPostString)
                         End If
                         sb.Append("<meta HTTP-EQUIV='REFRESH' content='2; url=default.aspx?id=" & request.Item("threadid") & "'>")
@@ -535,7 +523,7 @@ Public Module GlobalFunctions
                             For Each x In li
                                 Dim p As WPost = FetchPostData(x)
                                 If p.password = deletPass Then
-                                    DeletePost(x)
+                                    DeletePost(x, DeleteFiles)
                                     sb.Append(PostDeletedSuccess.Replace("%", x))
                                 Else
                                     sb.Append(CannotDeletePostBadPassword.Replace("%", x))
@@ -574,25 +562,31 @@ Public Module GlobalFunctions
     End Function
 
     Private Function ProcessComment(ByVal comment As String) As String
-        Dim sb As New StringBuilder
-        Dim li As String() = comment.Split(vbNewLine)
-        For Each x In li
-            'Check if greentext
-            If x.StartsWith(">") And Not x.StartsWith(">>") Then
-                sb.Append("<span class='quote'>&gt;" & x.Replace(">", "") & "</span></br>")
-            End If
-            'Check if quote
-            If x.StartsWith(">>") Then
-                sb.Append("<a href='#'>" & x & "</a><br/>")
-            End If
-            'Check if normal
-            If Not x.StartsWith(">") Then
-                sb.Append(x)
-            End If
-            sb.Append("</br>")
-            sb.Append(vbNewLine)
+        'Dim sb As New StringBuilder
+        'Dim li As String() = comment.Split(vbNewLine)
+        'For Each x In li
+        '    'Check if greentext
+        '    If x.StartsWith(">") And Not x.StartsWith(">>") Then
+        '        sb.Append("<span class='quote'>&gt;" & x.Replace(">", "") & "</span></br>")
+        '    End If
+        '    'Check if quote
+        '    If x.StartsWith(">>") Then
+        '        sb.Append("<a href='#'>" & x & "</a><br/>")
+        '    End If
+        '    'Check if normal
+        '    If Not x.StartsWith(">") Then
+        '        sb.Append(x)
+        '    End If
+        '    sb.Append("</br>")
+        '    sb.Append(vbNewLine)
+        'Next
+
+        Dim v As String = comment
+        For Each x In htmlElements
+            v = v.Replace(x, "")
+            v = v.Replace(x.ToUpper, "")
         Next
-        Return sb.ToString
+        Return v
     End Function
 
     Function GetOPPostHTML(ByVal id As Integer, ByVal replyButton As Boolean, ByVal isMod As Boolean) As String
@@ -619,7 +613,7 @@ Public Module GlobalFunctions
         postHTML = postHTML.Replace("%POST LINK%", "default.aspx?id=" & po.PostID & "#p" & po.PostID)
         postHTML = postHTML.Replace("%POST TEXT%", ProcessComment(po.comment))
         postHTML = postHTML.Replace("%REPLY COUNT%", GetRepliesCount(id))
-        If isMod Then postHTML = postHTML.Replace("%MODPANEL%", "<a href='modaction.aspx?action=banpost&postid=" & po.PostID & "'>Ban</a>") Else postHTML = postHTML.Replace("%MODPANEL%", "")
+        If isMod Then postHTML = postHTML.Replace("%MODPANEL%", "<a href='modaction.aspx?action=banpost&postid=" & po.PostID & "'>Ban</a><a href='modaction.aspx?action=delpost&id=" & po.PostID & "'>Delete</a>") Else postHTML = postHTML.Replace("%MODPANEL%", "")
         Return postHTML
     End Function
 
@@ -729,14 +723,47 @@ Public Module GlobalFunctions
         postHTML = postHTML.Replace("%NAME%", po.name)
         postHTML = postHTML.Replace("%DATE UTC UNIX%", po.time.ToFileTime)
         postHTML = postHTML.Replace("%POST LINK%", "default.aspx?id=" & po.parent & "#p" & po.PostID)
-        If isMod Then postHTML = postHTML.Replace("%MODPANEL%", "<a href='modaction.aspx?action=banpost&postid=" & po.PostID & "'>Ban</a>") Else postHTML = postHTML.Replace("%MODPANEL%", "")
-        Dim imagesHTML As String = ""
+        If isMod Then postHTML = postHTML.Replace("%MODPANEL%", "<a href='modaction.aspx?action=banpost&postid=" & po.PostID & "'>Ban</a><a href='modaction.aspx?action=delpost&id=" & po.PostID & "'>Delete</a>") Else postHTML = postHTML.Replace("%MODPANEL%", "")
+        postHTML = postHTML.Replace("%IMAGES%", GetImagesHTML(po))
+        Return postHTML
+    End Function
+
+    Private Function GetImagesHTML(ByVal po As WPost) As String
         Dim sb As New StringBuilder
         If Not (po._imageP = "") Then
-            For Each ima In po._imageP.Split(CChar(";"))
+            'At least one image is found. Check for more than 2 images
+            If po._imageP.Split(CChar(";")).Count > 1 Then
+                'Add rotator script
+                Dim items As New StringBuilder
+                Dim count As Integer = po._imageP.Split(CChar(";")).Count
+                Dim advanced As Boolean = False ' The first one is marked as active, the rest as notactive
+                Dim rotatorTemplat As String = rotatorTemplate
+                For Each ima In po._imageP.Split(CChar(";"))
+                    Dim r As String = imageTemplate
+                    Dim wpi As WPostImage = GetWPOSTIMAGE(ima.Replace(";", ""))
+                    r = r.Replace("%ID%", po.PostID)
+                    If Not advanced Then r = r.Replace("%AN%", "active") Else r = r.Replace("%AN%", "notactive")
+                    r = r.Replace("%filec%", "")
+                    r = r.Replace("%FILE NAME%", wpi.realname)
+                    r = r.Replace("%IMAGE SRC%", GetImageWEBPATH(wpi.chanbName))
+                    r = r.Replace("%FILE SIZE%", wpi.size)
+                    r = r.Replace("%IMAGE SIZE%", wpi.dimensions)
+                    r = r.Replace("%THUMB_LINK%", GetImageWEBPATHRE(wpi.chanbName))
+                    r = r.Replace("%IMAGE MD5%", wpi.md5)
+                    items.Append(r)
+                    advanced = True
+                Next
+                rotatorTemplat = rotatorTemplat.Replace("%ID%", po.PostID)
+                rotatorTemplat = rotatorTemplat.Replace("%IMAGECOUNT%", count)
+                rotatorTemplat = rotatorTemplat.Replace("%ITEMS%", items.ToString)
+                sb.Append(rotatorTemplat)
+            Else
+                'Single image
                 Dim r As String = imageTemplate
-                Dim wpi As WPostImage = GetWPOSTIMAGE(ima.Replace(";", ""))
+                Dim wpi As WPostImage = GetWPOSTIMAGE(po._imageP.Replace(";", ""))
                 r = r.Replace("%ID%", po.PostID)
+                r = r.Replace("%filec%", "file")
+                r = r.Replace("%AN%", "") ' No need for active/notactive class since there is no rotator.
                 r = r.Replace("%FILE NAME%", wpi.realname)
                 r = r.Replace("%IMAGE SRC%", GetImageWEBPATH(wpi.chanbName))
                 r = r.Replace("%FILE SIZE%", wpi.size)
@@ -744,17 +771,14 @@ Public Module GlobalFunctions
                 r = r.Replace("%THUMB_LINK%", GetImageWEBPATHRE(wpi.chanbName))
                 r = r.Replace("%IMAGE MD5%", wpi.md5)
                 sb.Append(r)
-            Next
-            imagesHTML = sb.ToString
+            End If
+        Else
+            'No image
         End If
-        postHTML = postHTML.Replace("%IMAGES%", imagesHTML)
-        Return postHTML
+        Return sb.ToString
     End Function
 
     Private Sub DeleteAllPosts()
-        'Dim cnx As New OleDbConnection(ConnectionString)
-        'Dim queryString As String = "DELETE FROM board"
-        'Dim queryObject As New OleDbCommand(queryString, cnx)
         Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = "TRUNCATE TABLE board"
         Dim queryObject As New SqlCommand(queryString, cnx)
@@ -764,26 +788,49 @@ Public Module GlobalFunctions
     End Sub
 
     Private Sub ReportPost(ByVal id As Integer, ByVal reporterIP As String, ByVal time As Date)
-        'Dim cnx As New OleDbConnection(ConnectionString)
         Dim cnx As New SqlConnection(SQLConnectionString)
-        'Dim queryString As String = "INSERT INTO reports  postID, reporterIP, [time] VALUES (" & id & ", '" & reporterIP & "', " & ConvertTimeToOLETIME(time) & ")"
         Dim queryString As String = "INSERT INTO reports  (postID, reporterIP, time) VALUES (" & id & ", '" & reporterIP & "', " & ConvertTimeToSQLTIME(time) & ")"
-        'Dim queryObject As New OleDbCommand(queryString, cnx)
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         queryObject.ExecuteNonQuery()
         cnx.Close()
     End Sub
 
-    Private Sub DeletePost(ByVal id As Integer)
-        'Dim cnx As New OleDbConnection(ConnectionString)
+    Sub DeletePost(ByVal id As Integer, ByVal dF As Boolean)
+        Dim w As WPost = FetchPostData(id)
+        If w.type = 0 Then
+            For Each x In GetThreadChildrenPosts(id)
+                DeleteP(x, dF)
+            Next
+            DeleteP(id, dF)
+        Else
+            DeleteP(id, dF)
+        End If
+    End Sub
+
+    Private Sub DeleteP(ByVal id As Integer, ByVal dF As Boolean)
+        If deleteFiles Then DeletePostFiles(id)
         Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = "DELETE FROM board WHERE(id = " & id & ")"
-        'Dim queryObject As New OleDbCommand(queryString, cnx)
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         queryObject.ExecuteNonQuery()
         cnx.Close()
+    End Sub
+
+    Private Sub DeletePostFiles(ByVal postID As Integer)
+        Dim w As WPost = FetchPostData(postID)
+        If w._imageP = "" Then
+            Exit Sub
+        Else
+            For Each x In w._imageP.Split(CChar(";"))
+                Dim ima As WPostImage = GetWPOSTIMAGE(w._imageP)
+                Dim realPath As String = STORAGEFOLDER & "\" & ima.chanbName
+                Dim thumbPath As String = STORAGEFOLDER & "\th" & ima.chanbName
+                IO.File.Delete(realPath)
+                IO.File.Delete(thumbPath)
+            Next
+        End If
     End Sub
 
 End Module

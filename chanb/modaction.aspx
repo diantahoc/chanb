@@ -8,9 +8,10 @@
      Select Case Request.Item("action")
         Case "banpost"
             BanPosterByPost(CInt(Request.Item("postid")))
-            Response.Write("Banned the poster of " & Request.Item("postid"))
-        Case "newmod"
-            NewMod(Request.Item("name"), Request.Item("pass"))
+                Response.Write("Banned the poster of " & Request.Item("postid"))
+            Case "delpost"
+                DeletePost(Request.Item("id"), True)
+                Response.Write("Delete post " & Request.Item("id"))
         Case Else
             Response.Write("invalid action")
     End Select

@@ -4,7 +4,7 @@
 <%@ Import Namespace = "chanb.Language" %>
 
 
-<%  Session("SS") = "yotsubab"%>
+<%      Session("SS") = "yotsubab"%>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -14,6 +14,7 @@
     <title><% Response.Write(BoardTitle)%></title>
     <link rel="Stylesheet" href=<% Response.Write("'" & GetUserSelectedStyle(Session) & ".css'")%> />
     <script src="scripts.js" type="text/javascript" language="javascript"></script>
+    <script type="text/javascript" src="jquery-1.4.2.min.js"></script>
     </head> 
 <body >
  
@@ -58,8 +59,19 @@
      
      If Session.Item("mod") Is "" Or Session.Item("mod") Is Nothing Then Session("mod") = CStr(False)
      
-     If Not (Request.Item("id") = "") Then
-         'Display thread or post thread
+     Dim validID As Boolean = False
+     
+     Try
+         Dim i = CInt(Request.Item("id"))
+         validID = True
+     Catch ex As Exception
+         validID = False
+     End Try
+     
+     
+     If Not (Request.Item("id") = "") And validID Then
+         
+         'Display thread or post thread      
          Dim opID As Integer = Request.Item("id")
          Dim po As WPost = FetchPostData(opID)
         
@@ -91,6 +103,8 @@
    
 %>
 </div>
+
+
 
 <div style="float: right;">
 <div class="deleteform desktop">

@@ -85,11 +85,13 @@
     <Content Include="chan.css" />
     <Content Include="Default.aspx" />
     <Content Include="imageTemplate.txt" />
+    <Content Include="jquery-1.4.2.min.js" />
     <Content Include="mod.aspx" />
     <Content Include="modaction.aspx" />
     <Content Include="opPostTemplate.txt" />
     <Content Include="post.aspx" />
     <Content Include="postTemplate.txt" />
+    <Content Include="RotatorTemplate.txt" />
     <Content Include="scripts.js" />
     <Content Include="threadTemplate.txt" />
     <Content Include="Web.config" />

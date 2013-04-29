@@ -1,9 +1,12 @@
-﻿<div class="file" id="f%ID%">
+﻿<div class="%filec% focusitem %AN% %ID%" id="f%ID%">
+
 <div class="fileInfo">
 <span data-filename="%FILE NAME%" class="fileText" id="fT%ID%">
 <a href="%IMAGE SRC%" target="_top">%FILE NAME%</a></span>
 <a href="http://www.google.com/searchbyimage?image_url=%THUMB_LINK%" target="_top">google</a>
 </div>
+
 <a class="fileThumb" href="%IMAGE SRC%" target="_blank">
 <img src="%THUMB_LINK%" alt="%IMAGE SIZE%" data-md5="%IMAGE MD5%"></a>
+
 </div>

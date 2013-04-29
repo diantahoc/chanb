@@ -59,5 +59,14 @@ Namespace My.Resources
                 resourceCulture = value
             End Set
         End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to &quot;.
+        '''</summary>
+        Friend ReadOnly Property doublequotes() As String
+            Get
+                Return ResourceManager.GetString("doublequotes", resourceCulture)
+            End Get
+        End Property
     End Module
 End Namespace

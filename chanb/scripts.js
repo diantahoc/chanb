@@ -9,10 +9,12 @@ function createUf() {
     divTag.setAttribute("name", "d" + Math.random().toString(10));
 
     divTag.setAttribute("type", "file");
-    document.getElementById("files").appendChild(divTag);
+
 
     var br = document.createElement("br");
+
     document.getElementById("files").appendChild(br);
+    document.getElementById("files").appendChild(divTag);
 }
 
 function goleft(id) {

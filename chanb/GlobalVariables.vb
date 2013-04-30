@@ -11,6 +11,7 @@
     Public StoragefolderWEB As String = "http://HOSTNAME/dtin/" ' The storage folder must be accessible from the web
     Public MaximumFileSize As Long = 15 * 1024 * 1024 ' 15 MB
     Public DeleteFiles As Boolean = True
+    Public ThreadPerPage As Integer = 10
 
     Public replyButtonHTML As String = "&nbsp;<span>[<a href='%POST LINK%' class='replylink'>Reply</a>]</span>"
 

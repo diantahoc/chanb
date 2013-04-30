@@ -4,7 +4,7 @@
 <%@ Import Namespace = "chanb.Language" %>
 
 
-<%      Session("SS") = "yotsubab"%>
+<%  Session("SS") = "yotsubab"%>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -25,34 +25,47 @@
    </div>
     
 <div class="postdiv" align="center">
-    
-    <form name="form" action="post.aspx" method="post" enctype="multipart/form-data" title="New thread">
-    
-    <input type="hidden" name="mode" value="<% If not request.item("id") = "" then Response.write("reply") else Response.write("thread") %>" />
-    <input type="hidden" name="threadid" value="<% Response.Write(Request.Item("id")) %>" />
-    <label class="text"><% Response.Write(NAMEString)%></label>
-    <input type="text" class="inputfield" name="postername" />
-    <br class="br" />
-    <label class="text"><% Response.Write(SUBJECTString)%></label>
-    <input type="text" class="inputfield" name="subject" />
-    <br class="br" />
-    <label class="text"><% Response.Write(EMAILString)%></label>
-    <input type="text" class="inputfield" name="email" />
-    <br class="br" />
-    <label class="text"><% Response.Write(COMMENTString)%></label>
-    <textarea id="commentfield" cols="25" rows="10" class="texto" name="comment" ></textarea>
-    <br class="br" />
-    <label class="text"><% Response.Write(PASSWORDString)%></label>
-    <input type="text" class="inputfield" name="password" value="<% Response.Write(GetSessionPassword(Session)) %>" />
-    <br class="br" />   
+<form name="form" enctype="multipart/form-data" action="post.aspx" method="post" title="New thread">
+<input type="hidden" name="mode" value="<% If not request.item("id") = "" then Response.write("reply") else Response.write("thread") %>" />
+<input type="hidden" name="threadid" value="<% Response.Write(Request.Item("id")) %>" />
+ <table>
+<tbody>
+<tr>
+<th><% Response.Write(NAMEString)%></th>
+<td><input type="text" size="25" name="postername" /></td>
+</tr><tr>
+<th><% Response.Write(EMAILString)%></th>
+<td>
+<input name="email" size="25" type="text">
+</td>
+</tr><tr>
+<th><% Response.Write(SUBJECTString)%></th>
+<td><input style="float:left;" name="subject" size="25" type="text">
+<input accesskey="s" style="margin-left:2px;" name="post" value="<% If Not Request.Item("id") = "" then Response.write("Reply") else Response.Write("New Topic") %>" type="submit"></td>
+</tr><tr>
+<th><% Response.Write(COMMENTString)%></th>
+<td><textarea name="comment" id="commentfield" rows="5" cols="35"></textarea></td>
+</tr><tr>
+
+<th>File(s)</th>
+<td>
     <div id="files" >
     <input type="file" name="ufile" class="file" maxlength="<% response.write(maximumfilesize / 1024) %>" id="file1" />
     </div>  
-  <%If Not Request.Item("id") = "" Then Response.Write("<input class='button' type='button'  value='Add another file'  onclick='createUf();' />")%>    
-    <input type="submit" value="submit" />
-    </form>
-    <label class="text">Maximum file size is <% Response.Write((MaximumFileSize / 1024 / 1024) & " MB")%></label>   
-    </div>  
+    <%If Not Request.Item("id") = "" Then Response.Write("<input class='button' type='button'  value='Add another file'  onclick='createUf();' />")%> 
+</td>   
+</tr><tr>
+<th><% Response.Write(PASSWORDString)%></th>
+<td><input name="password" size="12" autocomplete="off" type="text" value="<% Response.Write(GetSessionPassword(Session)) %>">
+<span>(For post deletion.)</span>
+</td>
+</tr>
+</tbody>
+</table>
+</form>
+<span>Maximum file size is <% Response.Write((MaximumFileSize / 1024 / 1024) & " MB")%></span>   
+</div> 
+ 
 <form name="deletation" action="post.aspx" enctype="application/x-www-form-urlencoded" method="get">
 <div class="board">
  <%    
@@ -113,6 +126,55 @@
 <input type="submit" name="mode" value="report" /></div>
 </div>
 </form>
+
+
+<div class="pagelist desktop">
+<%
+
+    Dim threadCount As Integer = GetThreadsCount()
+    
+    Dim pagesCount As Double = threadCount / ThreadPerPage
+    
+    If pagesCount > (Fix(pagesCount)) Then
+        pagesCount = Fix(pagesCount) + 1
+    End If
+    
+    Dim startIndexA As Integer
+    Try
+        startIndexA = CInt(Request.Item("startindex"))
+    Catch ex As Exception
+        startIndexA = 0
+    End Try
+   
+    If startIndexA = 0 Then
+        Response.Write("<div class='prev'><span>Previous</span></div>")
+    Else
+        Response.Write("<div class='prev'><form action='default.aspx'><input name='startindex' type='hidden' value='" & startIndexA - 1 & "' /><input value='Previous' type='submit'/></form></div>")
+    End If
+    
+    Response.Write("<div class='pages'>")
+    
+    '[<strong><a href="">0</a></strong>]
+    '[<a href="1">1</a>]
+
+    For i As Integer = 0 To (pagesCount - 1) Step 1
+        If i = startIndexA Then
+            Response.Write("[<strong><a href='?startindex=" & i & "'>" & i + 1 & "</a></strong>]")
+        Else
+            Response.Write("[<a href='?startindex=" & i & "'>" & i + 1 & "</a>]")
+        End If
+   
+    Next
+   
+    Response.Write("</div>")
+    
+    If startIndexA = pagesCount - 1 Then ' last page
+        Response.Write("<div class='next'><span>Next</span></div>")
+    Else
+        Response.Write("<div class='next'><form action='default.aspx'><input name='startindex' type='hidden' value='" & startIndexA + 1 & "' /><input value='Next' type='submit'/></form></div>")
+    End If
+%>
+</div>
 <div id="bottom"></div>
 
 </body>

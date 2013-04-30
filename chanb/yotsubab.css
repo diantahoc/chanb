@@ -9,6 +9,10 @@
     display: none;
 }
  
+.hide{    display: none;
+}
+
+ 
 .goleft, .goright {
     cursor: pointer;
     max-width: 50px;

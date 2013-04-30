@@ -1,5 +1,4 @@
-﻿'Imports System.Data.OleDb
-Imports System.Data.SqlClient
+﻿Imports System.Data.SqlClient
 
 Public Module GlobalFunctions
 
@@ -82,7 +81,7 @@ Public Module GlobalFunctions
         cnx.Close()
     End Sub
 
-    Private Function GetThreadsCount() As Integer
+    Function GetThreadsCount() As Integer
         Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = "SELECT ID FROM board  WHERE(type = 0)"
         Dim queryObject As New SqlCommand(queryString, cnx)
@@ -138,7 +137,7 @@ Public Module GlobalFunctions
         cnx.Open()
         queryObject.ExecuteNonQuery()
         cnx.Close()
-        BumpThread(id, 1)
+        If Not data.email = "sage" Then BumpThread(id, 1)
     End Sub
 
     Private Sub BumpThread(ByVal id As Integer, ByVal howmuch As Integer)
@@ -186,7 +185,7 @@ Public Module GlobalFunctions
         End While
         reader.Close()
         cnx.Close()
-        'MS SQL does not seem to support the MySQL Limit 0, 10 function
+        'MS SQL does not seem to support the MySQL Limit startIndex, count function
         Dim il As New List(Of Integer)
         For i As Integer = startIndex To count Step 1
             Try
@@ -674,8 +673,10 @@ Public Module GlobalFunctions
         Dim repC As Integer = GetRepliesCount(threadID)
         If repC - trailposts <= 0 Then
             postHtml = postHtml.Replace("%COUNT%", 0)
+            postHtml = postHtml.Replace("%AN%", "hide")
         Else
             postHtml = postHtml.Replace("%COUNT%", repC - trailposts)
+            postHtml = postHtml.Replace("%AN%", "")
         End If
         postHtml = postHtml.Replace("%POSTLINK%", "default.aspx?id=" & threadID)
         Return postHtml
@@ -701,9 +702,11 @@ Public Module GlobalFunctions
 
     Function GetRepliesHTML(ByVal threadID As Integer, ByVal isMod As Boolean) As String
         Dim sa As New StringBuilder
+        Dim il As Integer() = GetThreadChildrenPosts(threadID)
         For Each x In GetThreadChildrenPosts(threadID)
             sa.Append(GetSingleReplyHTML(x, isMod))
         Next
+        sa.Append("<hr></hr")
         Return sa.ToString
     End Function
 

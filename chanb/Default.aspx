@@ -105,9 +105,8 @@
          
          'Display a list of current threads
          Dim startIndex As Integer = 0
-         If Not (Request.Item("startindex") = "") Then startIndex = Request.Item("startindex")
-        
-         For Each x In GetThreads(startIndex, ThreadPerPage)
+         If Not (Request.Item("startindex") = "") Then startIndex = CInt(Request.Item("startindex")) * (ThreadPerPage)       
+         For Each x In GetThreads(startIndex, ThreadPerPage - 1 + startIndex)
              Response.Write(GetThreadHTML(x, CBool(Session("mod")), 3))
          Next
          

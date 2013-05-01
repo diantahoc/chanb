@@ -16,7 +16,7 @@
     <script src="scripts.js" type="text/javascript" language="javascript"></script>
     <script type="text/javascript" src="jquery-1.4.2.min.js"></script>
     </head> 
-<body >
+<body>
  
    <div class="boardBanner"> 
    <div class="boardTitle"><% Response.Write(BoardTitle)%></div>

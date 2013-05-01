@@ -4,8 +4,6 @@ Public Module GlobalFunctions
 
     Dim SQLConnectionString As String = "" ' Replace with your connection string
 
-    Dim htmlElements As String() = {"<!--", "<!DOCTYPE>", "<a>", "<abbr>", "<acronym>", "<address>", "<applet>", "<area>", "<article>", "<aside>", "<audio>", "<b>", "<base>", "<basefont>", "<bdi>", "<bdo>", "<big>", "<blockquote>", "<body>", "<br>", "<canvas>", "<caption>", "<center>", "<cite>", "<code>", "<col>", "<colgroup>", "<command>", "<datalist>", "<dd>", "<del>", "<details>", "<dfn>", "<dialog>", "<dir>", "<div>", "<dl>", "<dt>", "<em>", "<embed>", "<fieldset>", "<figcaption>", "<figure", "<font>", "<footer>", "<form>", "<frame>", "<frameset>", "<h1>", "<h2>", "<h3>", "<h4>", "<h5>", "<h6>", "<head>", "<header>", "<hgroup>", "<hr>", "<html>", "<i>", "<iframe>", "<img>", "<input>", "<ins>", "<kbd>", "<keygen>", "<label>", "<legend>", "<li>", "<link>", "<map>", "<mark>", "<menu>", "<meta>", "<meter>", "<nav>", "<noframes>", "<noscript>", "<object>", "<ol>", "<optgroup>", "<option>", "<output>", "<p>", "<param>", "<pre>", "<progress>", "<q>", "<rp>", "<rt>", "<ruby>", "<s>", "<samp>", "<script>", "<section>", "<select>", "<small>", "<source>", "<span>", "<strike>", "<strong>", "<style>", "<sub>", "<summary>", "<sup>", "<table>", "<tbody>", "<td>", "<textarea>", "<tfoot>", "<th>", "<thead>", "<time>", "<title>", "<tr>", "<track>", "<tt>", "<u>", "<ul>", "<var>", "<video>", "<wbr>", "</a>", "</abbr>", "</acronym>", "</address>", "</applet>", "</area>", "</article>", "</aside>", "</audio>", "</b>", "</base>", "</basefont>", "</bdi>", "</bdo>", "</big>", "</blockquote>", "</body>", "</br>", "</canvas>", "</caption>", "</center>", "</cite>", "</code>", "</col>", "</colgroup>", "</command>", "</datalist>", "</dd>", "</del>", "</details>", "</dfn>", "</dialog>", "</dir>", "</div>", "</dl>", "</dt>", "</em>", "</embed>", "</fieldset>", "</figcaption>", "</figure", "</font>", "</footer>", "</form>", "</frame>", "</frameset>", "</h1>", "</h2>", "</h3>", "</h4>", "</h5>", "</h6>", "</head>", "</header>", "</hgroup>", "</hr>", "</html>", "</i>", "</iframe>", "</img>", "</input>", "</ins>", "</kbd>", "</keygen>", "</label>", "</legend>", "</li>", "</link>", "</map>", "</mark>", "</menu>", "</meta>", "</meter>", "</nav>", "</noframes>", "</noscript>", "</object>", "</ol>", "</optgroup>", "</option>", "</output>", "</p>", "</param>", "</pre>", "</progress>", "</q>", "</rp>", "</rt>", "</ruby>", "</s>", "</samp>", "</script>", "</section>", "</select>", "</small>", "</source>", "</span>", "</strike>", "</strong>", "</style>", "</sub>", "</summary>", "</sup>", "</table>", "</tbody>", "</td>", "</textarea>", "</tfoot>", "</th>", "</thead>", "</time>", "</title>", "</tr>", "</track>", "</tt>", "</u>", "</ul>", "</var>", "</video>", "</wbr>"}
-
     Function GetUserSelectedStyle(ByVal session As Web.SessionState.HttpSessionState) As String
         If session.Item("SS") = "" Then
             session.Item("SS") = "chan"
@@ -33,18 +31,40 @@ Public Module GlobalFunctions
     End Function
 
     Private Function ProcessInputs(ByVal x As String) As String
-        Dim sqlElements As String() = {"'+", "+'", "'<", "<'", "'>", ">'", "'+'", "'<'", "'>'", "'", "/'", "'/'", "'/", "<script>", "</script>"}
         Dim lowcaseX As String = x
-        For Each a In htmlElements
-            lowcaseX = lowcaseX.Replace(a.ToLower, "")
-            lowcaseX = lowcaseX.Replace(a, "")
-            lowcaseX = lowcaseX.Replace(a.ToUpper, "")
-        Next
-        For Each a In sqlElements
-            lowcaseX = lowcaseX.Replace(a.ToLower, "")
-            lowcaseX = lowcaseX.Replace(a.ToUpper, "")
-        Next
-        lowcaseX = lowcaseX.Replace(My.Resources.doublequotes, "")
+        'HTML ISO 8879 Numerical Character References 
+        'http://sunsite.berkeley.edu/amher/iso_8879.html
+        lowcaseX = lowcaseX.Replace("&", "&amp;")
+        lowcaseX = lowcaseX.Replace("#", "&#35;")
+        lowcaseX = lowcaseX.Replace(";", "&#59;")
+        lowcaseX = lowcaseX.Replace("<", "&lt;")
+        lowcaseX = lowcaseX.Replace(">", "&gt;")
+        lowcaseX = lowcaseX.Replace("–", "&ndash;")
+        lowcaseX = lowcaseX.Replace("—", "&mdash;")
+        lowcaseX = lowcaseX.Replace("%", "&#37;")
+        lowcaseX = lowcaseX.Replace("$", "&#36;")
+        lowcaseX = lowcaseX.Replace("'", "&#39;")
+        lowcaseX = lowcaseX.Replace("(", "&#40;")
+        lowcaseX = lowcaseX.Replace(")", "&#41;")
+        lowcaseX = lowcaseX.Replace("*", "&#42;")
+        lowcaseX = lowcaseX.Replace("+", "&#43;")
+        lowcaseX = lowcaseX.Replace(",", "&#44;")
+        lowcaseX = lowcaseX.Replace("/", "&#47;")
+        lowcaseX = lowcaseX.Replace("%", "&#37;")
+        lowcaseX = lowcaseX.Replace(":", "&#58;")
+        lowcaseX = lowcaseX.Replace("=", "&#61;")
+        lowcaseX = lowcaseX.Replace("@", "&#64;")
+        lowcaseX = lowcaseX.Replace("[", "&#91;")
+        lowcaseX = lowcaseX.Replace("]", "&#93;")
+        lowcaseX = lowcaseX.Replace("\", "&#92;")
+        lowcaseX = lowcaseX.Replace("^", "&#94;")
+        lowcaseX = lowcaseX.Replace("`", "&#96;")
+        lowcaseX = lowcaseX.Replace("_", "&#95;")
+        lowcaseX = lowcaseX.Replace("{", "&#123;")
+        lowcaseX = lowcaseX.Replace("|", "&#124;")
+        lowcaseX = lowcaseX.Replace("}", "&#125;")
+        lowcaseX = lowcaseX.Replace("~", "&#126;")
+        lowcaseX = lowcaseX.Replace(My.Resources.doublequotes, "&quot;")
         Return lowcaseX
     End Function
 
@@ -74,7 +94,7 @@ Public Module GlobalFunctions
 
     Sub MakeThread(ByVal data As OPDATA)
         Dim cnx As New SqlConnection(SQLConnectionString)
-        Dim queryString As String = "INSERT INTO board (type, time, comment, postername, email, password, subject, imagename, IP, bumplevel) VALUES ('0', " & ConvertTimeToSQLTIME(data.time) & ", '" & data.Comment & "', '" & data.name & "', '" & data.email & "', '" & data.password & "', '" & data.subject & "', '" & data.imageName & "','" & data.IP & "', " & CInt(GetThreadsCount() + 1) & ") "
+        Dim queryString As String = "INSERT INTO board (type, time, comment, postername, email, password, subject, imagename, IP, bumplevel, ua) VALUES ('0', " & ConvertTimeToSQLTIME(data.time) & ", '" & data.Comment & "', '" & data.name & "', '" & data.email & "', '" & data.password & "', '" & data.subject & "', '" & data.imageName & "','" & data.IP & "', " & ConvertTimeToSQLTIME(data.time) & ", '" & data.UserAgent & "' ) "
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         queryObject.ExecuteNonQuery()
@@ -132,28 +152,19 @@ Public Module GlobalFunctions
     ''' <remarks></remarks>
     Private Sub ReplyTo(ByVal id As Long, ByVal data As OPDATA)
         Dim cnx As New SqlConnection(SQLConnectionString)
-        Dim queryString As String = "INSERT INTO board (type, [time], comment, postername, email, [password], parentT, subject, imagename, IP) VALUES      ('1', " & ConvertTimeToSQLTIME(data.time) & ", '" & data.Comment & "', '" & data.name & "', '" & data.email & "', '" & data.password & "', '" & id & "', '" & data.subject & "', '" & data.imageName & "' , '" & data.IP & "' )"
+        Dim queryString As String = "INSERT INTO board (type, [time], comment, postername, email, [password], parentT, subject, imagename, IP, ua) VALUES      ('1', " & ConvertTimeToSQLTIME(data.time) & ", '" & data.Comment & "', '" & data.name & "', '" & data.email & "', '" & data.password & "', '" & id & "', '" & data.subject & "', '" & data.imageName & "' , '" & data.IP & "' , '" & data.UserAgent & "' )"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         queryObject.ExecuteNonQuery()
         cnx.Close()
-        If Not data.email = "sage" Then BumpThread(id, 1)
+        If Not data.email = "sage" Then BumpThread(id)
     End Sub
 
-    Private Sub BumpThread(ByVal id As Integer, ByVal howmuch As Integer)
+    Private Sub BumpThread(ByVal id As Integer)
         Dim cnx As New SqlConnection(SQLConnectionString)
-        Dim queryString As String = "SELECT bumplevel FROM board  WHERE(id = " & id & ")"
-        Dim queryObject As New SqlCommand(queryString, cnx)
-        cnx.Open()
-        Dim reader As SqlDataReader = queryObject.ExecuteReader
-        Dim bumplevel As Integer = 0
-        While reader.Read
-            bumplevel = reader(0)
-        End While
-        bumplevel += howmuch
-        reader.Close()
-        Dim updateQueryString As String = "UPDATE board SET bumplevel = " & bumplevel & " WHERE(board.ID = " & id & ")"
+        Dim updateQueryString As String = "UPDATE board SET bumplevel = " & ConvertTimeToSQLTIME(Date.UtcNow) & " WHERE(board.ID = " & id & ")"
         Dim q As New SqlCommand(updateQueryString, cnx)
+        cnx.Open()
         q.ExecuteNonQuery()
         cnx.Close()
     End Sub
@@ -247,8 +258,8 @@ Public Module GlobalFunctions
             ResizeImage(w, 250).Save(thumb)
         End If
         f.SaveAs(p)
-        'chanb name : size in bytes : dimensions : realname 
-        Dim sp As String = dd & "." & f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1) & ":" & f.ContentLength & ":" & w.Size.ToString & ":" & f.FileName & ":" & MD5(f.InputStream)
+        'chanb name : size in bytes : dimensions : realname : md5
+        Dim sp As String = dd & "." & f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1) & ":" & f.ContentLength & ":" & w.Size.Width & "x" & w.Size.Height & ":" & f.FileName & ":" & MD5(f.InputStream)
         w.Dispose()
         Return sp
     End Function
@@ -302,8 +313,8 @@ Public Module GlobalFunctions
                         ResizeImage(i, 250).Save(thumb)
                     End If
                     f.SaveAs(p)
-                    'chanb name : size in bytes : dimensions : realname 
-                    Dim sp As String = dd & "." & f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1) & ":" & f.ContentLength & ":" & i.Size.ToString & ":" & f.FileName & ":" & MD5(f.InputStream)
+                    'chanb name : size in bytes : dimensions : realname : md5
+                    Dim sp As String = dd & "." & f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1) & ":" & f.ContentLength & ":" & i.Size.Width & "x" & i.Size.Height & ":" & f.FileName & ":" & MD5(f.InputStream)
                     i.Dispose()
                     list.Add(sp)
                     list.Add(";")
@@ -435,7 +446,6 @@ Public Module GlobalFunctions
                     Case "thread"
                         If request.Files.Count = 0 Then
                             sb.Append(ImageRequired)
-                            sb.Append("<meta HTTP-EQUIV='REFRESH' content='2; url=default.aspx'>")
                         Else
                             'Save file.
                             If request.Files("ufile").ContentLength = 0 Then
@@ -447,11 +457,8 @@ Public Module GlobalFunctions
                                     sb.Append("<meta HTTP-EQUIV='REFRESH' content='10; url=default.aspx'>")
                                     Exit Select
                                 End If
-
                                 Dim s As String = saveFile(request.Files("ufile"), False)
-
                                 Dim er As New OPData
-
                                 er.Comment = ProcessInputs(request.Item("comment"))
                                 er.email = ProcessInputs(request.Item("email"))
                                 If request.Item("postername") = "" Then er.name = AnonName Else er.name = ProcessInputs(request.Item("postername"))
@@ -461,14 +468,11 @@ Public Module GlobalFunctions
                                 er.imageName = s
                                 er.password = ProcessInputs(request.Item("password"))
                                 er.IP = request.UserHostAddress
-
+                                er.UserAgent = request.UserAgent.Replace("<", "").Replace(">", "") ' I replace < and > to prevent spoffing a user agent that contain <script> tags.
                                 Session.Item("pass") = request.Item("password")
-
                                 MakeThread(er)
-
                                 sb.Append(SuccessfulPostString)
                                 sb.Append("<meta HTTP-EQUIV='REFRESH' content='2; url=default.aspx'>")
-
                             End If
                         End If
                     Case "reply"
@@ -496,6 +500,7 @@ Public Module GlobalFunctions
                             er.imageName = s
                             er.password = ProcessInputs(request.Item("password"))
                             er.IP = request.UserHostAddress
+                            er.UserAgent = request.UserAgent.Replace("<", "").Replace(">", "") ' I replace < and > to prevent spoffing a user agent that contain <script> tags.
                             Session.Item("pass") = ProcessInputs(request.Item("password"))
                             ReplyTo(CInt(request.Item("threadid")), er)
                             sb.Append(SuccessfulPostString)
@@ -579,13 +584,7 @@ Public Module GlobalFunctions
         '    sb.Append("</br>")
         '    sb.Append(vbNewLine)
         'Next
-
-        Dim v As String = comment
-        For Each x In htmlElements
-            v = v.Replace(x, "")
-            v = v.Replace(x.ToUpper, "")
-        Next
-        Return v
+        Return comment
     End Function
 
     Function GetOPPostHTML(ByVal id As Integer, ByVal replyButton As Boolean, ByVal isMod As Boolean) As String
@@ -601,7 +600,7 @@ Public Module GlobalFunctions
         postHTML = postHTML.Replace("%IMAGE LINK%", GetImageWEBPATH(imageData.chanbName))
         postHTML = postHTML.Replace("%CHANB FILE NAME%", imageData.chanbName)
         postHTML = postHTML.Replace("%FILE NAME%", imageData.realname)
-        postHTML = postHTML.Replace("%FILE SIZE%", imageData.size)
+        postHTML = postHTML.Replace("%FILE SIZE%", FormatSizeString(imageData.size))
         postHTML = postHTML.Replace("%IMAGE DIMENSIONS%", imageData.dimensions)
         postHTML = postHTML.Replace("%THUMB LINK%", GetImageWEBPATHRE(imageData.chanbName))
         postHTML = postHTML.Replace("%MD5%", imageData.md5)
@@ -706,7 +705,7 @@ Public Module GlobalFunctions
         For Each x In GetThreadChildrenPosts(threadID)
             sa.Append(GetSingleReplyHTML(x, isMod))
         Next
-        sa.Append("<hr></hr")
+        sa.Append("<hr></hr>")
         Return sa.ToString
     End Function
 
@@ -749,7 +748,7 @@ Public Module GlobalFunctions
                     r = r.Replace("%filec%", "")
                     r = r.Replace("%FILE NAME%", wpi.realname)
                     r = r.Replace("%IMAGE SRC%", GetImageWEBPATH(wpi.chanbName))
-                    r = r.Replace("%FILE SIZE%", wpi.size)
+                    r = r.Replace("%FILE SIZE%", FormatSizeString(wpi.size))
                     r = r.Replace("%IMAGE SIZE%", wpi.dimensions)
                     r = r.Replace("%THUMB_LINK%", GetImageWEBPATHRE(wpi.chanbName))
                     r = r.Replace("%IMAGE MD5%", wpi.md5)
@@ -769,7 +768,7 @@ Public Module GlobalFunctions
                 r = r.Replace("%AN%", "") ' No need for active/notactive class since there is no rotator.
                 r = r.Replace("%FILE NAME%", wpi.realname)
                 r = r.Replace("%IMAGE SRC%", GetImageWEBPATH(wpi.chanbName))
-                r = r.Replace("%FILE SIZE%", wpi.size)
+                r = r.Replace("%FILE SIZE%", FormatSizeString(wpi.size))
                 r = r.Replace("%IMAGE SIZE%", wpi.dimensions)
                 r = r.Replace("%THUMB_LINK%", GetImageWEBPATHRE(wpi.chanbName))
                 r = r.Replace("%IMAGE MD5%", wpi.md5)
@@ -835,5 +834,28 @@ Public Module GlobalFunctions
             Next
         End If
     End Sub
+
+    Private Function FormatSizeString(ByVal size As Long) As String
+        Dim B As Long = 1024
+        Dim K As Long = 1024 * B
+        Dim M As Long = 1024 * K
+        Dim G As Long = 1024 * G
+
+        Dim KB As Long = Fix(size / B)
+        Dim MB As Long = Fix(size / K)
+        Dim GB As Long = Fix(size / M)
+
+        If KB = 0 Then
+            Return size & " B"
+        ElseIf KB > 0 And MB = 0 Then
+            Return KB & " KB"
+        ElseIf MB > 0 And GB = 0 Then
+            Return MB & " MB"
+        ElseIf GB > 0 Then
+            Return GB & " GB"
+        Else
+            Return size
+        End If
+    End Function
 
 End Module

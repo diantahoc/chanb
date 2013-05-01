@@ -2,7 +2,9 @@
 
 <div class="fileInfo">
 <span data-filename="%FILE NAME%" class="fileText" id="fT%ID%">
-<a href="%IMAGE SRC%" target="_top">%FILE NAME%</a></span>
+<a href="%IMAGE SRC%" target="_top">%FILE NAME%</a> - 
+(%FILE SIZE%, %IMAGE SIZE%)
+</span>
 <a href="http://www.google.com/searchbyimage?image_url=%THUMB_LINK%" target="_top">google</a>
 </div>
 

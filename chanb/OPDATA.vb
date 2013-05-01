@@ -1,6 +1,4 @@
-﻿Public Class OPDATA
-
-
+﻿Public Class OPData
     Public Comment As String
     Public name As String
     Public email As String
@@ -9,6 +7,5 @@
     Public password As String
     Public imageName As String
     Public IP As String
-
-
+    Public UserAgent As String
 End Class

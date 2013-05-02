@@ -175,6 +175,6 @@
 %>
 </div>
 <div id="bottom"></div>
-
+<div id="absbot" class="absBotText"><% Response.Write(footerText)%></span></div>
 </body>
 </html>

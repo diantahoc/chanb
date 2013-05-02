@@ -1,14 +1,8 @@
 ﻿<div class="postContainer opContainer" id="pc%ID%">
-
 <div id="p%ID%" class="post op">
-
 <div class="file" id="f%ID%">
-
 <div class="fileInfo">
-
-<span class="fileText" id="fT%ID%">File: <a href="%IMAGE LINK%" target="_blank">%CHANB FILE NAME%</a>
--(%FILE SIZE%, %IMAGE DIMENSIONS%, 
-<span title="%FILE NAME%">%FILE NAME%</span>)
+<span class="fileText" id="fT%ID%">File: <a href="%IMAGE LINK%" target="_blank">%CHANB FILE NAME%</a>-(%FILE SIZE%, %IMAGE DIMENSIONS%, <span title="%FILE NAME%">%FILE NAME%</span>)
 <a href="http://www.google.com/searchbyimage?image_url=%THUMB LINK%" target="_top">google</a>
 </span>
 </div>
@@ -19,13 +13,13 @@
 <div class="postInfo desktop" id="pi%ID%">
 <input name="proc%ID%" value="delete" type="checkbox">
 <span class="subject">%SUBJECT%</span>
- <span class="nameBlock">
- <span class="name">%NAME%</span>
- </span>
-  <span class="dateTime" data-utc="%DATE UTC UNIX%">%DATE UTC TEXT%</span>
-   <span class="postNum">
-   <a href="%POST LINK%" title="Highlight this post">No.</a>
-   <a href="javascript:quote('%ID%');" title="Quote this post">%ID%</a>
+<span class="nameBlock">
+<span class="name">%NAME%</span>
+</span>
+<span class="dateTime" data-utc="%DATE UTC UNIX%">%DATE UTC TEXT%</span>
+<span class="postNum">
+<a href="%POST LINK%" title="Highlight this post">No.</a>
+<a href="javascript:quote('%ID%');" title="Quote this post">%ID%</a>
 %REPLY BUTTON%
 %MODPANEL%
 </span>
@@ -33,6 +27,4 @@
 </div>
 <blockquote class="postMessage" id="m%ID%">%POST TEXT%</blockquote>
 </div>
-
 </div>
-<br/>

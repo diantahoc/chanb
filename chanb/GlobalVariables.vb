@@ -5,13 +5,14 @@
     Public BoardLetter As String = "c"
     Public BoardDesc As String = "VB.NET Imageboard"
     Public TimeBetweenRequestes As Integer = 15 ' in seconds
+    Public footerText As String = "<a href='https://github.com/diantahoc/chanb' target='_blank'>ChanB</a> ASP.NET board."
+    Public MaximumFileSize As Long = 15 * 1024 * 1024 ' 15 MB
+    Public DeleteFiles As Boolean = True
+    Public ThreadPerPage As Integer = 10
 
     'Server related
     Public STORAGEFOLDER As String = "PHYSICAL PATH TO\dtin" ' Make sure that the directory is write-able first
     Public StoragefolderWEB As String = "http://HOSTNAME/dtin/" ' The storage folder must be accessible from the web
-    Public MaximumFileSize As Long = 15 * 1024 * 1024 ' 15 MB
-    Public DeleteFiles As Boolean = True
-    Public ThreadPerPage As Integer = 10
 
     Public replyButtonHTML As String = "&nbsp;<span>[<a href='%POST LINK%' class='replylink'>Reply</a>]</span>"
 

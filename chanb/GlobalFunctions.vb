@@ -35,8 +35,6 @@ Public Module GlobalFunctions
         'HTML ISO 8879 Numerical Character References 
         'http://sunsite.berkeley.edu/amher/iso_8879.html
         lowcaseX = lowcaseX.Replace("&", "&amp;")
-        lowcaseX = lowcaseX.Replace("#", "&#35;")
-        lowcaseX = lowcaseX.Replace(";", "&#59;")
         lowcaseX = lowcaseX.Replace("<", "&lt;")
         lowcaseX = lowcaseX.Replace(">", "&gt;")
         lowcaseX = lowcaseX.Replace("–", "&ndash;")
@@ -92,7 +90,7 @@ Public Module GlobalFunctions
         cnx.Close()
     End Function
 
-    Sub MakeThread(ByVal data As OPDATA)
+    Sub MakeThread(ByVal data As OPData)
         Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = "INSERT INTO board (type, time, comment, postername, email, password, subject, imagename, IP, bumplevel, ua) VALUES ('0', " & ConvertTimeToSQLTIME(data.time) & ", '" & data.Comment & "', '" & data.name & "', '" & data.email & "', '" & data.password & "', '" & data.subject & "', '" & data.imageName & "','" & data.IP & "', " & ConvertTimeToSQLTIME(data.time) & ", '" & data.UserAgent & "' ) "
         Dim queryObject As New SqlCommand(queryString, cnx)
@@ -150,7 +148,7 @@ Public Module GlobalFunctions
     ''' <param name="id">id of the thread</param>
     ''' <param name="data"></param>
     ''' <remarks></remarks>
-    Private Sub ReplyTo(ByVal id As Long, ByVal data As OPDATA)
+    Private Sub ReplyTo(ByVal id As Long, ByVal data As OPData)
         Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = "INSERT INTO board (type, [time], comment, postername, email, [password], parentT, subject, imagename, IP, ua) VALUES      ('1', " & ConvertTimeToSQLTIME(data.time) & ", '" & data.Comment & "', '" & data.name & "', '" & data.email & "', '" & data.password & "', '" & id & "', '" & data.subject & "', '" & data.imageName & "' , '" & data.IP & "' , '" & data.UserAgent & "' )"
         Dim queryObject As New SqlCommand(queryString, cnx)
@@ -565,26 +563,49 @@ Public Module GlobalFunctions
         Return sb.ToString().ToLower
     End Function
 
-    Private Function ProcessComment(ByVal comment As String) As String
-        'Dim sb As New StringBuilder
-        'Dim li As String() = comment.Split(vbNewLine)
-        'For Each x In li
-        '    'Check if greentext
-        '    If x.StartsWith(">") And Not x.StartsWith(">>") Then
-        '        sb.Append("<span class='quote'>&gt;" & x.Replace(">", "") & "</span></br>")
-        '    End If
-        '    'Check if quote
-        '    If x.StartsWith(">>") Then
-        '        sb.Append("<a href='#'>" & x & "</a><br/>")
-        '    End If
-        '    'Check if normal
-        '    If Not x.StartsWith(">") Then
-        '        sb.Append(x)
-        '    End If
-        '    sb.Append("</br>")
-        '    sb.Append(vbNewLine)
-        'Next
-        Return comment
+    Private Function ProcessComment(ByVal comment As String, ByVal parentPost As Integer) As String
+        Dim sb As New StringBuilder
+        Dim li As String() = comment.Split(vbNewLine)
+        For Each x In li
+            If Not (x = "") Then
+                'Check if greentext
+                If x.StartsWith("&gt;") And Not x.StartsWith("&gt;&gt;") Then
+                    sb.Append("<span class='quote'>" & x & "</span>")
+                    'Some times, X start with a line terminator that is not vbnewline, so i remove it
+
+                ElseIf (x.Remove(0, 1).StartsWith("&gt;") And Not x.Remove(0, 1).StartsWith("&gt;&gt;")) Then
+                    sb.Append("<span class='quote'>" & x.Remove(0, 1) & "</span>")
+
+                ElseIf IsXvalidQuote(x) Then
+                    sb.Append("<a href='default.aspx?id=" & parentPost & "#p" & x.Replace("&gt;&gt;", "") & "'>" & x & "</a>")
+
+                    'Some times, X start with a line terminator that is not vbnewline, so i remove it
+                ElseIf IsXvalidQuote(x.Remove(0, 1)) Then
+                    sb.Append("<a href='default.aspx?id=" & parentPost & "#p" & x.Remove(0, 1).Replace("&gt;&gt;", "") & "'>" & x.Remove(0, 1) & "</a>")
+
+                Else
+                    sb.Append(x)
+                End If
+                sb.Append("<br>")
+            End If
+        Next
+        Return sb.ToString
+    End Function
+
+    Private Function IsXvalidQuote(ByVal x As String) As Boolean
+        Dim b As Boolean = False
+        ' A valid quote should be in >>Int32 format.
+        Try
+            If x.StartsWith("&gt;&gt;") Then
+                Dim i = CInt(x.Replace("&gt;&gt;", ""))
+                b = True
+            Else
+                b = False
+            End If
+        Catch ex As Exception
+            b = False
+        End Try
+        Return b
     End Function
 
     Function GetOPPostHTML(ByVal id As Integer, ByVal replyButton As Boolean, ByVal isMod As Boolean) As String
@@ -609,7 +630,7 @@ Public Module GlobalFunctions
         postHTML = postHTML.Replace("%DATE UTC UNIX%", po.time.ToFileTime)
         postHTML = postHTML.Replace("%DATE UTC TEXT%", GetTimeString(po.time))
         postHTML = postHTML.Replace("%POST LINK%", "default.aspx?id=" & po.PostID & "#p" & po.PostID)
-        postHTML = postHTML.Replace("%POST TEXT%", ProcessComment(po.comment))
+        postHTML = postHTML.Replace("%POST TEXT%", ProcessComment(po.comment, po.PostID))
         postHTML = postHTML.Replace("%REPLY COUNT%", GetRepliesCount(id))
         If isMod Then postHTML = postHTML.Replace("%MODPANEL%", "<a href='modaction.aspx?action=banpost&postid=" & po.PostID & "'>Ban</a><a href='modaction.aspx?action=delpost&id=" & po.PostID & "'>Delete</a>") Else postHTML = postHTML.Replace("%MODPANEL%", "")
         Return postHTML
@@ -719,7 +740,7 @@ Public Module GlobalFunctions
         End If
         postHTML = postHTML.Replace("%EMAIL%", po.email)
         postHTML = postHTML.Replace("%ID%", po.PostID)
-        postHTML = postHTML.Replace("%POST TEXT%", ProcessComment(po.comment))
+        postHTML = postHTML.Replace("%POST TEXT%", ProcessComment(po.comment, po.parent))
         postHTML = postHTML.Replace("%DATE TEXT UTC%", GetTimeString(po.time))
         postHTML = postHTML.Replace("%SUBJECT%", po.subject)
         postHTML = postHTML.Replace("%NAME%", po.name)

@@ -5,20 +5,20 @@ Public Module GlobalFunctions
     Dim SQLConnectionString As String = "" ' Replace with your connection string
 
     Function GetUserSelectedStyle(ByVal session As Web.SessionState.HttpSessionState) As String
-        If session.Item("SS") = "" Then
+        If CStr(session.Item("SS")) = "" Then
             session.Item("SS") = "chan"
             Return "chan"
         Else
-            Return session.Item("SS")
+            Return CStr(session.Item("SS"))
         End If
     End Function
 
     Function GetSessionPassword(ByVal seesion As Web.SessionState.HttpSessionState) As String
-        If seesion("pass") = "" Then
-            seesion("pass") = New String(seesion.SessionID, 0, 15)
-            Return seesion("pass")
+        If CStr(seesion("pass")) = "" Then
+            seesion("pass") = New String(CType(seesion.SessionID, Char()), 0, 15)
+            Return CStr(seesion("pass"))
         Else
-            Return seesion("pass")
+            Return CStr(seesion("pass"))
         End If
     End Function
 
@@ -68,22 +68,23 @@ Public Module GlobalFunctions
 
     Function FetchPostData(ByVal id As Long) As WPost
         Dim cnx As New SqlConnection(SQLConnectionString)
-        Dim queryString As String = "SELECT type, time, comment, postername, email, password, parentT, subject, imagename, IP FROM  board  WHERE (id = " & id & ")"
+        Dim queryString As String = "SELECT type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua FROM  board  WHERE (id = " & id & ")"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         Dim reader As SqlDataReader = queryObject.ExecuteReader
         Dim po As New WPost(id)
         While reader.Read
-            po.type = ConvertNoNull(reader(0))
-            po.time = ConvertNoNull(reader(1))
-            po.comment = ConvertNoNull(reader(2))
-            po.name = ConvertNoNull(reader(3))
-            po.email = ConvertNoNull(reader(4))
-            po.password = ConvertNoNull(reader(5))
-            po.parent = ConvertNoNull(reader(6))
-            po.subject = ConvertNoNull(reader(7))
-            po._imageP = ConvertNoNull(reader(8))
-            po.ip = ConvertNoNull(reader(9))
+            po.type = CStr(ConvertNoNull(reader(0)))
+            po.time = CDate(ConvertNoNull(reader(1)))
+            po.comment = CStr(ConvertNoNull(reader(2)))
+            po.name = CStr(ConvertNoNull(reader(3)))
+            po.email = CStr(ConvertNoNull(reader(4)))
+            po.password = CStr(ConvertNoNull(reader(5)))
+            po.parent = CInt(ConvertNoNull(reader(6)))
+            po.subject = CStr(ConvertNoNull(reader(7)))
+            po._imageP = CStr(ConvertNoNull(reader(8)))
+            po.ip = CStr(ConvertNoNull(reader(9)))
+            po.ua = CStr(ConvertNoNull(reader(10)))
         End While
         Return po
         reader.Close()
@@ -101,13 +102,13 @@ Public Module GlobalFunctions
 
     Function GetThreadsCount() As Integer
         Dim cnx As New SqlConnection(SQLConnectionString)
-        Dim queryString As String = "SELECT ID FROM board  WHERE(type = 0)"
+        Dim queryString As String = "Select Count(*) as [Total Records] from board where (type=0)"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         Dim i As Integer = 0
         Dim reader As SqlDataReader = queryObject.ExecuteReader
         While reader.Read
-            i += 1
+            i = CInt(reader(0))
         End While
         cnx.Close()
         Return i
@@ -148,7 +149,7 @@ Public Module GlobalFunctions
     ''' <param name="id">id of the thread</param>
     ''' <param name="data"></param>
     ''' <remarks></remarks>
-    Private Sub ReplyTo(ByVal id As Long, ByVal data As OPData)
+    Private Sub ReplyTo(ByVal id As Integer, ByVal data As OPData)
         Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = "INSERT INTO board (type, [time], comment, postername, email, [password], parentT, subject, imagename, IP, ua) VALUES      ('1', " & ConvertTimeToSQLTIME(data.time) & ", '" & data.Comment & "', '" & data.name & "', '" & data.email & "', '" & data.password & "', '" & id & "', '" & data.subject & "', '" & data.imageName & "' , '" & data.IP & "' , '" & data.UserAgent & "' )"
         Dim queryObject As New SqlCommand(queryString, cnx)
@@ -175,7 +176,7 @@ Public Module GlobalFunctions
         cnx.Open()
         Dim reader As SqlDataReader = queryObject.ExecuteReader()
         While reader.Read
-            ila.Add(reader.Item(0))
+            ila.Add(CInt(reader(0)))
         End While
         reader.Close()
         cnx.Close()
@@ -190,7 +191,7 @@ Public Module GlobalFunctions
         cnx.Open()
         Dim reader As SqlDataReader = queryObject.ExecuteReader
         While reader.Read
-            ila.Add(reader.Item(0))
+            ila.Add(CInt(reader.Item(0)))
         End While
         reader.Close()
         cnx.Close()
@@ -207,7 +208,7 @@ Public Module GlobalFunctions
         il.Clear()
     End Function
 
-    Function IsModLoginValid(ByVal name As String, ByVal password As String)
+    Function IsModLoginValid(ByVal name As String, ByVal password As String) As Boolean
         Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = "SELECT password FROM mods  WHERE (username LIKE '" & name & "')"
         Dim queryObject As New SqlCommand(queryString, cnx)
@@ -215,7 +216,7 @@ Public Module GlobalFunctions
         Dim sqlPassMd5 As String = ""
         Dim reader As SqlDataReader = queryObject.ExecuteReader
         While reader.Read
-            sqlPassMd5 = ConvertNoNull(reader(0))
+            sqlPassMd5 = CStr(ConvertNoNull(reader(0)))
         End While
         reader.Close()
         cnx.Close()
@@ -246,7 +247,7 @@ Public Module GlobalFunctions
         End Try
 
         'Actuall saving code start here
-        Dim dd As String = Date.UtcNow.ToFileTime
+        Dim dd As String = CStr(Date.UtcNow.ToFileTime)
         Dim p As String = STORAGEFOLDER & "\" & dd & "." & f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1)
         Dim thumb As String = STORAGEFOLDER & "\th" & dd & ".png"
         Dim w As Drawing.Image = Drawing.Image.FromStream(f.InputStream)
@@ -265,7 +266,7 @@ Public Module GlobalFunctions
     Private Function GetWPOSTIMAGE(ByVal sp As String) As WPostImage
         Dim wp As New WPostImage
         wp.chanbName = sp.Split(CChar(":")).ElementAt(0)
-        wp.size = sp.Split(CChar(":")).ElementAt(1)
+        wp.size = CLng(sp.Split(CChar(":")).ElementAt(1))
         wp.dimensions = sp.Split(CChar(":")).ElementAt(2)
         wp.realname = sp.Split(CChar(":")).ElementAt(3)
         wp.md5 = sp.Split(CChar(":")).ElementAt(4)
@@ -294,7 +295,7 @@ Public Module GlobalFunctions
                 er = True
             End Try
 
-            Dim dd As String = Date.UtcNow.ToFileTime
+            Dim dd As String = CStr(Date.UtcNow.ToFileTime)
             If Not er Then
                 'Check file size
                 If f.ContentLength > MaximumFileSize Then
@@ -329,8 +330,8 @@ Public Module GlobalFunctions
     End Function
 
     Private Function DownSizeWithAspectRatio(ByVal targetMax As Integer, ByVal isi As Drawing.Size) As Drawing.Size
-        Dim ratioP As Integer = isi.Width / targetMax
-        Return New Drawing.Size(Fix(isi.Width / ratioP), Fix(isi.Height / ratioP))
+        Dim ratioP As Double = isi.Width / targetMax
+        Return New Drawing.Size(CInt(Fix(isi.Width / ratioP)), CInt(Fix(isi.Height / ratioP)))
     End Function
 
     Private Function ResizeImage(ByVal i As Drawing.Image, ByVal targetS As Integer) As Drawing.Image
@@ -354,7 +355,7 @@ Public Module GlobalFunctions
     ''' <returns></returns>
     ''' <remarks></remarks>
     Public Function GetImageWEBPATHRE(ByVal name As String) As String
-        Return StoragefolderWEB & "th" & name.Split(".").ElementAt(0) & ".png"
+        Return StoragefolderWEB & "th" & name.Split(CChar(".")).ElementAt(0) & ".png"
     End Function
 
     Sub NewMod(ByVal name As String, ByVal pas As String)
@@ -404,11 +405,11 @@ Public Module GlobalFunctions
         Dim reader As SqlDataReader = queryObject.ExecuteReader
         Dim data As New BanData
         While reader.Read
-            data.ID = ConvertNoNull(reader(0))
-            data.PERM = ConvertNoNull(reader(1))
-            data.EXPIRY = ConvertNoNull(reader(2))
-            data.COMMENT = ConvertNoNull(reader(3))
-            data.POSTNO = ConvertNoNull(reader(4))
+            data.ID = CInt(ConvertNoNull(reader(0)))
+            data.PERM = CBool(ConvertNoNull(reader(1)))
+            data.EXPIRY = CDate(ConvertNoNull(reader(2)))
+            data.COMMENT = CStr(ConvertNoNull(reader(3)))
+            data.POSTNO = CInt(ConvertNoNull(reader(4)))
         End While
         data.IP = IP
         reader.Close()
@@ -427,7 +428,7 @@ Public Module GlobalFunctions
         If Session.Item("lastpost") Is "" Or Session.Item("lastpost") Is Nothing Then
             Session.Item("lastpost") = Now.ToString
         Else
-            Dim i As Date = Date.Parse(Session.Item("lastpost"))
+            Dim i As Date = Date.Parse(CStr(Session.Item("lastpost")))
             If (Now - i).TotalSeconds < TimeBetweenRequestes Then
                 sb.Append(FloodDetected)
                 cont = False
@@ -523,9 +524,9 @@ Public Module GlobalFunctions
                             sb.Append(NoPostWasSelected)
                         Else
                             For Each x In li
-                                Dim p As WPost = FetchPostData(x)
+                                Dim p As WPost = FetchPostData(CLng(x))
                                 If p.password = deletPass Then
-                                    DeletePost(x, DeleteFiles)
+                                    DeletePost(CInt(x), DeleteFiles)
                                     sb.Append(PostDeletedSuccess.Replace("%", x))
                                 Else
                                     sb.Append(CannotDeletePostBadPassword.Replace("%", x))
@@ -565,7 +566,7 @@ Public Module GlobalFunctions
 
     Private Function ProcessComment(ByVal comment As String, ByVal parentPost As Integer) As String
         Dim sb As New StringBuilder
-        Dim li As String() = comment.Split(vbNewLine)
+        Dim li As String() = comment.Split(CChar(vbNewLine))
         For Each x In li
             If Not (x = "") Then
                 'Check if greentext
@@ -617,7 +618,7 @@ Public Module GlobalFunctions
         Else
             postHTML = postHTML.Replace("%REPLY BUTTON%", "")
         End If
-        postHTML = postHTML.Replace("%ID%", po.PostID)
+        postHTML = postHTML.Replace("%ID%", CStr(po.PostID))
         postHTML = postHTML.Replace("%IMAGE LINK%", GetImageWEBPATH(imageData.chanbName))
         postHTML = postHTML.Replace("%CHANB FILE NAME%", imageData.chanbName)
         postHTML = postHTML.Replace("%FILE NAME%", imageData.realname)
@@ -627,11 +628,11 @@ Public Module GlobalFunctions
         postHTML = postHTML.Replace("%MD5%", imageData.md5)
         postHTML = postHTML.Replace("%SUBJECT%", po.subject)
         postHTML = postHTML.Replace("%NAME%", po.name)
-        postHTML = postHTML.Replace("%DATE UTC UNIX%", po.time.ToFileTime)
+        postHTML = postHTML.Replace("%DATE UTC UNIX%", CStr(po.time.ToFileTime))
         postHTML = postHTML.Replace("%DATE UTC TEXT%", GetTimeString(po.time))
         postHTML = postHTML.Replace("%POST LINK%", "default.aspx?id=" & po.PostID & "#p" & po.PostID)
-        postHTML = postHTML.Replace("%POST TEXT%", ProcessComment(po.comment, po.PostID))
-        postHTML = postHTML.Replace("%REPLY COUNT%", GetRepliesCount(id))
+        postHTML = postHTML.Replace("%POST TEXT%", ProcessComment(po.comment, CInt(po.PostID)))
+        postHTML = postHTML.Replace("%REPLY COUNT%", CStr(GetRepliesCount(id)))
         If isMod Then postHTML = postHTML.Replace("%MODPANEL%", "<a href='modaction.aspx?action=banpost&postid=" & po.PostID & "'>Ban</a><a href='modaction.aspx?action=delpost&id=" & po.PostID & "'>Delete</a>") Else postHTML = postHTML.Replace("%MODPANEL%", "")
         Return postHTML
     End Function
@@ -643,7 +644,7 @@ Public Module GlobalFunctions
         Dim il As New List(Of Integer)
         Dim reader As SqlDataReader = query.ExecuteReader
         While reader.Read
-            il.Add(reader(0))
+            il.Add(CInt(reader(0)))
         End While
         reader.Close()
         cnx.Close()
@@ -679,7 +680,7 @@ Public Module GlobalFunctions
 
     Function GetThreadHTML(ByVal threadID As Integer, ByVal isMod As Boolean, ByVal trailposts As Integer) As String
         Dim postHtml As String = threadTemplate
-        postHtml = postHtml.Replace("%ID%", threadID)
+        postHtml = postHtml.Replace("%ID%", CStr(threadID))
         If trailposts > 0 Then
             Dim sb As New StringBuilder
             For Each x In GetLastXPosts(threadID, trailposts).Reverse
@@ -692,10 +693,10 @@ Public Module GlobalFunctions
         postHtml = postHtml.Replace("%POST HTML%", GetOPPostHTML(threadID, True, isMod))
         Dim repC As Integer = GetRepliesCount(threadID)
         If repC - trailposts <= 0 Then
-            postHtml = postHtml.Replace("%COUNT%", 0)
+            postHtml = postHtml.Replace("%COUNT%", CStr(0))
             postHtml = postHtml.Replace("%AN%", "hide")
         Else
-            postHtml = postHtml.Replace("%COUNT%", repC - trailposts)
+            postHtml = postHtml.Replace("%COUNT%", CStr(repC - trailposts))
             postHtml = postHtml.Replace("%AN%", "")
         End If
         postHtml = postHtml.Replace("%POSTLINK%", "default.aspx?id=" & threadID)
@@ -708,13 +709,13 @@ Public Module GlobalFunctions
 
     Private Function GetRepliesCount(ByVal threadID As Integer) As Integer
         Dim cnx As New SqlConnection(SQLConnectionString)
-        Dim queryString As String = "SELECT   type   FROM board WHERE (parentT=" & threadID & ")"
+        Dim queryString As String = "Select Count(*) as [Total Records] from board where (parentT=" & threadID & ")"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         Dim i As Integer = 0
         Dim reader As SqlDataReader = queryObject.ExecuteReader
         While reader.Read
-            i += 1
+            i = CInt(reader(0))
         End While
         cnx.Close()
         Return i
@@ -739,12 +740,12 @@ Public Module GlobalFunctions
             postHTML = postHTML.Replace("%NAMESPAN%", "<a href='mailto:%EMAIL%' class='useremail'><span class='name'>%NAME%</span></a>")
         End If
         postHTML = postHTML.Replace("%EMAIL%", po.email)
-        postHTML = postHTML.Replace("%ID%", po.PostID)
+        postHTML = postHTML.Replace("%ID%", CStr(po.PostID))
         postHTML = postHTML.Replace("%POST TEXT%", ProcessComment(po.comment, po.parent))
         postHTML = postHTML.Replace("%DATE TEXT UTC%", GetTimeString(po.time))
         postHTML = postHTML.Replace("%SUBJECT%", po.subject)
         postHTML = postHTML.Replace("%NAME%", po.name)
-        postHTML = postHTML.Replace("%DATE UTC UNIX%", po.time.ToFileTime)
+        postHTML = postHTML.Replace("%DATE UTC UNIX%", CStr(po.time.ToFileTime))
         postHTML = postHTML.Replace("%POST LINK%", "default.aspx?id=" & po.parent & "#p" & po.PostID)
         If isMod Then postHTML = postHTML.Replace("%MODPANEL%", "<a href='modaction.aspx?action=banpost&postid=" & po.PostID & "'>Ban</a><a href='modaction.aspx?action=delpost&id=" & po.PostID & "'>Delete</a>") Else postHTML = postHTML.Replace("%MODPANEL%", "")
         postHTML = postHTML.Replace("%IMAGES%", GetImagesHTML(po))
@@ -764,7 +765,7 @@ Public Module GlobalFunctions
                 For Each ima In po._imageP.Split(CChar(";"))
                     Dim r As String = imageTemplate
                     Dim wpi As WPostImage = GetWPOSTIMAGE(ima.Replace(";", ""))
-                    r = r.Replace("%ID%", po.PostID)
+                    r = r.Replace("%ID%", CStr(po.PostID))
                     If Not advanced Then r = r.Replace("%AN%", "active") Else r = r.Replace("%AN%", "notactive")
                     r = r.Replace("%filec%", "")
                     r = r.Replace("%FILE NAME%", wpi.realname)
@@ -776,15 +777,15 @@ Public Module GlobalFunctions
                     items.Append(r)
                     advanced = True
                 Next
-                rotatorTemplat = rotatorTemplat.Replace("%ID%", po.PostID)
-                rotatorTemplat = rotatorTemplat.Replace("%IMAGECOUNT%", count)
+                rotatorTemplat = rotatorTemplat.Replace("%ID%", CStr(po.PostID))
+                rotatorTemplat = rotatorTemplat.Replace("%IMAGECOUNT%", CStr(count))
                 rotatorTemplat = rotatorTemplat.Replace("%ITEMS%", items.ToString)
                 sb.Append(rotatorTemplat)
             Else
                 'Single image
                 Dim r As String = imageTemplate
                 Dim wpi As WPostImage = GetWPOSTIMAGE(po._imageP.Replace(";", ""))
-                r = r.Replace("%ID%", po.PostID)
+                r = r.Replace("%ID%", CStr(po.PostID))
                 r = r.Replace("%filec%", "file")
                 r = r.Replace("%AN%", "") ' No need for active/notactive class since there is no rotator.
                 r = r.Replace("%FILE NAME%", wpi.realname)
@@ -821,7 +822,7 @@ Public Module GlobalFunctions
 
     Sub DeletePost(ByVal id As Integer, ByVal dF As Boolean)
         Dim w As WPost = FetchPostData(id)
-        If w.type = 0 Then
+        If w.type = "0" Then
             For Each x In GetThreadChildrenPosts(id)
                 DeleteP(x, dF)
             Next
@@ -832,7 +833,7 @@ Public Module GlobalFunctions
     End Sub
 
     Private Sub DeleteP(ByVal id As Integer, ByVal dF As Boolean)
-        If deleteFiles Then DeletePostFiles(id)
+        If DeleteFiles Then DeletePostFiles(id)
         Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = "DELETE FROM board WHERE(id = " & id & ")"
         Dim queryObject As New SqlCommand(queryString, cnx)
@@ -861,11 +862,9 @@ Public Module GlobalFunctions
         Dim K As Long = 1024 * B
         Dim M As Long = 1024 * K
         Dim G As Long = 1024 * G
-
-        Dim KB As Long = Fix(size / B)
-        Dim MB As Long = Fix(size / K)
-        Dim GB As Long = Fix(size / M)
-
+        Dim KB As Long = CLng(Fix(size / B))
+        Dim MB As Long = CLng(Fix(size / K))
+        Dim GB As Long = CLng(Fix(size / M))
         If KB = 0 Then
             Return size & " B"
         ElseIf KB > 0 And MB = 0 Then
@@ -875,7 +874,7 @@ Public Module GlobalFunctions
         ElseIf GB > 0 Then
             Return GB & " GB"
         Else
-            Return size
+            Return CStr(size)
         End If
     End Function
 

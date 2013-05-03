@@ -102,7 +102,7 @@ Public Module GlobalFunctions
 
     Function GetThreadsCount() As Integer
         Dim cnx As New SqlConnection(SQLConnectionString)
-        Dim queryString As String = "Select Count(*) as [Total Records] from board where (type=0)"
+        Dim queryString As String = "Select Count(ID) as [Total Records] from board where (type=0)"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         Dim i As Integer = 0
@@ -654,15 +654,20 @@ Public Module GlobalFunctions
     Sub BanPosterByPost(ByVal postID As Integer)
         Dim po As WPost = FetchPostData(postID)
         If IsIPBanned(po.ip) = False Then
-            Dim newText As String = po.comment & vbNewLine & "<br/><strong style='color: red;'>USER WAS BANNED FOR THIS POST</strong>"
+            Dim newText As String = po.comment & "<br><strong style=''color: red;''>USER WAS BANNED FOR THIS POST</strong>"
             BanPoster(po.ip, postID)
-            UpdatePostText(postID, newText)
+            UpdatePostText(postID, newText, True)
         End If
     End Sub
 
-    Private Sub UpdatePostText(ByVal postID As Integer, ByVal newText As String)
+    Private Sub UpdatePostText(ByVal postID As Integer, ByVal newText As String, ByVal allowHTML As Boolean)
         Dim cnx As New SqlConnection(SQLConnectionString)
-        Dim queryString As String = "UPDATE board SET comment = '\" & newText.Replace("'", "") & "' WHERE(ID = " & postID & ")"
+        Dim queryString As String = ""
+        If allowHTML Then
+            queryString = "UPDATE board SET comment = '" & newText & "' WHERE(ID = " & postID & ")"
+        Else
+            queryString = "UPDATE board SET comment = '" & ProcessInputs(newText) & "' WHERE(ID = " & postID & ")"
+        End If
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         queryObject.ExecuteNonQuery()
@@ -709,7 +714,7 @@ Public Module GlobalFunctions
 
     Private Function GetRepliesCount(ByVal threadID As Integer) As Integer
         Dim cnx As New SqlConnection(SQLConnectionString)
-        Dim queryString As String = "Select Count(*) as [Total Records] from board where (parentT=" & threadID & ")"
+        Dim queryString As String = "Select Count(ID) as [Total Records] from board where (parentT=" & threadID & ")"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         Dim i As Integer = 0

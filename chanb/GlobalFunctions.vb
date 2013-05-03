@@ -227,12 +227,12 @@ Public Module GlobalFunctions
     ''' Save single file
     ''' </summary>
     ''' <param name="f"></param>
-    ''' <param name="checksize"></param>
     ''' <param name="reply"></param>
     ''' <returns></returns>
     ''' <remarks></remarks>
     Private Function saveFile(ByVal f As HttpPostedFile, ByVal reply As Boolean) As String
         'Check if the file is a valid image
+
         Try
             Dim i As Drawing.Image = Drawing.Image.FromStream(f.InputStream)
             i.Dispose()
@@ -246,21 +246,89 @@ Public Module GlobalFunctions
             End If
         End Try
 
-        'Actuall saving code start here
-        Dim dd As String = CStr(Date.UtcNow.ToFileTime)
-        Dim p As String = STORAGEFOLDER & "\" & dd & "." & f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1)
-        Dim thumb As String = STORAGEFOLDER & "\th" & dd & ".png"
         Dim w As Drawing.Image = Drawing.Image.FromStream(f.InputStream)
-        If w.Width < 250 Then
+
+        Dim dd As String = CStr(Date.UtcNow.ToFileTime)
+        'Full image path
+        Dim p As String = STORAGEFOLDER & "\" & dd & "." & f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1)
+        'Thumb path
+        Dim thumb As String = STORAGEFOLDER & "\th" & dd & ".png"
+
+        'Check if resize is needed.
+        If (w.Width * w.Height) < 62500 Then
             w.Save(thumb)
         Else
             ResizeImage(w, 250).Save(thumb)
         End If
         f.SaveAs(p)
-        'chanb name : size in bytes : dimensions : realname : md5
-        Dim sp As String = dd & "." & f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1) & ":" & f.ContentLength & ":" & w.Size.Width & "x" & w.Size.Height & ":" & f.FileName & ":" & MD5(f.InputStream)
-        w.Dispose()
+
+        'Calculate the file hash. I save the file then calulate the hash because f.InputStream always return a null stream. 
+        Dim fs As New IO.FileStream(p, IO.FileMode.Open)
+        Dim md5string As String = MD5(fs)
+        fs.Close()
+
+        Dim sp As String = ""
+
+        If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
+            'If image already exist, we fetch the matching image data from the database, and delete the saved files.
+            If SmartLinkDuplicateImages = False Then
+                Throw New ArgumentException("Duplicate image detected.")
+            Else
+                Dim wpi As WPostImage = GetImageDataByMD5(md5string)
+                FileIO.FileSystem.DeleteFile(p)
+                FileIO.FileSystem.DeleteFile(thumb)
+                sp = wpi.chanbName & ":" & CStr(wpi.size) & ":" & wpi.dimensions & ":" & wpi.realname & ":" & wpi.md5
+            End If
+        Else
+            'chanb name : size in bytes : dimensions : realname : md5
+            sp = dd & "." & f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1) & ":" & f.ContentLength & ":" & w.Size.Width & "x" & w.Size.Height & ":" & f.FileName & ":" & md5string
+            w.Dispose()
+        End If
         Return sp
+    End Function
+
+    Private Function GetImageDataByMD5(ByVal md5 As String) As WPostImage
+        Dim wpi As New WPostImage
+        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim queryString As String = "SELECT TOP 1 imagename FROM board WHERE (imagename LIKE '%" & md5 & "%')"
+        Dim queryObject As New SqlCommand(queryString, cnx)
+        cnx.Open()
+        Dim imageNameStr As String = ""
+        Dim reader As SqlDataReader = queryObject.ExecuteReader
+        While reader.Read
+            imageNameStr = CStr(ConvertNoNull(reader(0)))
+        End While
+        If imageNameStr = "" Then
+            Throw New ArgumentException("No image exist with the specified MD5.")
+        Else
+            Dim array As String() = imageNameStr.Split(CChar(";"))
+            Dim selectedX As String = ""
+            For Each x In array
+                Dim p As WPostImage = GetWPOSTIMAGE(x)
+                If p.md5 = md5 Then
+                    wpi = p
+                End If
+            Next
+        End If
+        Return wpi
+    End Function
+
+    Private Function ImageExist(ByVal md5 As String) As Boolean
+        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim queryString As String = "SELECT TOP 1 ID FROM board WHERE (imagename LIKE '%" & md5 & "%')"
+        Dim queryObject As New SqlCommand(queryString, cnx)
+        cnx.Open()
+        Dim reader As SqlDataReader = queryObject.ExecuteReader
+        Dim b As Boolean = False
+        While reader.Read
+            If TypeOf reader(0) Is DBNull Then
+                b = False
+            Else
+                b = True
+            End If
+        End While
+        cnx.Close()
+        Return b
     End Function
 
     Private Function GetWPOSTIMAGE(ByVal sp As String) As WPostImage
@@ -303,18 +371,45 @@ Public Module GlobalFunctions
                     Return ""
                     Exit Function
                 Else
+
+                    Dim w As Drawing.Image = Drawing.Image.FromStream(f.InputStream)
+
+                    'Full image path
                     Dim p As String = STORAGEFOLDER & "\" & dd & "." & f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1)
+                    'Thumb path
                     Dim thumb As String = STORAGEFOLDER & "\th" & dd & ".png"
-                    Dim i As Drawing.Image = Drawing.Image.FromStream(f.InputStream)
-                    If i.Width < 250 Then
-                        i.Save(thumb)
+
+                    'Check if resize is needed.
+                    If (w.Width * w.Height) < 62500 Then
+                        w.Save(thumb)
                     Else
-                        ResizeImage(i, 250).Save(thumb)
+                        ResizeImage(w, 250).Save(thumb)
                     End If
                     f.SaveAs(p)
-                    'chanb name : size in bytes : dimensions : realname : md5
-                    Dim sp As String = dd & "." & f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1) & ":" & f.ContentLength & ":" & i.Size.Width & "x" & i.Size.Height & ":" & f.FileName & ":" & MD5(f.InputStream)
-                    i.Dispose()
+
+                    'Calculate the file hash. I save the file then calulate the hash because f.InputStream always return a null stream. 
+                    Dim fs As New IO.FileStream(p, IO.FileMode.Open)
+                    Dim md5string As String = MD5(fs)
+                    fs.Close()
+
+                    Dim sp As String = ""
+
+                    If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
+                        'If image already exist, we fetch the matching image data from the database, and delete the saved files.
+                        If SmartLinkDuplicateImages = False Then
+                            Throw New ArgumentException("Duplicate image detected.")
+                        Else
+                            Dim wpi As WPostImage = GetImageDataByMD5(md5string)
+                            FileIO.FileSystem.DeleteFile(p)
+                            FileIO.FileSystem.DeleteFile(thumb)
+                            sp = wpi.chanbName & ":" & CStr(wpi.size) & ":" & wpi.dimensions & ":" & wpi.realname & ":" & wpi.md5
+                        End If
+                    Else
+                        'chanb name : size in bytes : dimensions : realname : md5
+                        sp = dd & "." & f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1) & ":" & f.ContentLength & ":" & w.Size.Width & "x" & w.Size.Height & ":" & f.FileName & ":" & md5string
+                    End If
+                    w.Dispose()
+
                     list.Add(sp)
                     list.Add(";")
                 End If
@@ -506,12 +601,20 @@ Public Module GlobalFunctions
                         End If
                         sb.Append("<meta HTTP-EQUIV='REFRESH' content='2; url=default.aspx?id=" & request.Item("threadid") & "'>")
                     Case "report"
+                        Dim il As New List(Of Integer)
                         For Each x As String In request.QueryString
                             If x.StartsWith("proc") Then
-                                ReportPost(CInt(x.Replace("proc", "")), request.UserHostAddress, Date.UtcNow)
-                                sb.Append(ReportedSucess.Replace("%", x))
+                                il.Add(CInt(x.Replace("proc", "")))
                             End If
                         Next
+                        If il.Count = 0 Then
+                            sb.Append("No post was selected to report")
+                        Else
+                            For Each x In il
+                                ReportPost(x, request.UserHostAddress, Date.UtcNow)
+                                sb.Append(ReportedSucess.Replace("%", CStr(x)))
+                            Next
+                        End If
                     Case "delete"
                         Dim li As New List(Of String)
                         Dim deletPass As String = request.Item("deletePass")
@@ -545,21 +648,20 @@ Public Module GlobalFunctions
     End Function
 
     Private Function MD5(ByVal s As IO.Stream) As String
-        Dim md5s As New System.Security.Cryptography.MD5CryptoServiceProvider()
-        Dim hash() As Byte = md5s.ComputeHash(s)
-        Return ByteArrayToString(hash)
+        Dim md5s As New System.Security.Cryptography.MD5CryptoServiceProvider
+        Return ByteArrayToString(md5s.ComputeHash(s))
     End Function
 
     Private Function MD5(ByVal s As String) As String
-        Dim md5s As New System.Security.Cryptography.MD5CryptoServiceProvider()
-        Dim hash() As Byte = System.Text.Encoding.ASCII.GetBytes(s)
-        Return ByteArrayToString(hash)
+        Dim md5s As New System.Security.Cryptography.MD5CryptoServiceProvider
+        Dim bytes() As Byte = System.Text.Encoding.ASCII.GetBytes(s)
+        Return ByteArrayToString(md5s.ComputeHash(bytes))
     End Function
 
     Private Function ByteArrayToString(ByVal arrInput() As Byte) As String
-        Dim sb As New System.Text.StringBuilder(arrInput.Length * 2)
-        For i As Integer = 0 To arrInput.Length - 1
-            sb.Append(arrInput(i).ToString("X2"))
+        Dim sb As New StringBuilder
+        For Each x As Byte In arrInput
+            sb.Append(x.ToString("X"))
         Next
         Return sb.ToString().ToLower
     End Function

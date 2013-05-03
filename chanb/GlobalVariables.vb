@@ -9,6 +9,8 @@
     Public MaximumFileSize As Long = 15 * 1024 * 1024 ' 15 MB
     Public DeleteFiles As Boolean = True
     Public ThreadPerPage As Integer = 10
+    Public AllowDuplicatesFiles As Boolean = False
+    Public SmartLinkDuplicateImages As Boolean = True
 
     'Server related
     Public STORAGEFOLDER As String = "PHYSICAL PATH TO\dtin" ' Make sure that the directory is write-able first

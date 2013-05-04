@@ -11,12 +11,12 @@
     Public ThreadPerPage As Integer = 10
     Public AllowDuplicatesFiles As Boolean = False
     Public SmartLinkDuplicateImages As Boolean = True
+    Public TrailPosts As Integer = 3
+    Public EnableUserID As Boolean = True
 
     'Server related
     Public STORAGEFOLDER As String = "PHYSICAL PATH TO\dtin" ' Make sure that the directory is write-able first
     Public StoragefolderWEB As String = "http://HOSTNAME/dtin/" ' The storage folder must be accessible from the web
-
-    Public replyButtonHTML As String = "&nbsp;<span>[<a href='%POST LINK%' class='replylink'>Reply</a>]</span>"
 
     'Physical path , not relative, to template files.
     Public ReadOnly postTemplate As String = IO.File.ReadAllText("PHYSICAL PATH TO\postTemplate.txt")
@@ -24,5 +24,7 @@
     Public ReadOnly opPostTemplate As String = IO.File.ReadAllText("PHYSICAL PATH TO\opPostTemplate.txt")
     Public ReadOnly threadTemplate As String = IO.File.ReadAllText("PHYSICAL PATH TO\threadTemplate.txt")
     Public ReadOnly rotatorTemplate As String = IO.File.ReadAllText("PHYSICAL PATH TO\RotatorTemplate.txt")
+    Public ReadOnly idHtml As String = "<span class='posteruid id_%UID%'>(ID: <span class='hand' title='Highlight posts by this ID'>%UID%</span>)</span>"
+    Public replyButtonHTML As String = "&nbsp;<span>[<a href='%POST LINK%' class='replylink'>Reply</a>]</span>"
 
 End Module

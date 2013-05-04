@@ -13,12 +13,14 @@ Public Module GlobalFunctions
         End If
     End Function
 
-    Function GetSessionPassword(ByVal seesion As Web.SessionState.HttpSessionState) As String
-        If CStr(seesion("pass")) = "" Then
-            seesion("pass") = New String(CType(seesion.SessionID, Char()), 0, 15)
-            Return CStr(seesion("pass"))
+    Function GetSessionPassword(ByVal cookies As Web.HttpCookieCollection, ByVal session As Web.SessionState.HttpSessionState) As String
+        If cookies("pass") Is Nothing Then
+            Dim c As New HttpCookie("pass", New String(CType(session.SessionID, Char()), 0, 15))
+            c.Expires = (Now + New TimeSpan(0, 60, 0))
+            cookies.Add(c)
+            Return cookies("pass").Value
         Else
-            Return CStr(seesion("pass"))
+            Return cookies("pass").Value
         End If
     End Function
 
@@ -93,7 +95,7 @@ Public Module GlobalFunctions
 
     Sub MakeThread(ByVal data As OPData)
         Dim cnx As New SqlConnection(SQLConnectionString)
-        Dim queryString As String = "INSERT INTO board (type, time, comment, postername, email, password, subject, imagename, IP, bumplevel, ua) VALUES ('0', " & ConvertTimeToSQLTIME(data.time) & ", '" & data.Comment & "', '" & data.name & "', '" & data.email & "', '" & data.password & "', '" & data.subject & "', '" & data.imageName & "','" & data.IP & "', " & ConvertTimeToSQLTIME(data.time) & ", '" & data.UserAgent & "' ) "
+        Dim queryString As String = "INSERT INTO board (type, time, comment, postername, email, password, subject, imagename, IP, bumplevel, ua) VALUES ('0', " & ConvertTimeToSQLTIME(data.time) & ", N'" & data.Comment & "', '" & data.name & "', '" & data.email & "', '" & data.password & "', '" & data.subject & "', '" & data.imageName & "','" & data.IP & "', " & ConvertTimeToSQLTIME(data.time) & ", '" & data.UserAgent & "' ) "
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         queryObject.ExecuteNonQuery()
@@ -151,7 +153,7 @@ Public Module GlobalFunctions
     ''' <remarks></remarks>
     Private Sub ReplyTo(ByVal id As Integer, ByVal data As OPData)
         Dim cnx As New SqlConnection(SQLConnectionString)
-        Dim queryString As String = "INSERT INTO board (type, [time], comment, postername, email, [password], parentT, subject, imagename, IP, ua) VALUES      ('1', " & ConvertTimeToSQLTIME(data.time) & ", '" & data.Comment & "', '" & data.name & "', '" & data.email & "', '" & data.password & "', '" & id & "', '" & data.subject & "', '" & data.imageName & "' , '" & data.IP & "' , '" & data.UserAgent & "' )"
+        Dim queryString As String = "INSERT INTO board (type, [time], comment, postername, email, [password], parentT, subject, imagename, IP, ua) VALUES      ('1', " & ConvertTimeToSQLTIME(data.time) & ", N'" & data.Comment & "', '" & data.name & "', '" & data.email & "', '" & data.password & "', '" & id & "', '" & data.subject & "', '" & data.imageName & "' , '" & data.IP & "' , '" & data.UserAgent & "' )"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         queryObject.ExecuteNonQuery()
@@ -183,18 +185,31 @@ Public Module GlobalFunctions
         Return ila.ToArray
     End Function
 
-    Function GetThreads(ByVal startIndex As Integer, ByVal count As Integer) As Integer()
+    Function GetThreads(ByVal startIndex As Integer, ByVal count As Integer, ByVal ignoreStickies As Boolean) As Integer()
         Dim ila As New List(Of Integer)
         Dim cnx As New SqlConnection(SQLConnectionString)
-        Dim queryString As String = "SELECT ID FROM board  WHERE (type = 0) ORDER BY bumplevel DESC"
-        Dim queryObject As New sqlCommand(queryString, cnx)
         cnx.Open()
+        If Not ignoreStickies Then
+            Dim queryString1 As String = "SELECT ID FROM board  WHERE (type = 0) AND (sticky = 1) ORDER BY ID"
+            Dim queryObject1 As New SqlCommand(queryString1, cnx)
+            Dim reader1 As SqlDataReader = queryObject1.ExecuteReader
+            While reader1.Read
+                Try
+                    ila.Add(CInt(ConvertNoNull(reader1(0))))
+                Catch ex As Exception
+                End Try
+            End While
+            reader1.Close()
+        End If
+        Dim queryString As String = "SELECT ID FROM board  WHERE (type = 0) ORDER BY bumplevel DESC"
+        Dim queryObject As New SqlCommand(queryString, cnx)
         Dim reader As SqlDataReader = queryObject.ExecuteReader
         While reader.Read
             ila.Add(CInt(reader.Item(0)))
         End While
         reader.Close()
         cnx.Close()
+
         'MS SQL does not seem to support the MySQL Limit startIndex, count function
         Dim il As New List(Of Integer)
         For i As Integer = startIndex To count Step 1
@@ -554,16 +569,18 @@ Public Module GlobalFunctions
                                 Dim s As String = saveFile(request.Files("ufile"), False)
                                 Dim er As New OPData
                                 er.Comment = ProcessInputs(request.Item("comment"))
+                                If er.Comment.Length > 4000 Then
+                                    er.Comment = er.Comment.Remove(3999)
+                                End If
                                 er.email = ProcessInputs(request.Item("email"))
                                 If request.Item("postername") = "" Then er.name = AnonName Else er.name = ProcessInputs(request.Item("postername"))
                                 er.subject = ProcessInputs(request.Item("subject"))
-
                                 er.time = Date.UtcNow
                                 er.imageName = s
                                 er.password = ProcessInputs(request.Item("password"))
                                 er.IP = request.UserHostAddress
                                 er.UserAgent = request.UserAgent.Replace("<", "").Replace(">", "") ' I replace < and > to prevent spoffing a user agent that contain <script> tags.
-                                Session.Item("pass") = request.Item("password")
+                                If request.Cookies("pass") IsNot Nothing Then request.Cookies("pass").Value = request.Item("password") Else request.Cookies.Add(New HttpCookie("pass", request.Item("password")))
                                 MakeThread(er)
                                 sb.Append(SuccessfulPostString)
                                 sb.Append("<meta HTTP-EQUIV='REFRESH' content='2; url=default.aspx'>")
@@ -587,6 +604,9 @@ Public Module GlobalFunctions
                             sb.Append("Blank post are not allowed")
                         Else
                             er.Comment = ProcessInputs(request.Item("comment"))
+                            If er.Comment.Length > 4000 Then
+                                er.Comment = er.Comment.Remove(3999)
+                            End If
                             er.email = ProcessInputs(request.Item("email"))
                             If request.Item("postername") = "" Then er.name = AnonName Else er.name = ProcessInputs(request.Item("postername"))
                             er.subject = ProcessInputs(request.Item("subject"))
@@ -595,7 +615,7 @@ Public Module GlobalFunctions
                             er.password = ProcessInputs(request.Item("password"))
                             er.IP = request.UserHostAddress
                             er.UserAgent = request.UserAgent.Replace("<", "").Replace(">", "") ' I replace < and > to prevent spoffing a user agent that contain <script> tags.
-                            Session.Item("pass") = ProcessInputs(request.Item("password"))
+                            If request.Cookies("pass") IsNot Nothing Then request.Cookies("pass").Value = request.Item("password") Else request.Cookies.Add(New HttpCookie("pass", request.Item("password")))
                             ReplyTo(CInt(request.Item("threadid")), er)
                             sb.Append(SuccessfulPostString)
                         End If
@@ -720,6 +740,18 @@ Public Module GlobalFunctions
         Else
             postHTML = postHTML.Replace("%REPLY BUTTON%", "")
         End If
+        If EnableUserID Then
+            Dim idHt As String = idHtml
+            idHt = idHt.Replace("%UID%", GenerateUID(po))
+            postHTML = postHTML.Replace("%UID%", idHt)
+        Else
+            postHTML = postHTML.Replace("%UID%", "")
+        End If
+        If po.email = "" Then
+            postHTML = postHTML.Replace("%NAMESPAN%", "<span class='name'>%NAME%</span>")
+        Else
+            postHTML = postHTML.Replace("%NAMESPAN%", "<a href='mailto:%EMAIL%' class='useremail'><span class='name'>%NAME%</span></a>")
+        End If
         postHTML = postHTML.Replace("%ID%", CStr(po.PostID))
         postHTML = postHTML.Replace("%IMAGE LINK%", GetImageWEBPATH(imageData.chanbName))
         postHTML = postHTML.Replace("%CHANB FILE NAME%", imageData.chanbName)
@@ -728,6 +760,7 @@ Public Module GlobalFunctions
         postHTML = postHTML.Replace("%IMAGE DIMENSIONS%", imageData.dimensions)
         postHTML = postHTML.Replace("%THUMB LINK%", GetImageWEBPATHRE(imageData.chanbName))
         postHTML = postHTML.Replace("%MD5%", imageData.md5)
+        postHTML = postHTML.Replace("%EMAIL%", po.email)
         postHTML = postHTML.Replace("%SUBJECT%", po.subject)
         postHTML = postHTML.Replace("%NAME%", po.name)
         postHTML = postHTML.Replace("%DATE UTC UNIX%", CStr(po.time.ToFileTime))
@@ -737,6 +770,16 @@ Public Module GlobalFunctions
         postHTML = postHTML.Replace("%REPLY COUNT%", CStr(GetRepliesCount(id)))
         If isMod Then postHTML = postHTML.Replace("%MODPANEL%", "<a href='modaction.aspx?action=banpost&postid=" & po.PostID & "'>Ban</a><a href='modaction.aspx?action=delpost&id=" & po.PostID & "'>Delete</a>") Else postHTML = postHTML.Replace("%MODPANEL%", "")
         Return postHTML
+    End Function
+
+    Private Function GenerateUID(ByVal po As WPost) As String
+        If po.type = "0" Then
+            Dim idstr As String = po.PostID & po.ip
+            Return New String(CType(MD5(idstr), Char()), 0, 8)
+        Else
+            Dim idstr As String = po.parent & po.ip
+            Return New String(CType(MD5(idstr), Char()), 0, 8)
+        End If
     End Function
 
     Private Function GetLastXPosts(ByVal threadID As Integer, ByVal x As Integer) As Integer()
@@ -765,10 +808,13 @@ Public Module GlobalFunctions
     Private Sub UpdatePostText(ByVal postID As Integer, ByVal newText As String, ByVal allowHTML As Boolean)
         Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = ""
+        If newText.Length > 4000 Then
+            newText = newText.Remove(3999)
+        End If
         If allowHTML Then
-            queryString = "UPDATE board SET comment = '" & newText & "' WHERE(ID = " & postID & ")"
+            queryString = "UPDATE board SET comment = N'" & newText & "' WHERE(ID = " & postID & ")"
         Else
-            queryString = "UPDATE board SET comment = '" & ProcessInputs(newText) & "' WHERE(ID = " & postID & ")"
+            queryString = "UPDATE board SET comment = N'" & ProcessInputs(newText) & "' WHERE(ID = " & postID & ")"
         End If
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
@@ -845,6 +891,13 @@ Public Module GlobalFunctions
             postHTML = postHTML.Replace("%NAMESPAN%", "<span class='name'>%NAME%</span>")
         Else
             postHTML = postHTML.Replace("%NAMESPAN%", "<a href='mailto:%EMAIL%' class='useremail'><span class='name'>%NAME%</span></a>")
+        End If
+        If EnableUserID Then
+            Dim idHt As String = idHtml
+            idHt = idHt.Replace("%UID%", GenerateUID(po))
+            postHTML = postHTML.Replace("%UID%", idHt)
+        Else
+            postHTML = postHTML.Replace("%UID%", "")
         End If
         postHTML = postHTML.Replace("%EMAIL%", po.email)
         postHTML = postHTML.Replace("%ID%", CStr(po.PostID))

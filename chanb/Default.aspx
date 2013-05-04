@@ -4,7 +4,10 @@
 <%@ Import Namespace = "chanb.Language" %>
 
 
-<%  Session("SS") = "yotsubab"%>
+<%  
+   
+    
+    Session("SS") = "yotsubab"%>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -25,7 +28,7 @@
    </div>
     
 <div class="postdiv" align="center">
-<form name="form" enctype="multipart/form-data" action="post.aspx" method="post" title="New thread">
+<form id="delform" name="delform" enctype="multipart/form-data" action="post.aspx" method="post" title="New thread">
 <input type="hidden" name="mode" value="<% If not request.item("id") = "" then Response.write("reply") else Response.write("thread") %>" />
 <input type="hidden" name="threadid" value="<% Response.Write(Request.Item("id")) %>" />
  <table>
@@ -56,7 +59,7 @@
 </td>   
 </tr><tr>
 <th><% Response.Write(PASSWORDString)%></th>
-<td><input name="password" size="12" autocomplete="off" type="text" value="<% Response.Write(GetSessionPassword(Session)) %>">
+<td><input name="password" size="12" autocomplete="off" type="text" value="<% Response.Write(GetSessionPassword(Request.Cookies, Session)) %>">
 <span>(For post deletion.)</span>
 </td>
 </tr>
@@ -106,13 +109,13 @@
          'Display a list of current threads
          Dim startIndex As Integer = 0
          If Not (Request.Item("startindex") = "") Then startIndex = CInt(Request.Item("startindex")) * (ThreadPerPage)       
-         For Each x In GetThreads(startIndex, ThreadPerPage - 1 + startIndex)
-             Response.Write(GetThreadHTML(x, CBool(Session("mod")), 3))
+         For Each x In GetThreads(startIndex, ThreadPerPage - 1 + startIndex, False)
+             Response.Write(GetThreadHTML(x, CBool(Session("mod")), TrailPosts))
          Next
          
      End If
      
-   
+     
 %>
 </div>
 
@@ -120,7 +123,7 @@
 
 <div style="float: right;">
 <div class="deleteform desktop">
-<input type="text" name="deletePass" value="<% Response.Write(GetSessionPassword(Session)) %>" />
+<input type="text" name="deletePass" value="<% Response.Write(GetSessionPassword(Request.Cookies, Session)) %>" />
 <input type="submit" name="mode" value="delete" />
 <input type="submit" name="mode" value="report" /></div>
 </div>

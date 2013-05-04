@@ -14,8 +14,9 @@
 <input name="proc%ID%" value="delete" type="checkbox">
 <span class="subject">%SUBJECT%</span>
 <span class="nameBlock">
-<span class="name">%NAME%</span>
+%NAMESPAN%
 </span>
+%UID%
 <span class="dateTime" data-utc="%DATE UTC UNIX%">%DATE UTC TEXT%</span>
 <span class="postNum">
 <a href="%POST LINK%" title="Highlight this post">No.</a>

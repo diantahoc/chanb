@@ -14,12 +14,13 @@ Features
 ========
 
 * Multiple files per post 
+* Poster ID support
 * PDF Support (not yet)
 * 4chan-like interface
 * Catalog (not yet)
 * Multilanguage support (not complete)
 
-Yet there will be more of course.
+There will be more of course.
 
 How to install
 ==============

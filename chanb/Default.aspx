@@ -2,36 +2,26 @@
 <%@ Import Namespace = "chanb.GlobalVariables" %>
 <%@ Import Namespace = "chanb.GlobalFunctions" %>
 <%@ Import Namespace = "chanb.Language" %>
-
-
-<%  
-   
-    
-    Session("SS") = "yotsubab"%>
-
+<%  Session("SS") = "yotsubab"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 <html xmlns="http://www.w3.org/1999/xhtml" >
-
 <head>
-    <title><% Response.Write(BoardTitle)%></title>
-    <link rel="Stylesheet" href=<% Response.Write("'" & GetUserSelectedStyle(Session) & ".css'")%> />
-    <script src="scripts.js" type="text/javascript" language="javascript"></script>
-    <script type="text/javascript" src="jquery-1.4.2.min.js"></script>
-    </head> 
+<title><% Response.Write(BoardTitle)%></title>
+<link rel="Stylesheet" href=<% Response.Write("'" & GetUserSelectedStyle(Session) & ".css'")%> />
+<script src="scripts.js" type="text/javascript" language="javascript"></script>
+<script type="text/javascript" src="jquery-1.4.2.min.js"></script>
+</head> 
 <body>
- 
-   <div class="boardBanner"> 
-   <div class="boardTitle"><% Response.Write(BoardTitle)%></div>
-   <div class="boardSubtitle"><% Response.Write(BoardDesc)%></div>
+<div class="boardBanner"> 
+<div class="boardTitle"><% Response.Write(BoardTitle)%></div>
+<div class="boardSubtitle"><% Response.Write(BoardDesc)%></div>
  <% If Not Request.Item("id") = "" Then Response.Write("<div class='postingMode desktop'><span>Posting mode: Reply</span><a href='/'>[Return]</a></div><br/>")%>
-   </div>
-    
+</div>
 <div class="postdiv" align="center">
 <form id="delform" name="delform" enctype="multipart/form-data" action="post.aspx" method="post" title="New thread">
 <input type="hidden" name="mode" value="<% If not request.item("id") = "" then Response.write("reply") else Response.write("thread") %>" />
 <input type="hidden" name="threadid" value="<% Response.Write(Request.Item("id")) %>" />
- <table>
+<table>
 <tbody>
 <tr>
 <th><% Response.Write(NAMEString)%></th>
@@ -49,7 +39,6 @@
 <th><% Response.Write(COMMENTString)%></th>
 <td><textarea name="comment" id="commentfield" rows="5" cols="35"></textarea></td>
 </tr><tr>
-
 <th>File(s)</th>
 <td>
     <div id="files" >
@@ -66,10 +55,18 @@
 </tbody>
 </table>
 </form>
-<span>Maximum file size is <% Response.Write((MaximumFileSize / 1024 / 1024) & " MB")%></span>   
-</div> 
- 
-<form name="deletation" action="post.aspx" enctype="application/x-www-form-urlencoded" method="get">
+<ul class="rules" >
+<li><span>Maximum file size is <% Response.Write((MaximumFileSize / 1024 / 1024) & " MB")%>.</span></li>
+<li><span>Supported file types are : JPG, JPEG, BMP, PNG, SVG, and PDF.</span></li>
+<li><span>Blank posts are not allowed.</span></li>
+<li><span>Spoilers are suported under the [spolier][/spolier] tags.</span></li>
+<li><span>You may highlight your code by using the [code][/code] tags. The [lang][/lang] tags are required in order to properly highlight your code. See a <a href="faq.aspx#codetags">list</a> of supported languages.</span></li>
+<li><span>This website is for demonstrating a live preview of ChanB imageboard. Expect your post to be deleted at any time.</span></li>
+
+</ul>
+</div>
+<hr />
+ <form name="deletation" action="post.aspx" enctype="application/x-www-form-urlencoded" method="get">
 <div class="board">
  <%    
      
@@ -118,9 +115,6 @@
      
 %>
 </div>
-
-
-
 <div style="float: right;">
 <div class="deleteform desktop">
 <input type="text" name="deletePass" value="<% Response.Write(GetSessionPassword(Request.Cookies, Session)) %>" />
@@ -128,37 +122,27 @@
 <input type="submit" name="mode" value="report" /></div>
 </div>
 </form>
-
-
 <div class="pagelist desktop">
 <%
-
-    Dim threadCount As Integer = GetThreadsCount()
-    
-    Dim pagesCount As Double = threadCount / ThreadPerPage
-    
+    Dim threadCount As Integer = GetThreadsCount()   
+    Dim pagesCount As Double = threadCount / ThreadPerPage  
     If pagesCount > (Fix(pagesCount)) Then
         pagesCount = Fix(pagesCount) + 1
-    End If
-    
+    End If  
     Dim startIndexA As Integer
     Try
         startIndexA = CInt(Request.Item("startindex"))
     Catch ex As Exception
         startIndexA = 0
-    End Try
-   
+    End Try 
     If startIndexA = 0 Then
         Response.Write("<div class='prev'><span>Previous</span></div>")
     Else
         Response.Write("<div class='prev'><form action='default.aspx'><input name='startindex' type='hidden' value='" & startIndexA - 1 & "' /><input value='Previous' type='submit'/></form></div>")
-    End If
-    
+    End If   
     Response.Write("<div class='pages'>")
-    
     '[<strong><a href="">0</a></strong>]
     '[<a href="1">1</a>]
-
     For i As Integer = 0 To (pagesCount - 1) Step 1
         If i = startIndexA Then
             Response.Write("[<strong><a href='?startindex=" & i & "'>" & i + 1 & "</a></strong>]")
@@ -166,10 +150,8 @@
             Response.Write("[<a href='?startindex=" & i & "'>" & i + 1 & "</a>]")
         End If
    
-    Next
-   
-    Response.Write("</div>")
-    
+    Next 
+    Response.Write("</div>")   
     If startIndexA = pagesCount - 1 Then ' last page
         Response.Write("<div class='next'><span>Next</span></div>")
     Else

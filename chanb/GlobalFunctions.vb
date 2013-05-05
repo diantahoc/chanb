@@ -56,7 +56,6 @@ Public Module GlobalFunctions
         lowcaseX = lowcaseX.Replace("+", "&#43;")
         lowcaseX = lowcaseX.Replace(",", "&#44;")
         lowcaseX = lowcaseX.Replace("/", "&#47;")
-        lowcaseX = lowcaseX.Replace("%", "&#37;")
         lowcaseX = lowcaseX.Replace(":", "&#58;")
         lowcaseX = lowcaseX.Replace("=", "&#61;")
         lowcaseX = lowcaseX.Replace("@", "&#64;")
@@ -746,6 +745,7 @@ Public Module GlobalFunctions
 
         Dim sr As String = sb.ToString
         sr = MatchBBCode("spoiler", sr)
+        sr = MatchBBCode("code", sr)
         Return sr
     End Function
 
@@ -769,8 +769,132 @@ Public Module GlobalFunctions
                 mdata = mdata.Replace("[", "&#91;")
                 mdata = mdata.Replace("]", "&#93;")
                 Return mdata
+            Case "code"
+                Dim regSTR As String = "\[/?code\]"
+                Dim mdata As String = data.Replace("&#91;", "[").Replace("&#93;", "]").Replace("&#47;", "/") ' replace [ ] / html equivalent with the real character to make sure the regex will catch them
+                Dim st As String() = Regex.Split(mdata, regSTR)
+                Dim ismath As Boolean = False
+                For i As Integer = 0 To st.Length - 1 Step 1
+                    If Not ismath Then
+                        'Not a match 
+                    Else
+                        Dim codeStr As String = st.ElementAt(i)
+                        codeStr = codeStr.Replace("<br>", vbNewLine)
+
+                        Dim codeLang As String = GetCodeLang(codeStr)
+                        codeStr = codeStr.Replace("[lang]", "")
+                        codeStr = codeStr.Replace("[/lang]", "")
+                        If Not (codeLang = "") Then codeStr = codeStr.Replace(codeLang, "")
+                        codeStr = RemoveHTMLEscapes(codeStr)
+
+                        Dim colorizer As New ColorCode.CodeColorizer()
+
+                        mdata = mdata.Replace(st.ElementAt(i), colorizer.Colorize(codeStr, GetCCLI(codeLang)))
+                    End If
+                    ismath = Not ismath
+                Next
+                mdata = mdata.Replace("[code]", "")
+                mdata = mdata.Replace("[/code]", "")
+                Return mdata
             Case Else
                 Return data
+        End Select
+    End Function
+
+    Private Function RemoveHTMLEscapes(ByVal c As String) As String
+        Dim lowcaseX As String = c
+        lowcaseX = lowcaseX.Replace("&amp;", "&")
+        lowcaseX = lowcaseX.Replace("&lt;", "<")
+        lowcaseX = lowcaseX.Replace("&gt;", ">")
+        lowcaseX = lowcaseX.Replace("&ndash;", "-")
+        lowcaseX = lowcaseX.Replace("&mdash;", "—")
+        lowcaseX = lowcaseX.Replace("&#37;", "%")
+        lowcaseX = lowcaseX.Replace("&#36;", "$")
+        lowcaseX = lowcaseX.Replace("&#39;", "'")
+        lowcaseX = lowcaseX.Replace("&#40;", "(")
+        lowcaseX = lowcaseX.Replace("&#41;", ")")
+        lowcaseX = lowcaseX.Replace("&#42;", "*")
+        lowcaseX = lowcaseX.Replace("&#43;", "+")
+        lowcaseX = lowcaseX.Replace("&#44;", ",")
+        lowcaseX = lowcaseX.Replace("&#47;", "/")
+        lowcaseX = lowcaseX.Replace("&#58;", ":")
+        lowcaseX = lowcaseX.Replace("&#61;", "=")
+        lowcaseX = lowcaseX.Replace("&#64;", "@")
+        lowcaseX = lowcaseX.Replace("&#91;", "[")
+        lowcaseX = lowcaseX.Replace("&#93;", "]")
+        lowcaseX = lowcaseX.Replace("&#92;", "\")
+        lowcaseX = lowcaseX.Replace("&#94;", "^")
+        lowcaseX = lowcaseX.Replace("&#96;", "`")
+        lowcaseX = lowcaseX.Replace("&#95;", "_")
+        lowcaseX = lowcaseX.Replace("&#123;", "{")
+        lowcaseX = lowcaseX.Replace("&#124;", "|")
+        lowcaseX = lowcaseX.Replace("&#125;", "}")
+        lowcaseX = lowcaseX.Replace("&#126;", "~")
+        lowcaseX = lowcaseX.Replace("&quot;", My.Resources.doublequotes)
+        Return lowcaseX
+    End Function
+
+    Private Function GetCodeLang(ByVal x As String) As String
+        Dim st As String() = Regex.Split(x, "\[/?lang\]")
+        Dim ismath As Boolean = False
+        Dim codel As String = ""
+        For i As Integer = 0 To st.Length - 1 Step 1
+            If Not ismath Then
+                'Not a match 
+            Else
+                codel = st.ElementAt(i)
+            End If
+            ismath = Not ismath
+        Next
+        Return codel
+    End Function
+
+    Private Function GetCCLI(ByVal lang As String) As ColorCode.ILanguage
+        Select Case lang
+            Case "asax"
+                Return ColorCode.Languages.Asax
+            Case "ashx"
+                Return ColorCode.Languages.Ashx
+            Case "aspx"
+                Return ColorCode.Languages.Aspx
+            Case "aspxcs"
+                Return ColorCode.Languages.AspxCs
+            Case "aspxvb"
+                Return ColorCode.Languages.AspxVb
+            Case "cpp"
+                Return ColorCode.Languages.Cpp
+            Case "csharp"
+                Return ColorCode.Languages.CSharp
+            Case "css"
+                Return ColorCode.Languages.Css
+            Case "fsharp"
+                Return ColorCode.Languages.FSharp
+            Case "html"
+                Return ColorCode.Languages.Html
+            Case "java"
+                Return ColorCode.Languages.Java
+            Case "javascript"
+                Return ColorCode.Languages.JavaScript
+            Case "js"
+                Return ColorCode.Languages.JavaScript
+            Case "php"
+                Return ColorCode.Languages.Php
+            Case "ps"
+                Return ColorCode.Languages.PowerShell
+            Case "sql"
+                Return ColorCode.Languages.Sql
+            Case "typescript"
+                Return ColorCode.Languages.Typescript
+            Case "vbdotnet"
+                Return ColorCode.Languages.VbDotNet
+            Case "vb"
+                Return ColorCode.Languages.VbDotNet
+            Case "xml"
+                Return ColorCode.Languages.Xml
+            Case "c"
+                Return ColorCode.Languages.Cpp
+            Case Else
+                Return ColorCode.Languages.Cpp
         End Select
     End Function
 

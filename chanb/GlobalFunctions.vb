@@ -755,7 +755,6 @@ Public Module GlobalFunctions
                 Dim regSTR As String = "\[/?spoiler\]"
                 Dim mdata As String = data.Replace("&#91;", "[").Replace("&#93;", "]").Replace("&#47;", "/")
                 Dim st As String() = Regex.Split(mdata, regSTR)
-
                 Dim ismath As Boolean = False
                 For i As Integer = 0 To st.Length - 1 Step 1
                     If Not ismath Then
@@ -765,8 +764,12 @@ Public Module GlobalFunctions
                     End If
                     ismath = Not ismath
                 Next
-                Return mdata.Replace("[spoiler]", "").Replace("[/spoiler]", "")
-
+                mdata = mdata.Replace("[spoiler]", "")
+                mdata = mdata.Replace("[/spoiler]", "")
+                mdata = mdata.Replace("[", "&#91;")
+                mdata = mdata.Replace("]", "&#93;")
+                mdata = mdata.Replace("/", "&#47;")
+                Return mdata
             Case Else
                 Return data
         End Select

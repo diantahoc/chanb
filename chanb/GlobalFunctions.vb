@@ -768,7 +768,6 @@ Public Module GlobalFunctions
                 mdata = mdata.Replace("[/spoiler]", "")
                 mdata = mdata.Replace("[", "&#91;")
                 mdata = mdata.Replace("]", "&#93;")
-                mdata = mdata.Replace("/", "&#47;")
                 Return mdata
             Case Else
                 Return data

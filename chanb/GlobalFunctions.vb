@@ -352,10 +352,11 @@ Public Module GlobalFunctions
                     Return sp
                 Case "PDF"
                     Return ""
+                Case ""
+                    Return ""
                 Case Else
                     Throw New ArgumentException("Unsupported file type")
             End Select
-
         End If
     End Function
 
@@ -742,7 +743,33 @@ Public Module GlobalFunctions
                 sb.Append("<br>")
             End If
         Next
-        Return sb.ToString
+
+        Dim sr As String = sb.ToString
+        sr = MatchBBCode("spoiler", sr)
+        Return sr
+    End Function
+
+    Private Function MatchBBCode(ByVal codename As String, ByVal data As String) As String
+        Select Case codename
+            Case "spoiler"
+                Dim regSTR As String = "\[/?spoiler\]"
+                Dim mdata As String = data.Replace("&#91;", "[").Replace("&#93;", "]").Replace("&#47;", "/")
+                Dim st As String() = Regex.Split(mdata, regSTR)
+
+                Dim ismath As Boolean = False
+                For i As Integer = 0 To st.Length - 1 Step 1
+                    If Not ismath Then
+                        'Not a match 
+                    Else
+                        mdata = mdata.Replace(st.ElementAt(i), "<s>" & st.ElementAt(i) & "</s>")
+                    End If
+                    ismath = Not ismath
+                Next
+                Return mdata.Replace("[spoiler]", "").Replace("[/spoiler]", "")
+
+            Case Else
+                Return data
+        End Select
     End Function
 
     Private Function IsXvalidQuote(ByVal x As String) As Boolean

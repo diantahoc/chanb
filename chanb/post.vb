@@ -11,6 +11,7 @@
     Public type As String
     Public parent As Integer
     Public ua As String
+    Public posterID As String
     Sub New(ByVal _id As Long)
         PostID = _id
     End Sub

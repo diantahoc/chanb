@@ -13,6 +13,8 @@
     Public SmartLinkDuplicateImages As Boolean = True
     Public TrailPosts As Integer = 3
     Public EnableUserID As Boolean = True
+    Public BumpLimit As Integer = 250
+    Public ResizeMethode As Integer = 1
 
     'Server related
     Public STORAGEFOLDER As String = "PHYSICAL PATH TO\dtin" ' Make sure that the directory is write-able first

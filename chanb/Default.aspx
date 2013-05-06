@@ -62,7 +62,7 @@
 <li><span>Spoilers are suported under the [spolier][/spolier] tags.</span></li>
 <li><span>You may highlight your code by using the [code][/code] tags. The [lang][/lang] tags are required in order to properly highlight your code. See a <a href="faq.aspx#codetags">list</a> of supported languages.</span></li>
 <li><span>This website is for demonstrating a live preview of ChanB imageboard. Expect your post to be deleted at any time.</span></li>
-
+<li><span>All times are UTC.</span></li>
 </ul>
 </div>
 <hr />

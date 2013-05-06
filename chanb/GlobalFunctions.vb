@@ -45,8 +45,6 @@ Public Module GlobalFunctions
         lowcaseX = lowcaseX.Replace("&", "&amp;")
         lowcaseX = lowcaseX.Replace("<", "&lt;")
         lowcaseX = lowcaseX.Replace(">", "&gt;")
-        lowcaseX = lowcaseX.Replace("–", "&ndash;")
-        lowcaseX = lowcaseX.Replace("—", "&mdash;")
         lowcaseX = lowcaseX.Replace("%", "&#37;")
         lowcaseX = lowcaseX.Replace("$", "&#36;")
         lowcaseX = lowcaseX.Replace("'", "&#39;")
@@ -54,7 +52,6 @@ Public Module GlobalFunctions
         lowcaseX = lowcaseX.Replace(")", "&#41;")
         lowcaseX = lowcaseX.Replace("*", "&#42;")
         lowcaseX = lowcaseX.Replace("+", "&#43;")
-        lowcaseX = lowcaseX.Replace(",", "&#44;")
         lowcaseX = lowcaseX.Replace("/", "&#47;")
         lowcaseX = lowcaseX.Replace(":", "&#58;")
         lowcaseX = lowcaseX.Replace("=", "&#61;")
@@ -63,8 +60,6 @@ Public Module GlobalFunctions
         lowcaseX = lowcaseX.Replace("]", "&#93;")
         lowcaseX = lowcaseX.Replace("\", "&#92;")
         lowcaseX = lowcaseX.Replace("^", "&#94;")
-        lowcaseX = lowcaseX.Replace("`", "&#96;")
-        lowcaseX = lowcaseX.Replace("_", "&#95;")
         lowcaseX = lowcaseX.Replace("{", "&#123;")
         lowcaseX = lowcaseX.Replace("|", "&#124;")
         lowcaseX = lowcaseX.Replace("}", "&#125;")
@@ -75,7 +70,7 @@ Public Module GlobalFunctions
 
     Function FetchPostData(ByVal id As Long) As WPost
         Dim cnx As New SqlConnection(SQLConnectionString)
-        Dim queryString As String = "SELECT type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua FROM  board  WHERE (id = " & id & ")"
+        Dim queryString As String = "SELECT type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua, posterID FROM  board  WHERE (id = " & id & ")"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         Dim reader As SqlDataReader = queryObject.ExecuteReader
@@ -92,6 +87,7 @@ Public Module GlobalFunctions
             po._imageP = CStr(ConvertNoNull(reader(8)))
             po.ip = CStr(ConvertNoNull(reader(9)))
             po.ua = CStr(ConvertNoNull(reader(10)))
+            po.posterID = CStr(ConvertNoNull(reader(11)))
         End While
         Return po
         reader.Close()
@@ -100,10 +96,23 @@ Public Module GlobalFunctions
 
     Sub MakeThread(ByVal data As OPData)
         Dim cnx As New SqlConnection(SQLConnectionString)
-        Dim queryString As String = "INSERT INTO board (type, time, comment, postername, email, password, subject, imagename, IP, bumplevel, ua) VALUES ('0', " & ConvertTimeToSQLTIME(data.time) & ", N'" & data.Comment & "', '" & data.name & "', '" & data.email & "', '" & data.password & "', '" & data.subject & "', '" & data.imageName & "','" & data.IP & "', " & ConvertTimeToSQLTIME(data.time) & ", '" & data.UserAgent & "' ) "
+        'Insert thread data
+        Dim queryString As String = "INSERT INTO board (type, time, comment, postername, email, password, subject, imagename, IP, bumplevel, ua, sticky) VALUES ('0', " & ConvertTimeToSQLTIME(data.time) & ", N'" & data.Comment & "', '" & data.name & "', '" & data.email & "', '" & data.password & "', '" & data.subject & "', '" & data.imageName & "','" & data.IP & "', " & ConvertTimeToSQLTIME(data.time) & ", '" & data.UserAgent & "', 0 ) "
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         queryObject.ExecuteNonQuery()
+        'Retrive thread ID
+        Dim idQuery As String = "SELECT ID FROM board WHERE (IP LIKE '" & data.IP & "') AND (ua LIKE '" & data.UserAgent & "') AND (password LIKE '" & data.password & "') AND (time =  CONVERT(DATETIME, " & ConvertTimeToSQLTIME(data.time) & ", 102))"
+        Dim idOb As New SqlCommand(idQuery, cnx)
+        Dim reader As SqlDataReader = idOb.ExecuteReader
+        Dim postID As Integer
+        While reader.Read
+            postID = CInt(reader(0))
+        End While
+        reader.Close()
+        'Update thread data with OP posterID
+        Dim updateq As New SqlCommand("UPDATE board SET posterID = '" & GenerateUID(postID, data.IP) & "' WHERE (IP LIKE '" & data.IP & "') AND (ua LIKE '" & data.UserAgent & "') AND (password LIKE '" & data.password & "') AND (time =  CONVERT(DATETIME, " & ConvertTimeToSQLTIME(data.time) & ", 102))", cnx)
+        updateq.ExecuteNonQuery()
         cnx.Close()
     End Sub
 
@@ -120,20 +129,6 @@ Public Module GlobalFunctions
         cnx.Close()
         Return i
     End Function
-
-    'Private Function ConvertTimeToOLETIME(ByVal d As Date) As String
-    '    '#12/12/2012 8:51:00 AM#
-    '    '#MM/DD/YYYY H:MM:SS PMAM#
-    '    Dim s As String = "#" & d.Month & "/" & d.Day & "/" & d.Year & " "
-    '    If d.Hour > 12 Then
-    '        Dim t As String = d.Hour - 12 & ":" & d.Minute & ":" & d.Second & " PM"
-    '        s = s & t & "#"
-    '    Else
-    '        Dim t As String = d.Hour & ":" & d.Minute & ":" & d.Second & " AM"
-    '        s = s & t & "#"
-    '    End If
-    '    Return s
-    'End Function
 
     Private Function ConvertTimeToSQLTIME(ByVal d As Date) As String
         ''4/23/2013 5:45:45 PM'
@@ -158,12 +153,12 @@ Public Module GlobalFunctions
     ''' <remarks></remarks>
     Private Sub ReplyTo(ByVal id As Integer, ByVal data As OPData)
         Dim cnx As New SqlConnection(SQLConnectionString)
-        Dim queryString As String = "INSERT INTO board (type, [time], comment, postername, email, [password], parentT, subject, imagename, IP, ua) VALUES      ('1', " & ConvertTimeToSQLTIME(data.time) & ", N'" & data.Comment & "', '" & data.name & "', '" & data.email & "', '" & data.password & "', '" & id & "', '" & data.subject & "', '" & data.imageName & "' , '" & data.IP & "' , '" & data.UserAgent & "' )"
+        Dim queryString As String = "INSERT INTO board (type, [time], comment, postername, email, [password], parentT, subject, imagename, IP, ua, posterID) VALUES      ('1', " & ConvertTimeToSQLTIME(data.time) & ", N'" & data.Comment & "', '" & data.name & "', '" & data.email & "', '" & data.password & "', '" & id & "', '" & data.subject & "', '" & data.imageName & "' , '" & data.IP & "' , '" & data.UserAgent & "','" & GenerateUID(id, data.IP) & "' )"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         queryObject.ExecuteNonQuery()
         cnx.Close()
-        If Not data.email = "sage" Then BumpThread(id)
+        If Not data.email = "sage" And (GetRepliesCount(id) <= BumpLimit) Then BumpThread(id)
     End Sub
 
     Private Sub BumpThread(ByVal id As Integer)
@@ -206,7 +201,7 @@ Public Module GlobalFunctions
             End While
             reader1.Close()
         End If
-        Dim queryString As String = "SELECT ID FROM board  WHERE (type = 0) ORDER BY bumplevel DESC"
+        Dim queryString As String = "SELECT ID FROM board  WHERE (type = 0) AND (sticky = 0) ORDER BY bumplevel DESC"
         Dim queryObject As New SqlCommand(queryString, cnx)
         Dim reader As SqlDataReader = queryObject.ExecuteReader
         While reader.Read
@@ -254,6 +249,7 @@ Public Module GlobalFunctions
         Dim isImage As Boolean = FileIsImage(f)
 
         If isImage Then
+
             Try
                 'Check if the file is a valid image
                 Dim i As Drawing.Image = Drawing.Image.FromStream(f.InputStream)
@@ -270,19 +266,34 @@ Public Module GlobalFunctions
             End Try
 
             Dim w As Drawing.Image = Drawing.Image.FromStream(f.InputStream)
+            Dim fileextension As String = f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1)
 
             Dim dd As String = CStr(Date.UtcNow.ToFileTime)
             'Full image path
-            Dim p As String = STORAGEFOLDER & "\" & dd & "." & f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1)
+            Dim p As String = STORAGEFOLDER & "\" & dd & "." & fileextension
             'Thumb path
-            Dim thumb As String = STORAGEFOLDER & "\th" & dd & ".png"
+            Dim thumb As String = ""
+            If fileextension = "png" Then
+                thumb = STORAGEFOLDER & "\th" & dd & ".png"
+            Else
+                thumb = STORAGEFOLDER & "\th" & dd & ".jpg"
+            End If
 
             'Check if resize is needed.
             If (w.Width * w.Height) < 62500 Then
-                w.Save(thumb)
+                If fileextension = "png" Then
+                    w.Save(thumb, Drawing.Imaging.ImageFormat.Png)
+                Else
+                    w.Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
+                End If
             Else
-                ResizeImage(w, 250).Save(thumb)
+                If fileextension = "png" Then
+                    ResizeImage(w, 250).Save(thumb, Drawing.Imaging.ImageFormat.Png)
+                Else
+                    ResizeImage(w, 250).Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
+                End If
             End If
+            'Save the file.
             f.SaveAs(p)
 
             'Calculate the file hash. I save the file then calulate the hash because f.InputStream always return a null stream. 
@@ -298,17 +309,19 @@ Public Module GlobalFunctions
                     Throw New ArgumentException("Duplicate image detected.")
                 Else
                     Dim wpi As WPostImage = GetImageDataByMD5(md5string)
+                    'Delete previously saved files.
                     FileIO.FileSystem.DeleteFile(p)
                     FileIO.FileSystem.DeleteFile(thumb)
                     sp = wpi.chanbName & ":" & CStr(wpi.size) & ":" & wpi.dimensions & ":" & wpi.realname & ":" & wpi.md5
                 End If
             Else
                 'chanb name : size in bytes : dimensions : realname : md5
-                sp = dd & "." & f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1) & ":" & f.ContentLength & ":" & w.Size.Width & "x" & w.Size.Height & ":" & f.FileName & ":" & md5string
+                sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & w.Size.Width & "x" & w.Size.Height & ":" & f.FileName & ":" & md5string
                 w.Dispose()
             End If
             Return sp
-        Else 'Maybe a PDF or SVG file
+
+        Else 'Maybe a PDF or SVG file or no file
             Dim fileextension As String = f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1)
 
             Select Case fileextension.ToUpper()
@@ -468,7 +481,42 @@ Public Module GlobalFunctions
     End Function
 
     Private Function ResizeImage(ByVal i As Drawing.Image, ByVal targetS As Integer) As Drawing.Image
-        Return i.GetThumbnailImage(DownSizeWithAspectRatio(targetS, i.Size).Width, DownSizeWithAspectRatio(targetS, i.Size).Height, Nothing, System.IntPtr.Zero)
+
+        Select Case ResizeMethode
+            Case 0 'naive quality methode
+                Return i.GetThumbnailImage(DownSizeWithAspectRatio(targetS, i.Size).Width, DownSizeWithAspectRatio(targetS, i.Size).Height, Nothing, System.IntPtr.Zero)
+            Case 1 ' Medium Quality 
+                Dim sizef As Drawing.Size = DownSizeWithAspectRatio(targetS, i.Size)
+                Dim bi As New Drawing.Bitmap(sizef.Width, sizef.Height)
+                Dim g As Drawing.Graphics = Drawing.Graphics.FromImage(bi)
+                g.InterpolationMode = Drawing.Drawing2D.InterpolationMode.Bicubic
+                g.SmoothingMode = Drawing.Drawing2D.SmoothingMode.HighQuality
+                g.PixelOffsetMode = Drawing.Drawing2D.PixelOffsetMode.HighQuality
+                g.CompositingQuality = Drawing.Drawing2D.CompositingQuality.HighQuality
+
+                Dim imageRectangle As Drawing.Rectangle = New Drawing.Rectangle(0, 0, sizef.Width, sizef.Height)
+                g.DrawImage(i, imageRectangle)
+                Return bi
+                bi.Dispose()
+                g.Dispose()
+
+            Case 2 'Fastest Methode
+                Dim sizef As Drawing.Size = DownSizeWithAspectRatio(targetS, i.Size)
+                Dim bi As New Drawing.Bitmap(sizef.Width, sizef.Height)
+                Dim g As Drawing.Graphics = Drawing.Graphics.FromImage(bi)
+                g.InterpolationMode = Drawing.Drawing2D.InterpolationMode.Default
+                g.SmoothingMode = Drawing.Drawing2D.SmoothingMode.HighSpeed
+                g.PixelOffsetMode = Drawing.Drawing2D.PixelOffsetMode.HighSpeed
+                g.CompositingQuality = Drawing.Drawing2D.CompositingQuality.HighSpeed
+                Dim imageRectangle As Drawing.Rectangle = New Drawing.Rectangle(0, 0, sizef.Width, sizef.Height)
+                g.DrawImage(i, imageRectangle)
+                Return bi
+                bi.Dispose()
+                g.Dispose()
+            Case Else
+                Return i.GetThumbnailImage(DownSizeWithAspectRatio(targetS, i.Size).Width, DownSizeWithAspectRatio(targetS, i.Size).Height, Nothing, System.IntPtr.Zero)
+        End Select
+
     End Function
 
     ''' <summary>
@@ -488,14 +536,13 @@ Public Module GlobalFunctions
     ''' <returns></returns>
     ''' <remarks></remarks>
     Public Function GetImageWEBPATHRE(ByVal name As String) As String
-        'If name.Contains("svg") Then
-        '    Return ""
-        'ElseIf name.Contains("pdf") Then
-        '    Return ""
-        'Else
-        '    Return StoragefolderWEB & "th" & name.Split(CChar(".")).ElementAt(0) & ".png"
-        'End If
-        Return StoragefolderWEB & "th" & name.Split(CChar(".")).ElementAt(0) & ".png"
+        Dim jpgThumb As String = STORAGEFOLDER & "\th" & name.Split(CChar(".")).ElementAt(0) & ".jpg"
+        If FileIO.FileSystem.FileExists(jpgThumb) Then
+            Return StoragefolderWEB & "th" & name.Split(CChar(".")).ElementAt(0) & ".jpg"
+        Else
+            'Must be a png thumbnail
+            Return StoragefolderWEB & "th" & name.Split(CChar(".")).ElementAt(0) & ".png"
+        End If
     End Function
 
     Sub NewMod(ByVal name As String, ByVal pas As String)
@@ -506,16 +553,6 @@ Public Module GlobalFunctions
         queryObject.ExecuteNonQuery()
         cnx.Close()
     End Sub
-
-    'Sub GenerateThumbsForOldImages()
-    '    For Each x As IO.FileInfo In FileIO.FileSystem.GetDirectoryInfo(STORAGEFOLDER).GetFiles
-    '        If x.Name.StartsWith("th") Then
-    '        Else
-    '            Dim thumb As String = STORAGEFOLDER & "\th" & x.Name.Split(CChar(".")).ElementAt(0) & ".png"
-    '            ResizeImage(Drawing.Image.FromFile(x.FullName), 250).Save(thumb)
-    '        End If
-    '    Next
-    'End Sub
 
     Function IsIPBanned(ByVal IP As String) As Boolean
         Dim cnx As New SqlConnection(SQLConnectionString)
@@ -749,6 +786,8 @@ Public Module GlobalFunctions
         Return sr
     End Function
 
+#Region "BB codes processing"
+
     Private Function MatchBBCode(ByVal codename As String, ByVal data As String) As String
         Select Case codename
             Case "spoiler"
@@ -898,6 +937,8 @@ Public Module GlobalFunctions
         End Select
     End Function
 
+#End Region
+
     Private Function IsXvalidQuote(ByVal x As String) As Boolean
         Dim b As Boolean = False
         ' A valid quote should be in >>Int32 format.
@@ -925,7 +966,7 @@ Public Module GlobalFunctions
         End If
         If EnableUserID Then
             Dim idHt As String = idHtml
-            idHt = idHt.Replace("%UID%", GenerateUID(po))
+            idHt = idHt.Replace("%UID%", po.posterID)
             postHTML = postHTML.Replace("%UID%", idHt)
         Else
             postHTML = postHTML.Replace("%UID%", "")
@@ -955,14 +996,18 @@ Public Module GlobalFunctions
         Return postHTML
     End Function
 
-    Private Function GenerateUID(ByVal po As WPost) As String
-        If po.type = "0" Then
-            Dim idstr As String = po.PostID & po.ip
-            Return New String(CType(MD5(idstr), Char()), 0, 8)
-        Else
-            Dim idstr As String = po.parent & po.ip
-            Return New String(CType(MD5(idstr), Char()), 0, 8)
-        End If
+    'Private Function GenerateUID(ByVal po As WPost) As String
+    '    If po.type = "0" Then
+    '        Dim idstr As String = po.PostID & po.ip
+    '        Return New String(CType(MD5(idstr), Char()), 0, 8)
+    '    Else
+    '        Dim idstr As String = po.parent & po.ip
+    '        Return New String(CType(MD5(idstr), Char()), 0, 8)
+    '    End If
+    'End Function
+
+    Private Function GenerateUID(ByVal parentPost As Integer, ByVal IP As String) As String
+        Return New String(CType(MD5(CStr(parentPost) & IP), Char()), 0, 8)
     End Function
 
     Private Function GetLastXPosts(ByVal threadID As Integer, ByVal x As Integer) As Integer()
@@ -1077,7 +1122,7 @@ Public Module GlobalFunctions
         End If
         If EnableUserID Then
             Dim idHt As String = idHtml
-            idHt = idHt.Replace("%UID%", GenerateUID(po))
+            idHt = idHt.Replace("%UID%", po.posterID)
             postHTML = postHTML.Replace("%UID%", idHt)
         Else
             postHTML = postHTML.Replace("%UID%", "")
@@ -1145,13 +1190,18 @@ Public Module GlobalFunctions
         Return sb.ToString
     End Function
 
-    Private Sub DeleteAllPosts()
+    Sub DeleteAllPosts(ByVal deletefiles As Boolean)
         Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = "TRUNCATE TABLE board"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         queryObject.ExecuteNonQuery()
         cnx.Close()
+        If deletefiles Then
+            For Each x As IO.FileInfo In FileIO.FileSystem.GetDirectoryInfo(STORAGEFOLDER).GetFiles
+                x.Delete()
+            Next
+        End If
     End Sub
 
     Private Sub ReportPost(ByVal id As Integer, ByVal reporterIP As String, ByVal time As Date)
@@ -1221,6 +1271,38 @@ Public Module GlobalFunctions
         Else
             Return CStr(size)
         End If
+    End Function
+
+    Sub ToggleSticky(ByVal threadID As Integer)
+        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim i As Integer = 0 ' 0 unsticky the thread.
+        If Not IsSticky(threadID) Then
+            'Need to sticky it.
+            i = 1
+        End If
+        Dim queryString As String = "UPDATE board SET sticky = " & i & " WHERE (ID = " & threadID & " )"
+        Dim queryObject As New SqlCommand(queryString, cnx)
+        cnx.Open()
+        queryObject.ExecuteNonQuery()
+        cnx.Close()
+    End Sub
+
+    Private Function IsSticky(ByVal id As Integer) As Boolean
+        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim queryString As String = "SELECT sticky FROM board  WHERE (ID = " & id & " )"
+        Dim queryObject As New SqlCommand(queryString, cnx)
+        cnx.Open()
+        Dim reader As SqlDataReader = queryObject.ExecuteReader
+        Dim p As Boolean = False
+        While reader.Read
+            If TypeOf reader(0) Is DBNull Or CInt(ConvertNoNull(reader(0))) <> 1 Then
+                p = False
+            Else
+                p = True
+            End If
+        End While
+        cnx.Close()
+        Return p
     End Function
 
 End Module

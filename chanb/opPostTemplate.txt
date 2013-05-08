@@ -3,7 +3,7 @@
 <div class="file" id="f%ID%">
 <div class="fileInfo">
 <span class="fileText" id="fT%ID%">File: <a href="%IMAGE LINK%" target="_blank">%CHANB FILE NAME%</a>-(%FILE SIZE%, %IMAGE DIMENSIONS%, <span title="%FILE NAME%">%FILE NAME%</span>)
-<a href="http://www.google.com/searchbyimage?image_url=%THUMB LINK%" target="_top">google</a>
+<a href="http://www.google.com/searchbyimage?image_url=%THUMB LINK%" target="_blank">google</a>
 </span>
 </div>
 <a class="fileThumb" href="%IMAGE LINK%" target="_blank">
@@ -24,7 +24,9 @@
 %REPLY BUTTON%
 %MODPANEL%
 </span>
-<b>%REPLY COUNT%</b><span> reply.</span>
+(<b>%REPLY COUNT%</b><span> reply.)</span>
+%STICKY%
+%LOCKED%
 </div>
 <blockquote class="postMessage" id="m%ID%">%POST TEXT%</blockquote>
 </div>

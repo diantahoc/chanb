@@ -1,6 +1,6 @@
 ﻿function quote(id) {
 
-    document.getElementById("commentfield").value += ">>" + id;
+    document.getElementById("commentfield").value += ">>" + id + "\n";
 }
 
 
@@ -36,4 +36,7 @@ function goright(id) {
     $active.addClass('notactive');
     $next.addClass('active');
     $next.removeClass('notactive');
+
 }
+
+

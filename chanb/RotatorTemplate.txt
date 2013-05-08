@@ -1,9 +1,6 @@
 ﻿<div class="rotator">
 <span>%IMAGECOUNT% images.</span>
 <br/>
-<a href="javascript:goleft('%ID%');" class="goright">Previous</a>
-<div class="">
-%ITEMS%
-</div>
-<a href="javascript:goright('%ID%');" class="goright">Next</a>
+<script>document.write('<a href="javascript:goleft(\'%ID%\');" class="goright">Previous</a>' + '<div>' + '%ITEMS%' + '</div>' + '<a href="javascript:goright(\'%ID%\');" class="goright">Next</a>');</script>
+<noscript>%NOS%</noscript>
 </div>

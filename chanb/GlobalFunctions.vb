@@ -31,11 +31,7 @@ Public Module GlobalFunctions
     End Function
 
     Private Function ConvertNoNull(ByVal x As Object) As Object
-        If TypeOf x Is DBNull Then
-            Return Nothing
-        Else
-            Return x
-        End If
+        If TypeOf x Is DBNull Then Return Nothing Else Return x
     End Function
 
     Private Function ProcessInputs(ByVal x As String) As String
@@ -70,7 +66,7 @@ Public Module GlobalFunctions
 
     Function FetchPostData(ByVal id As Long) As WPost
         Dim cnx As New SqlConnection(SQLConnectionString)
-        Dim queryString As String = "SELECT type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua, posterID FROM  board  WHERE (id = " & id & ")"
+        Dim queryString As String = "SELECT type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua, posterID, sticky, locked FROM  board  WHERE (id = " & id & ")"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         Dim reader As SqlDataReader = queryObject.ExecuteReader
@@ -88,6 +84,8 @@ Public Module GlobalFunctions
             po.ip = CStr(ConvertNoNull(reader(9)))
             po.ua = CStr(ConvertNoNull(reader(10)))
             po.posterID = CStr(ConvertNoNull(reader(11)))
+            If CInt(ConvertNoNull(reader(12))) = 1 Then po.isSticky = True Else po.isSticky = False
+            If CInt(ConvertNoNull(reader(13))) = 1 Then po.locked = True Else po.locked = False
         End While
         Return po
         reader.Close()
@@ -225,7 +223,7 @@ Public Module GlobalFunctions
 
     Function IsModLoginValid(ByVal name As String, ByVal password As String) As Boolean
         Dim cnx As New SqlConnection(SQLConnectionString)
-        Dim queryString As String = "SELECT password FROM mods  WHERE (username LIKE '" & name & "')"
+        Dim queryString As String = "SELECT password FROM mods WHERE (username LIKE '" & name & "')"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         Dim sqlPassMd5 As String = ""
@@ -306,6 +304,8 @@ Public Module GlobalFunctions
             If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
                 'If image already exist, we fetch the matching image data from the database, and delete the saved files.
                 If SmartLinkDuplicateImages = False Then
+                    FileIO.FileSystem.DeleteFile(p)
+                    FileIO.FileSystem.DeleteFile(thumb)
                     Throw New ArgumentException("Duplicate image detected.")
                 Else
                     Dim wpi As WPostImage = GetImageDataByMD5(md5string)
@@ -341,6 +341,8 @@ Public Module GlobalFunctions
                     If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
 
                         If SmartLinkDuplicateImages = False Then
+                            FileIO.FileSystem.DeleteFile(p)
+                            FileIO.FileSystem.DeleteFile(thumb)
                             Throw New ArgumentException("Duplicate image detected.")
                         Else
                             Dim wpi As WPostImage = GetImageDataByMD5(md5string)
@@ -363,6 +365,60 @@ Public Module GlobalFunctions
 
                     Return sp
                 Case "PDF"
+                    ' Need to find another PDF renderer beside PDF Rasterizer.
+
+                    'Dim dd As String = CStr(Date.UtcNow.ToFileTime)
+                    'Dim p As String = STORAGEFOLDER & "\" & dd & "." & fileextension
+                    ''Thumb path
+                    'Dim thumb As String = STORAGEFOLDER & "\th" & dd & ".jpg"
+                    'f.SaveAs(p)
+
+                    'Dim fs As New IO.FileStream(p, IO.FileMode.Open)
+                    'Dim md5string As String = MD5(fs)
+                    'fs.Close()
+
+                    'Dim sp As String = ""
+
+                    'If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
+                    '    If SmartLinkDuplicateImages = False Then
+                    '        FileIO.FileSystem.DeleteFile(p)
+                    '        FileIO.FileSystem.DeleteFile(thumb)
+                    '        Throw New ArgumentException("Duplicate image detected.")
+                    '    Else
+                    '        Dim wpi As WPostImage = GetImageDataByMD5(md5string)
+                    '        FileIO.FileSystem.DeleteFile(p)
+                    '        sp = wpi.chanbName & ":" & CStr(wpi.size) & ":" & wpi.dimensions & ":" & wpi.realname & ":" & wpi.md5
+                    '    End If
+                    'Else
+
+                    '    Dim fileS As New IO.FileStream(p, IO.FileMode.Open)
+
+                    '    Dim pd As New TallComponents.PDF.Rasterizer.Document(fileS)
+                    '    Dim page As TallComponents.PDF.Rasterizer.Page = pd.Pages(0)
+
+                    '    Dim scale As Double = 150 / 72
+
+                    '    Dim pdfBi As Drawing.Bitmap = New Drawing.Bitmap(CInt(scale * page.Width), CInt(scale * page.Height))
+
+                    '    Dim graph As Drawing.Graphics = Drawing.Graphics.FromImage(pdfBi)
+                    '    graph.SmoothingMode = Drawing.Drawing2D.SmoothingMode.AntiAlias
+                    '    graph.ScaleTransform(CSng(scale), CSng(scale))
+                    '    graph.Clear(Drawing.Color.White)
+                    '    page.Draw(graph)
+
+                    '    graph.Dispose()
+                    '    fileS.Close()
+
+                    '    If (pdfBi.Width * pdfBi.Height) < 62500 Then
+                    '        pdfBi.Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
+                    '    Else
+                    '        ResizeImage(pdfBi, 250).Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
+                    '    End If
+                    '    sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & pdfBi.Size.Width & "x" & pdfBi.Size.Height & ":" & f.FileName & ":" & md5string
+                    '    pdfBi.Dispose()
+
+                    'End If
+                    'Return sp
                     Return ""
                 Case ""
                     Return ""
@@ -562,12 +618,13 @@ Public Module GlobalFunctions
         Dim reader As SqlDataReader = queryObject.ExecuteReader
         Dim banned As Boolean = False
         While reader.Read
-            If TypeOf reader(0) Is DBNull Then
-                banned = False
-                'User is not banned since there is no ID entry for the specified IP address
-            Else
-                banned = True
-            End If
+            banned = Not (TypeOf reader(0) Is DBNull)
+            'If TypeOf reader(0) Is DBNull Then
+            '    banned = False
+            '    'User is not banned since there is no ID entry for the specified IP address
+            'Else
+            '    banned = True
+            'End If
         End While
         reader.Close()
         cnx.Close()
@@ -595,7 +652,7 @@ Public Module GlobalFunctions
     End Function
 
     Private Function MakeBannedMessage(ByVal IP As String) As String
-        Return "You are banned!"
+        Return BannedMessage
     End Function
 
     Function ProcessPost(ByVal request As HttpRequest, ByVal Session As Web.SessionState.HttpSessionState) As String
@@ -653,7 +710,15 @@ Public Module GlobalFunctions
                                 sb.Append("<meta HTTP-EQUIV='REFRESH' content='2; url=default.aspx'>")
                             End If
                         End If
+
                     Case "reply"
+
+                        If IsLocked(CInt(request.Item("threadid"))) Then
+                            sb.Append(lockedMessage)
+                            sb.Append("<meta HTTP-EQUIV='REFRESH' content='5; url=default.aspx?id=" & request.Item("threadid") & "'>")
+                            Exit Select
+                        End If
+
                         Dim s As String = ""
                         If request.Files.Count = 0 Then
                             s = ""
@@ -668,7 +733,7 @@ Public Module GlobalFunctions
                         If ProcessInputs(request.Item("comment")) = "" And s = "" Then
                             'no image and no text
                             'blank post
-                            sb.Append("Blank post are not allowed")
+                            sb.Append(noBlankpost)
                         Else
                             er.Comment = ProcessInputs(request.Item("comment"))
                             If er.Comment.Length > 4000 Then
@@ -687,6 +752,7 @@ Public Module GlobalFunctions
                             sb.Append(SuccessfulPostString)
                         End If
                         sb.Append("<meta HTTP-EQUIV='REFRESH' content='2; url=default.aspx?id=" & request.Item("threadid") & "'>")
+
                     Case "report"
                         Dim il As New List(Of Integer)
                         For Each x As String In request.QueryString
@@ -702,6 +768,7 @@ Public Module GlobalFunctions
                                 sb.Append(ReportedSucess.Replace("%", CStr(x)))
                             Next
                         End If
+
                     Case "delete"
                         Dim li As New List(Of String)
                         Dim deletPass As String = request.Item("deletePass")
@@ -724,6 +791,7 @@ Public Module GlobalFunctions
                                 sb.Append("<br/>")
                             Next
                         End If
+
                     Case Else
                         sb.Append("Invalid Posting mode")
                         sb.Append("<meta HTTP-EQUIV='REFRESH' content='2; url=default.aspx'>")
@@ -976,6 +1044,16 @@ Public Module GlobalFunctions
         Else
             postHTML = postHTML.Replace("%NAMESPAN%", "<a href='mailto:%EMAIL%' class='useremail'><span class='name'>%NAME%</span></a>")
         End If
+        If po.isSticky Then
+            postHTML = postHTML.Replace("%STICKY%", "<img alt='" & stickyStr & "' title='" & stickyStr & "' src='res/sticky.png' />")
+        Else
+            postHTML = postHTML.Replace("%STICKY%", "")
+        End If
+        If po.locked Then
+            postHTML = postHTML.Replace("%LOCKED%", "<img alt='" & lockedStr & "' title='" & lockedStr & "' src='res/locked.png' />")
+        Else
+            postHTML = postHTML.Replace("%LOCKED%", "")
+        End If
         postHTML = postHTML.Replace("%ID%", CStr(po.PostID))
         postHTML = postHTML.Replace("%IMAGE LINK%", GetImageWEBPATH(imageData.chanbName))
         postHTML = postHTML.Replace("%CHANB FILE NAME%", imageData.chanbName)
@@ -992,7 +1070,7 @@ Public Module GlobalFunctions
         postHTML = postHTML.Replace("%POST LINK%", "default.aspx?id=" & po.PostID & "#p" & po.PostID)
         postHTML = postHTML.Replace("%POST TEXT%", ProcessComment(po.comment, CInt(po.PostID)))
         postHTML = postHTML.Replace("%REPLY COUNT%", CStr(GetRepliesCount(id)))
-        If isMod Then postHTML = postHTML.Replace("%MODPANEL%", "<a href='modaction.aspx?action=banpost&postid=" & po.PostID & "'>Ban</a><a href='modaction.aspx?action=delpost&id=" & po.PostID & "'>Delete</a>") Else postHTML = postHTML.Replace("%MODPANEL%", "")
+        If isMod Then postHTML = postHTML.Replace("%MODPANEL%", modMenu.Replace("%ID%", CStr(po.PostID))) Else postHTML = postHTML.Replace("%MODPANEL%", "")
         Return postHTML
     End Function
 
@@ -1027,7 +1105,7 @@ Public Module GlobalFunctions
     Sub BanPosterByPost(ByVal postID As Integer)
         Dim po As WPost = FetchPostData(postID)
         If IsIPBanned(po.ip) = False Then
-            Dim newText As String = po.comment & "<br><strong style=''color: red;''>USER WAS BANNED FOR THIS POST</strong>"
+            Dim newText As String = po.comment & "<br><strong style=''color: red;''>User was banned for this post.</strong>"
             BanPoster(po.ip, postID)
             UpdatePostText(postID, newText, True)
         End If
@@ -1135,7 +1213,7 @@ Public Module GlobalFunctions
         postHTML = postHTML.Replace("%NAME%", po.name)
         postHTML = postHTML.Replace("%DATE UTC UNIX%", CStr(po.time.ToFileTime))
         postHTML = postHTML.Replace("%POST LINK%", "default.aspx?id=" & po.parent & "#p" & po.PostID)
-        If isMod Then postHTML = postHTML.Replace("%MODPANEL%", "<a href='modaction.aspx?action=banpost&postid=" & po.PostID & "'>Ban</a><a href='modaction.aspx?action=delpost&id=" & po.PostID & "'>Delete</a>") Else postHTML = postHTML.Replace("%MODPANEL%", "")
+        If isMod Then postHTML = postHTML.Replace("%MODPANEL%", modMenu.Replace("%ID%", CStr(po.PostID))) Else postHTML = postHTML.Replace("%MODPANEL%", "")
         postHTML = postHTML.Replace("%IMAGES%", GetImagesHTML(po))
         Return postHTML
     End Function
@@ -1147,6 +1225,7 @@ Public Module GlobalFunctions
             If po._imageP.Split(CChar(";")).Count > 1 Then
                 'Add rotator script
                 Dim items As New StringBuilder
+                Dim noscriptItems As New StringBuilder
                 Dim count As Integer = po._imageP.Split(CChar(";")).Count
                 Dim advanced As Boolean = False ' The first one is marked as active, the rest as notactive
                 Dim rotatorTemplat As String = rotatorTemplate
@@ -1162,12 +1241,18 @@ Public Module GlobalFunctions
                     r = r.Replace("%IMAGE SIZE%", wpi.dimensions)
                     r = r.Replace("%THUMB_LINK%", GetImageWEBPATHRE(wpi.chanbName))
                     r = r.Replace("%IMAGE MD5%", wpi.md5)
+                    Dim nr As String = noscriptItemHTML
+                    nr = nr.Replace("%IMAGE SRC%", GetImageWEBPATH(wpi.chanbName))
+                    nr = nr.Replace("%FILE NAME%", wpi.realname)
+                    nr = nr.Replace("%THUMB_LINK%", GetImageWEBPATHRE(wpi.chanbName))
+                    noscriptItems.Append(nr)
                     items.Append(r)
                     advanced = True
                 Next
                 rotatorTemplat = rotatorTemplat.Replace("%ID%", CStr(po.PostID))
                 rotatorTemplat = rotatorTemplat.Replace("%IMAGECOUNT%", CStr(count))
-                rotatorTemplat = rotatorTemplat.Replace("%ITEMS%", items.ToString)
+                rotatorTemplat = rotatorTemplat.Replace("%ITEMS%", items.ToString.Replace(vbNewLine, "").Replace("'", "\'"))
+                rotatorTemplat = rotatorTemplat.Replace("%NOS%", noscriptItems.ToString)
                 sb.Append(rotatorTemplat)
             Else
                 'Single image
@@ -1290,6 +1375,38 @@ Public Module GlobalFunctions
     Private Function IsSticky(ByVal id As Integer) As Boolean
         Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = "SELECT sticky FROM board  WHERE (ID = " & id & " )"
+        Dim queryObject As New SqlCommand(queryString, cnx)
+        cnx.Open()
+        Dim reader As SqlDataReader = queryObject.ExecuteReader
+        Dim p As Boolean = False
+        While reader.Read
+            If TypeOf reader(0) Is DBNull Or CInt(ConvertNoNull(reader(0))) <> 1 Then
+                p = False
+            Else
+                p = True
+            End If
+        End While
+        cnx.Close()
+        Return p
+    End Function
+
+    Sub ToggleLock(ByVal threadID As Integer)
+        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim i As Integer = 0 ' 0 unsticky the thread.
+        If Not IsSticky(threadID) Then
+            'Need to sticky it.
+            i = 1
+        End If
+        Dim queryString As String = "UPDATE board SET locked = " & i & " WHERE (ID = " & threadID & " )"
+        Dim queryObject As New SqlCommand(queryString, cnx)
+        cnx.Open()
+        queryObject.ExecuteNonQuery()
+        cnx.Close()
+    End Sub
+
+    Private Function IsLocked(ByVal id As Integer) As Boolean
+        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim queryString As String = "SELECT locked FROM board  WHERE (ID = " & id & " )"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         Dim reader As SqlDataReader = queryObject.ExecuteReader

@@ -12,9 +12,15 @@
             Case "delpost"
                 DeletePost(Request.Item("id"), True)
                 Response.Write("Delete post " & Request.Item("id"))
-        Case Else
-            Response.Write("invalid action")
-    End Select
+            Case "tgsticky"
+                ToggleSticky(CInt(Request.Item("id")))
+                Response.Write("Request complete")
+            Case "tglock"
+                ToggleLock(CInt(Request.Item("id")))
+                Response.Write("Request complete")    
+            Case Else
+                Response.Write("invalid action")
+        End Select
     End If  
         
    

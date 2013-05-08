@@ -18,4 +18,10 @@
     Public NoPostWasSelected As String = "No post was selected"
     Public ReportedSucess As String = "Reported post no. %"
 
+    Public BannedMessage As String = "You are banned from posting."
+    Public stickyStr As String = "Sticky."
+    Public lockedStr As String = "Locked."
+    Public lockedMessage As String = "Thread is locked."
+    Public noBlankpost As String = "Blank post are not allowed"
+
 End Module

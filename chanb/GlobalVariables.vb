@@ -28,5 +28,7 @@
     Public ReadOnly rotatorTemplate As String = IO.File.ReadAllText("PHYSICAL PATH TO\RotatorTemplate.txt")
     Public ReadOnly idHtml As String = "<span class='posteruid id_%UID%'>(ID: <span class='hand' title='Highlight posts by this ID'>%UID%</span>)</span>"
     Public replyButtonHTML As String = "&nbsp;<span>[<a href='%POST LINK%' class='replylink'>Reply</a>]</span>"
+    Public ReadOnly noscriptItemHTML As String = "<a href='%IMAGE SRC%' target='_blank'>%FILE NAME%<br/><img src='%THUMB_LINK%' style='width: 100px; height: 100px' /></a><br/>"
+    Public ReadOnly modMenu As String = "<a href='modaction.aspx?action=banpost&postid=%ID%'>Ban</a>,&nbsp;<a href='modaction.aspx?action=delpost&id=%ID%'>Delete</a>,&nbsp;<a href='modaction.aspx?action=tgsticky&id=%ID%'>Toggle sticky</a>,&nbsp;<a href='modaction.aspx?action=tglock&id=%ID%'>Toggle lock.</a>"
 
 End Module

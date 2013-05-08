@@ -12,6 +12,8 @@
     Public parent As Integer
     Public ua As String
     Public posterID As String
+    Public isSticky As Boolean
+    Public locked As Boolean
     Sub New(ByVal _id As Long)
         PostID = _id
     End Sub

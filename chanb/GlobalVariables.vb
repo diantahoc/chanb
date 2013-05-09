@@ -9,6 +9,7 @@
     Public MaximumFileSize As Long = 15 * 1024 * 1024 ' 15 MB
     Public DeleteFiles As Boolean = True
     Public ThreadPerPage As Integer = 10
+    Public MaximumPages As Integer = 15
     Public AllowDuplicatesFiles As Boolean = False
     Public SmartLinkDuplicateImages As Boolean = True
     Public TrailPosts As Integer = 3

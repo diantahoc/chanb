@@ -92,7 +92,7 @@ Public Module GlobalFunctions
         cnx.Close()
     End Function
 
-    Sub MakeThread(ByVal data As OPData)
+    Private Sub MakeThread(ByVal data As OPData)
         Dim cnx As New SqlConnection(SQLConnectionString)
         'Insert thread data
         Dim queryString As String = "INSERT INTO board (type, time, comment, postername, email, password, subject, imagename, IP, bumplevel, ua, sticky) VALUES ('0', " & ConvertTimeToSQLTIME(data.time) & ", N'" & data.Comment & "', '" & data.name & "', '" & data.email & "', '" & data.password & "', '" & data.subject & "', '" & data.imageName & "','" & data.IP & "', " & ConvertTimeToSQLTIME(data.time) & ", '" & data.UserAgent & "', 0 ) "
@@ -112,6 +112,22 @@ Public Module GlobalFunctions
         Dim updateq As New SqlCommand("UPDATE board SET posterID = '" & GenerateUID(postID, data.IP) & "' WHERE (IP LIKE '" & data.IP & "') AND (ua LIKE '" & data.UserAgent & "') AND (password LIKE '" & data.password & "') AND (time =  CONVERT(DATETIME, " & ConvertTimeToSQLTIME(data.time) & ", 102))", cnx)
         updateq.ExecuteNonQuery()
         cnx.Close()
+        CheckForPrunedThreads()
+    End Sub
+
+    Private Sub CheckForPrunedThreads()
+        Dim currentThread As Integer() = GetThreads(0, (MaximumPages * ThreadPerPage) - 1, True) ' list of thread that haven't reached the last page. 
+        Dim allThread As Integer() = GetThreads(0, MaximumPages * ThreadPerPage, True) ' list of all threads.
+        Dim l As New List(Of Integer) ' list of thread that should be pruned
+        For Each x As Integer In allThread
+            If Array.IndexOf(currentThread, x) = -1 Then
+                'This thread should be deleted.
+                l.Add(x)
+            End If
+        Next
+        For Each x As Integer In l
+            DeletePost(x, DeleteFiles)
+        Next
     End Sub
 
     Function GetThreadsCount() As Integer

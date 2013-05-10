@@ -155,6 +155,7 @@
     </Compile>
     <Compile Include="post.vb">
     </Compile>
+    <Compile Include="ThreadReplies.vb" />
     <Compile Include="WPostImage.vb" />
   </ItemGroup>
   <ItemGroup>

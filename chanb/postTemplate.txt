@@ -1,4 +1,4 @@
-div class="postContainer replyContainer" id="pc%ID%">
+<div class="postContainer replyContainer" id="pc%ID%">
 <div class="sideArrows" id="sa%ID%">&gt;&gt;</div>
 <div id="p%ID%" class="post reply">
 <div class="postInfo desktop" id="pi%ID%">

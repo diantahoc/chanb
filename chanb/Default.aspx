@@ -15,11 +15,11 @@
 <div class="boardBanner"> 
 <div class="boardTitle"><% Response.Write(BoardTitle)%></div>
 <div class="boardSubtitle"><% Response.Write(BoardDesc)%></div>
- <% If Not Request.Item("id") = "" Then Response.Write("<div class='postingMode desktop'><span>Posting mode: Reply</span><a href='/'>[Return]</a></div><br/>")%>
+ <% If Not Request.Item("id") = "" Then Response.Write("<div class='postingMode desktop'><span>" & postingModstr & "</span><a href='./'>[" & returnStr & "]</a></div><br/>")%>
 </div>
 <div class="postdiv" align="center">
-<form id="delform" name="delform" enctype="multipart/form-data" action="post.aspx" method="post" title="New thread">
-<input type="hidden" name="mode" value="<% If not request.item("id") = "" then Response.write("reply") else Response.write("thread") %>" />
+<form id="delform" name="delform" enctype="multipart/form-data" action="post.aspx" method="post" title="<% Response.Write(newthreadStr) %>">
+<input type="hidden" name="mode" value="<% If Not request.item("id") = "" Then Response.write("reply") Else Response.write("thread") %>" />
 <input type="hidden" name="threadid" value="<% Response.Write(Request.Item("id")) %>" />
 <table>
 <tbody>
@@ -34,22 +34,22 @@
 </tr><tr>
 <th><% Response.Write(SUBJECTString)%></th>
 <td><input style="float:left;" name="subject" size="25" type="text">
-<input accesskey="s" style="margin-left:2px;" name="post" value="<% If Not Request.Item("id") = "" then Response.write("Reply") else Response.Write("New Topic") %>" type="submit"></td>
+<input accesskey="s" style="margin-left:2px;" name="post" value="<% If Not Request.Item("id") = "" then Response.write(replyStr) else Response.Write(newthreadStr) %>" type="submit"></td>
 </tr><tr>
 <th><% Response.Write(COMMENTString)%></th>
 <td><textarea name="comment" id="commentfield" rows="5" cols="35"></textarea></td>
 </tr><tr>
-<th>File(s)</th>
+<th><% Response.Write(filesStr)%></th>
 <td>
     <div id="files" >
     <input type="file" name="ufile" class="file" maxlength="<% response.write(maximumfilesize / 1024) %>" id="file1" />
     </div>  
-    <%If Not Request.Item("id") = "" Then Response.Write("<input class='button' type='button'  value='Add another file'  onclick='createUf();' />")%> 
+    <%If Not Request.Item("id") = "" Then Response.Write("<input type='checkbox' name='finp' value='yes'>" & eachfileInNewpost & "</input><br/><input type='checkbox' name='countf' value='yes'>" & countFiles & "</input><br/><input class='button' type='button'  value='" & addAnotherF & "'  onclick='createUf();' />")%> 
 </td>   
 </tr><tr>
 <th><% Response.Write(PASSWORDString)%></th>
 <td><input name="password" size="12" autocomplete="off" type="text" value="<% Response.Write(GetSessionPassword(Request.Cookies, Session)) %>">
-<span>(For post deletion.)</span>
+<span>(<% Response.Write(forPD)%>)</span>
 </td>
 </tr>
 </tbody>
@@ -64,7 +64,6 @@
 <li><span>This website is for demonstrating a live preview of ChanB imageboard. Expect your post to be deleted at any time.</span></li>
 <li><span>All times are UTC.</span></li>
 <li><span><% Response.Write("Currently there is " & CStr(GetThreadsCount()) & " thread(s).")%></span></li>
-
 </ul>
 </div>
 <hr />
@@ -72,7 +71,7 @@
 <div class="board">
  <%    
      
-     If Session.Item("mod") Is "" Or Session.Item("mod") Is Nothing Then Session("mod") = CStr(False)
+     Dim isMod As Boolean = CBool(Session("mod"))
      
      Dim validID As Boolean = False
      
@@ -99,9 +98,9 @@
          If po.type = 1 Then Response.Redirect("default.aspx?id=" & po.parent & "#p" & po.PostID)
     
          'Write OP Post        
-         Response.Write(GetOPPostHTML(opID, False, CBool(Session("mod"))))
+         Response.Write(GetOPPostHTML(opID, False, isMod))
          'Write replies, if any.  
-         Response.Write(GetRepliesHTML(opID, CBool(Session("mod"))))
+         Response.Write(GetRepliesHTML(opID, isMod))
                  
      Else
          
@@ -109,7 +108,7 @@
          Dim startIndex As Integer = 0
          If Not (Request.Item("startindex") = "") Then startIndex = CInt(Request.Item("startindex")) * (ThreadPerPage)       
          For Each x In GetThreads(startIndex, ThreadPerPage - 1 + startIndex, False)
-             Response.Write(GetThreadHTML(x, CBool(Session("mod")), TrailPosts))
+             Response.Write(GetThreadHTML(x, isMod, TrailPosts))
          Next
          
      End If
@@ -120,8 +119,8 @@
 <div style="float: right;">
 <div class="deleteform desktop">
 <input type="text" name="deletePass" value="<% Response.Write(GetSessionPassword(Request.Cookies, Session)) %>" />
-<input type="submit" name="mode" value="delete" />
-<input type="submit" name="mode" value="report" /></div>
+<input type="submit" name="mode" value="<% Response.Write(deleteStr) %>" />
+<input type="submit" name="mode" value="<% Response.Write(reportStr) %>" /></div>
 </div>
 </form>
 <div class="pagelist desktop">
@@ -138,13 +137,11 @@
         startIndexA = 0
     End Try 
     If startIndexA = 0 Then
-        Response.Write("<div class='prev'><span>Previous</span></div>")
+        Response.Write("<div class='prev'><span>" & prevStr & "</span></div>")
     Else
-        Response.Write("<div class='prev'><form action='default.aspx'><input name='startindex' type='hidden' value='" & startIndexA - 1 & "' /><input value='Previous' type='submit'/></form></div>")
+        Response.Write("<div class='prev'><form action='default.aspx'><input name='startindex' type='hidden' value='" & startIndexA - 1 & "' /><input value='" & prevStr & "' type='submit'/></form></div>")
     End If   
     Response.Write("<div class='pages'>")
-    '[<strong><a href="">0</a></strong>]
-    '[<a href="1">1</a>]
     For i As Integer = 0 To (pagesCount - 1) Step 1
         If i = startIndexA Then
             Response.Write("[<strong><a href='?startindex=" & i & "'>" & i + 1 & "</a></strong>]")
@@ -155,9 +152,9 @@
     Next 
     Response.Write("</div>")   
     If startIndexA = pagesCount - 1 Then ' last page
-        Response.Write("<div class='next'><span>Next</span></div>")
+        Response.Write("<div class='next'><span>" & nextStr & "</span></div>")
     Else
-        Response.Write("<div class='next'><form action='default.aspx'><input name='startindex' type='hidden' value='" & startIndexA + 1 & "' /><input value='Next' type='submit'/></form></div>")
+        Response.Write("<div class='next'><form action='default.aspx'><input name='startindex' type='hidden' value='" & startIndexA + 1 & "' /><input value='" & nextStr & "' type='submit'/></form></div>")
     End If
 %>
 </div>

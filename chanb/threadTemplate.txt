@@ -1,6 +1,6 @@
 ﻿<div class="thread" id="t%ID%">
 %POST HTML%
-<span class="summary desktop %AN%">%COUNT% posts omitted. Click <a href="%POSTLINK%" target="_blank" class="replylink">here</a> to view.</span>
+<span class="summary desktop %AN%">%TCOUNT% %AND% %ICOUNT% %omitStr%</span>
 %TRAILS%
 </div>
 <hr ></hr>

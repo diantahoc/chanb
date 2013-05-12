@@ -380,7 +380,7 @@ Public Module GlobalFunctions
 
                     Return sp
                 Case "PDF"
-                    ' Download TallComponent PDFRasterizer in add a project reference, and uncomment this code. 
+                    ' Download TallComponent PDFRasterizer, add a project reference, and uncomment this code. 
                     'Dim dd As String = CStr(Date.UtcNow.ToFileTime)
                     'Dim p As String = STORAGEFOLDER & "\" & dd & "." & fileextension
                     ''Thumb path
@@ -433,7 +433,6 @@ Public Module GlobalFunctions
 
                     'End If
                     'Return sp
-                    Return ""
                 Case ""
                     Return ""
                 Case Else
@@ -503,13 +502,14 @@ Public Module GlobalFunctions
         Return b
     End Function
 
-    Private Function GetWPOSTIMAGE(ByVal sp As String) As WPostImage
+    Private Function GetWPostImage(ByVal sp As String) As WPostImage
         Dim wp As New WPostImage
         wp.chanbName = sp.Split(CChar(":")).ElementAt(0)
         wp.size = CLng(sp.Split(CChar(":")).ElementAt(1))
         wp.dimensions = sp.Split(CChar(":")).ElementAt(2)
         wp.realname = sp.Split(CChar(":")).ElementAt(3)
         wp.md5 = sp.Split(CChar(":")).ElementAt(4)
+        wp.Extension = wp.RealName.Split(CChar(".")).ElementAt(wp.RealName.Split(CChar(".")).Length - 1).ToUpper
         Return wp
     End Function
 
@@ -1120,6 +1120,8 @@ Public Module GlobalFunctions
         postHTML = postHTML.Replace("%POST LINK%", "default.aspx?id=" & po.PostID & "#p" & po.PostID)
         postHTML = postHTML.Replace("%POST TEXT%", ProcessComment(po.comment, CInt(po.PostID)))
         postHTML = postHTML.Replace("%REPLY COUNT%", CStr(GetRepliesCount(id).TotalReplies))
+        postHTML = postHTML.Replace("%IMAGE EXT%", imageData.Extension)
+
         If isMod Then postHTML = postHTML.Replace("%MODPANEL%", modMenu.Replace("%ID%", CStr(po.PostID))) Else postHTML = postHTML.Replace("%MODPANEL%", "")
         Return postHTML
     End Function
@@ -1233,8 +1235,8 @@ Public Module GlobalFunctions
                 postHtml = postHtml.Replace("%ICOUNT%", p2str.Replace("%", CStr(tIm)))
             End If
             postHtml = postHtml.Replace("%omitStr%", omittedStr)
-            postHtml = postHtml.Replace("%POSTLINK%", "default.aspx?id=" & threadID)
         End If
+        postHtml = postHtml.Replace("%POSTLINK%", "default.aspx?id=" & threadID)
         Return postHtml
     End Function
 
@@ -1329,7 +1331,8 @@ Public Module GlobalFunctions
                     r = r.Replace("%FILE SIZE%", FormatSizeString(wpi.size))
                     r = r.Replace("%IMAGE SIZE%", wpi.dimensions)
                     r = r.Replace("%THUMB_LINK%", GetImageWEBPATHRE(wpi.chanbName))
-                    r = r.Replace("%IMAGE MD5%", wpi.md5)
+                    r = r.Replace("%IMAGE MD5%", wpi.MD5)
+                    r = r.Replace("%IMAGE EXT%", wpi.Extension)
                     Dim nr As String = noscriptItemHTML
                     nr = nr.Replace("%IMAGE SRC%", GetImageWEBPATH(wpi.chanbName))
                     nr = nr.Replace("%FILE NAME%", wpi.realname)
@@ -1356,6 +1359,7 @@ Public Module GlobalFunctions
                 r = r.Replace("%IMAGE SIZE%", wpi.dimensions)
                 r = r.Replace("%THUMB_LINK%", GetImageWEBPATHRE(wpi.chanbName))
                 r = r.Replace("%IMAGE MD5%", wpi.md5)
+                r = r.Replace("%IMAGE EXT%", wpi.Extension)
                 sb.Append(r)
             End If
         Else

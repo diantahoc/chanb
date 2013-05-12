@@ -1,6 +1,20 @@
 <div class="postContainer replyContainer" id="pc%ID%">
+
 <div class="sideArrows" id="sa%ID%">&gt;&gt;</div>
+
 <div id="p%ID%" class="post reply">
+
+<div class="postInfoM mobile" id="pim%ID%">
+<span class="nameBlock">
+    %NAMESPAN%
+    <br>
+    <span class="subject">%SUBJECT%</span>
+</span>
+<span class="dateTime postNum" data-utc="%DATE UTC UNIX%">%DATE TEXT UTC%<a href="%POST LINK%"> No.</a>
+    <a href="%POST LINK%" title="Quote this post">%ID%</a>
+</span>
+</div>
+
 <div class="postInfo desktop" id="pi%ID%">
 <input name="proc%ID%" value="delete" type="checkbox">
 <span class="subject">%SUBJECT%</span>

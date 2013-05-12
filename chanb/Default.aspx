@@ -2,12 +2,12 @@
 <%@ Import Namespace = "chanb.GlobalVariables" %>
 <%@ Import Namespace = "chanb.GlobalFunctions" %>
 <%@ Import Namespace = "chanb.Language" %>
-<%  Session("SS") = "yotsubab"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" >
 <head>
 <title><% Response.Write(BoardTitle)%></title>
-<link rel="Stylesheet" href=<% Response.Write("'" & GetUserSelectedStyle(Session) & ".css'")%> />
+<link rel="Stylesheet" href='yotsubab.css' />
+<link rel="Stylesheet" href="mobile.css" />
 <script src="scripts.js" type="text/javascript" language="javascript"></script>
 <script type="text/javascript" src="jquery-1.4.2.min.js"></script>
 </head> 

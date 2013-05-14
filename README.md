@@ -23,6 +23,7 @@ Current Features
 * PDF Support (through the use of TallComponent PDFRasterizer library, not enabled by default).
 * 4chan-like interface, and mobile support.
 * Moderator powers customization.
+* Code and spolier tags support.
 
 There will be more of course.
 

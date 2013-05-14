@@ -5,6 +5,7 @@
 <div class="postInfoM mobile" id="pim%ID%">
 <span class="nameBlock">
     %NAMESPAN%
+    %UID%
     <br>
     <span class="subject">%SUBJECT%</span>
 </span>

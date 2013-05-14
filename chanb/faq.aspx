@@ -7,7 +7,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" >
 <head>
 <title><% Response.Write(BoardTitle)%></title>
-<link rel="Stylesheet" href=<% Response.Write("'" & GetUserSelectedStyle(Session) & ".css'")%> />
+<link rel="Stylesheet" href='yotsubab.css' />
 <script src="scripts.js" type="text/javascript" language="javascript"></script>
 </head> 
 <body>
@@ -22,7 +22,6 @@
 <tr>
 <td>
 <div id="globalrules" style="float: left">
-
 <span>Rules:</span>
 <ul>
 <il><span>• Do not post illegal material.</span></il><br />

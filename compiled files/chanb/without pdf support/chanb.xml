@@ -1,0 +1,135 @@
+﻿<?xml version="1.0"?>
+<doc>
+<assembly>
+<name>
+chanb
+</name>
+</assembly>
+<members>
+<member name="P:chanb.My.Resources.Resources.ResourceManager">
+	<summary>
+  Returns the cached ResourceManager instance used by this class.
+</summary>
+</member><member name="P:chanb.My.Resources.Resources.Culture">
+	<summary>
+  Overrides the current thread's CurrentUICulture property for all
+  resource lookups using this strongly typed resource class.
+</summary>
+</member><member name="P:chanb.My.Resources.Resources.doublequotes">
+	<summary>
+  Looks up a localized string similar to ".
+</summary>
+</member><member name="T:chanb.My.Resources.Resources">
+	<summary>
+  A strongly-typed resource class, for looking up localized strings, etc.
+</summary>
+</member><member name="F:chanb._mod.Head1">
+	<summary>
+Head1 control.
+</summary>
+	<remarks>
+Auto-generated field.
+To modify move field declaration from designer file to code-behind file.
+</remarks>
+</member><member name="P:chanb.My.MyWebExtension.Computer">
+	<summary>
+ Returns information about the host computer.
+ </summary>
+</member><member name="P:chanb.My.MyWebExtension.User">
+	<summary>
+ Returns information for the current Web user.
+ </summary>
+</member><member name="P:chanb.My.MyWebExtension.Request">
+	<summary>
+ Returns Request object.
+ </summary>
+</member><member name="P:chanb.My.MyWebExtension.Response">
+	<summary>
+ Returns Response object.
+ </summary>
+</member><member name="P:chanb.My.MyWebExtension.Log">
+	<summary>
+ Returns the Asp log object.
+ </summary>
+</member><member name="T:chanb.My.MyWebExtension">
+	<summary>
+ Module used to define the properties that are available in the My Namespace for Web projects.
+ </summary>
+	<remarks></remarks>
+</member><member name="M:chanb.ValuesStore.AddKey(System.String,System.String)">
+	<summary>
+ Update an existing key or add a new key.
+ </summary>
+	<param name="name"></param>
+	<param name="value"></param>
+	<remarks></remarks>
+</member><member name="T:chanb.ValuesStore">
+	<summary>
+ A class that represent a simple dictionary / data storing system.
+ Written by diantahoc
+ Project: Novelli Torrent
+ </summary>
+	<remarks></remarks>
+</member><member name="M:chanb.GlobalFunctions.ReplyTo(System.Int32,chanb.OPData)">
+	<summary>
+ Append a post to thread
+ </summary>
+	<param name="id">id of the thread</param>
+	<param name="data">Poster data</param>
+	<remarks></remarks>
+</member><member name="M:chanb.GlobalFunctions.saveFile(System.Web.HttpPostedFile,System.Boolean)">
+	<summary>
+ Save single file
+ </summary>
+	<param name="f"></param>
+	<param name="reply"></param>
+	<returns></returns>
+	<remarks></remarks>
+</member><member name="M:chanb.GlobalFunctions.saveMFile(System.Web.HttpFileCollection)">
+	<summary>
+ Save multiple files.
+ </summary>
+	<param name="li"></param>
+	<returns></returns>
+	<remarks></remarks>
+</member><member name="M:chanb.GlobalFunctions.GetImageWEBPATH(System.String)">
+	<summary>
+ For full image
+ </summary>
+	<param name="name"></param>
+	<returns></returns>
+	<remarks></remarks>
+</member><member name="M:chanb.GlobalFunctions.GetImageWEBPATHRE(System.String)">
+	<summary>
+ For thumbnails
+ </summary>
+	<param name="name"></param>
+	<returns></returns>
+	<remarks></remarks>
+</member><member name="M:chanb.GlobalFunctions.MatchBBCode(System.String,System.String)">
+	<summary>
+ Return the bbcode and the data inside.
+ </summary>
+	<param name="codename"></param>
+	<param name="data"></param>
+	<returns></returns>
+	<remarks></remarks>
+</member><member name="F:chanb.faq.form1">
+	<summary>
+form1 control.
+</summary>
+	<remarks>
+Auto-generated field.
+To modify move field declaration from designer file to code-behind file.
+</remarks>
+</member><member name="F:chanb.modaction.form1">
+	<summary>
+form1 control.
+</summary>
+	<remarks>
+Auto-generated field.
+To modify move field declaration from designer file to code-behind file.
+</remarks>
+</member>
+</members>
+</doc>

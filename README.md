@@ -1,7 +1,8 @@
-chanb
+Chanb
 =====
 
-chanb is an ASP.NET Image board written in visual basic. Licensed legally under the GPLv2
+Chanb (Channel Board) is an ASP.NET Image board written in Visual Basic. 
+Licensed legally under the GPLv2
 
 Live preview
 =============
@@ -10,23 +11,44 @@ http://www.chanb.somee.com
 
 The website gets cleaned each while.
 
-Features
+Current Features
 ========
 
-* Multiple files per post 
-* Poster ID support
-* PDF Support (not yet)
-* 4chan-like interface
-* Catalog (not yet)
-* Multilanguage support (not complete)
+* Multiple files per post .
+* Automatic set dumper (with file counting support).
+* SVG documents support.
+* Duplicate image checking support.
+* Smart Linking of duplicate images to the same real file, therefore reducing the consumed disk space.
+* Poster ID support.
+* PDF Support (through the use of TallComponent PDFRasterizer library, not enabled by default).
+* 4chan-like interface, and mobile support.
+* Moderator powers customization.
 
 There will be more of course.
+
+Planned features
+==============
+
+* Catalog
+* Multilanguage support.
+* Admin panel
+* Installer
+* Online language adder and editor.
+* Integrated archive.
 
 How to install
 ==============
 
-Open the project in visual studio, and open the GlobalFunctions file. Change the 'SQLConnectionString' variable to your
-server connection string. After that, open the GlobalVariables file, and adjust it. Instructions are commented inside of it. 
-When you have finished adjusting the code, compile it, and upload all .aspx files to your application root. Upload the bin 
-directory in the same directory as the .aspx files. Make sure you also make a folder to store files, and make that folder 
-accessible from the web. Don't forget to upload the templates files.
+Copy the binary files to your application root, under a directory called bin. Make sure you copy the required dlls, and the templates files.
+
+Make a "db.txt" file in the same directory as chanb.dll, write inside of it the SQL connection string.
+
+Make sure you prepare the database with the SQL template provided. Note: The provided template drop all existing items before updating the database.
+
+And copy all the .aspx files to your application root.
+
+Make a "images" folder in your application root.
+
+Currently, you can change settings by editing the data.as file which is automatically made in the same folder as chanb.dll .
+
+Enjoy

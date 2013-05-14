@@ -9,10 +9,10 @@ function createUf() {
     divTag.setAttribute("name", "d" + Math.random().toString(10));
 
     divTag.setAttribute("type", "file");
-
-
+    
+    
     var br = document.createElement("br");
-
+    
     document.getElementById("files").appendChild(br);
     document.getElementById("files").appendChild(divTag);
 }
@@ -29,7 +29,7 @@ function goleft(id) {
 
 function goright(id) {
 
-    var $active = $(".active." + id);
+    var $active = $(".active." + id );
     var $next = $active.next().length ? $active.next() : $("." + id + ".focusitem:first");
 
     $active.removeClass('active');

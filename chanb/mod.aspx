@@ -6,10 +6,15 @@
     If (Not Request.Item("modname") = "") AndAlso (Not Request.Item("modpass") = "") Then
         If IsModLoginValid(Request.Item("modname"), Request.Item("modpass")) Then
             Session("mod") = CStr(True)
+            Session("modpowers") = GetModPowers(Request.Item("modname"))
+            Session("modmenu") = GetModeratorHTMLMenu("%ID%", Session("modpowers"))
             Response.Write("Login successful")
             Response.Redirect("default.aspx")
         End If
     End If
+    
+  
+    
         %>
 
 <html xmlns="http://www.w3.org/1999/xhtml" >

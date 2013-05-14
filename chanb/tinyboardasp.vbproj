@@ -27,7 +27,8 @@
     <NoWarn>
     </NoWarn>
     <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
-    <Optimize>true</Optimize>
+    <Optimize>false</Optimize>
+    <RemoveIntegerChecks>true</RemoveIntegerChecks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -43,11 +44,11 @@
   <ItemGroup>
     <Reference Include="ColorCode, Version=1.0.1.62759, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\ColorCode.dll</HintPath>
+      <HintPath>..\..\..\ColorCode.dll</HintPath>
     </Reference>
-    <Reference Include="svg, Version=0.5.2.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Svg, Version=0.5.2.36557, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\svg.dll</HintPath>
+      <HintPath>..\..\..\Svg.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -55,11 +56,25 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Web.Extensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.Web.Mobile" />
+    <Reference Include="TallComponents.PDF.Rasterizer, Version=3.0.81.0, Culture=neutral, PublicKeyToken=76bf2dedaa68ccb5, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\TallComponents.PDF.Rasterizer.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Import Include="Microsoft.VisualBasic" />
@@ -89,16 +104,19 @@
     <Content Include="chan.css" />
     <Content Include="Default.aspx" />
     <Content Include="faq.aspx" />
-    <Content Include="favicon.ico" />
     <Content Include="jquery-1.4.2.min.js" />
     <Content Include="JScript1.js" />
-    <Content Include="mainpageTE.htm" />
     <Content Include="mobile.css" />
+    <Content Include="RotatorTemplate.txt" />
+    <Content Include="imageTemplate.txt" />
+    <Content Include="mainpageTE.htm" />
     <Content Include="mod.aspx" />
     <Content Include="modaction.aspx" />
+    <Content Include="opPostTemplate.txt" />
     <Content Include="post.aspx" />
+    <Content Include="postTemplate.txt" />
     <Content Include="scripts.js" />
-    <Content Include="tinyboardasp.vbproj" />
+    <Content Include="threadTemplate.txt" />
     <Content Include="Web.config" />
     <Content Include="yotsubab.css" />
   </ItemGroup>
@@ -108,7 +126,7 @@
     </Compile>
     <Compile Include="adminaction.aspx.vb">
       <DependentUpon>adminaction.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
+      <SubType>ASPXCodebehind</SubType>
     </Compile>
     <Compile Include="BanData.vb" />
     <Compile Include="DataInitializer.vb" />
@@ -125,7 +143,7 @@
     </Compile>
     <Compile Include="faq.aspx.vb">
       <DependentUpon>faq.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
+      <SubType>ASPXCodebehind</SubType>
     </Compile>
     <Compile Include="GlobalFunctions.vb" />
     <Compile Include="GlobalVariables.vb" />
@@ -137,14 +155,14 @@
     </Compile>
     <Compile Include="mod.aspx.vb">
       <DependentUpon>mod.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
+      <SubType>ASPXCodebehind</SubType>
     </Compile>
     <Compile Include="modaction.aspx.designer.vb">
       <DependentUpon>modaction.aspx</DependentUpon>
     </Compile>
     <Compile Include="modaction.aspx.vb">
       <DependentUpon>modaction.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
+      <SubType>ASPXCodebehind</SubType>
     </Compile>
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">

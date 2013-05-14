@@ -1,35 +1,53 @@
 ﻿Public Module GlobalVariables
 
-    'Board related
-    Public BoardTitle As String = "ChanBoard"
-    Public BoardLetter As String = "c"
-    Public BoardDesc As String = "VB.NET Imageboard"
-    Public TimeBetweenRequestes As Integer = 15 ' in seconds
-    Public footerText As String = "<a href='https://github.com/diantahoc/chanb' target='_blank'>ChanB</a> ASP.NET board."
-    Public MaximumFileSize As Long = 15 * 1024 * 1024 ' 15 MB
-    Public DeleteFiles As Boolean = True
-    Public ThreadPerPage As Integer = 10
-    Public MaximumPages As Integer = 15
-    Public AllowDuplicatesFiles As Boolean = False
-    Public SmartLinkDuplicateImages As Boolean = True
-    Public TrailPosts As Integer = 3
-    Public EnableUserID As Boolean = True
-    Public BumpLimit As Integer = 250
-    Public ResizeMethode As Integer = 1
+    Dim DI As New DataInitializer
 
-    'Server related
-    Public STORAGEFOLDER As String = "PHYSICAL PATH TO\dtin" ' Make sure that the directory is write-able first
-    Public StoragefolderWEB As String = "http://HOSTNAME/dtin/" ' The storage folder must be accessible from the web
+#Region "Board configuration"
 
-    'Physical path , not relative, to template files.
-    Public ReadOnly postTemplate As String = IO.File.ReadAllText("PHYSICAL PATH TO\postTemplate.txt")
-    Public ReadOnly imageTemplate As String = IO.File.ReadAllText("PHYSICAL PATH TO\imageTemplate.txt")
-    Public ReadOnly opPostTemplate As String = IO.File.ReadAllText("PHYSICAL PATH TO\opPostTemplate.txt")
-    Public ReadOnly threadTemplate As String = IO.File.ReadAllText("PHYSICAL PATH TO\threadTemplate.txt")
-    Public ReadOnly rotatorTemplate As String = IO.File.ReadAllText("PHYSICAL PATH TO\RotatorTemplate.txt")
-    Public ReadOnly idHtml As String = "<span class='posteruid id_%UID%'>(ID: <span class='hand' title='Highlight posts by this ID'>%UID%</span>)</span>"
-    Public replyButtonHTML As String = "&nbsp;<span>[<a href='%POST LINK%' class='replylink'>Reply</a>]</span>"
+    Public BoardTitle As String = DI.BoardTitle
+    Public BoardLetter As String = DI.BoardLetter
+    Public BoardDesc As String = DI.BoardDescription
+    Public TimeBetweenRequestes As Integer = DI.FloodInterval  ' in seconds
+    Public footerText As String = DI.FooterText
+    Public MaximumFileSize As Long = DI.MaximumFileSize
+    Public DeleteFiles As Boolean = DI.AutoDeleteFiles
+    Public ThreadPerPage As Integer = DI.ThreadPerPage
+    Public MaximumPages As Integer = DI.MaximumPages
+    Public AllowDuplicatesFiles As Boolean = DI.AllowDuplicatesFiles
+    Public SmartLinkDuplicateImages As Boolean = DI.SmartLinkDuplicateImages
+    Public TrailPosts As Integer = DI.TrailPostsCount
+    Public EnableUserID As Boolean = DI.EnableUserID
+    Public BumpLimit As Integer = DI.BumpLimit
+    Public ResizeMethode As Integer = DI.ResizeMethod
+    Public EnableArchive As Boolean = DI.EnableArchive
+    Public DefaultModPowers As String = DI.DefaultModPowers  ' In that order: Ban, Delete, Toggle sticky, Toggle Locked, Edit post.
+    Public MaximumPostLenght As Integer = 0
+
+#End Region
+
+#Region "Server configuration"
+
+    Public STORAGEFOLDER As String = DI.PhysicalStorageFolderPath
+    Public StoragefolderWEB As String = DI.WebStorageFolderPath
+
+#End Region
+
+#Region "HTML Templates"
+
+
+    Public ReadOnly postTemplate As String = DI.ReplyPostTemplate
+    Public ReadOnly imageTemplate As String = DI.ImageTemplate
+    Public ReadOnly opPostTemplate As String = DI.OPPostTemplate
+    Public ReadOnly threadTemplate As String = DI.ThreadTemplate
+    Public ReadOnly rotatorTemplate As String = DI.ImageRotatorTemplate
+
+    Public ReadOnly idHtml As String = "<span class='posteruid id_%UID%'>(ID: <span class='hand' title='%PO%.'>%UID%</span>)</span>".Replace("%PO%", posterIdstr)
+    Public ReadOnly replyButtonHTML As String = "&nbsp;<span>[<a href='%POST LINK%' target='_blank' class='replylink'>%RE%</a>]</span>".Replace("%RE%", replyStr)
     Public ReadOnly noscriptItemHTML As String = "<a href='%IMAGE SRC%' target='_blank'>%FILE NAME%<br/><img src='%THUMB_LINK%' style='width: 100px; height: 100px' /></a><br/>"
-    Public ReadOnly modMenu As String = "<a href='modaction.aspx?action=banpost&postid=%ID%'>Ban</a>,&nbsp;<a href='modaction.aspx?action=delpost&id=%ID%'>Delete</a>,&nbsp;<a href='modaction.aspx?action=tgsticky&id=%ID%'>Toggle sticky</a>,&nbsp;<a href='modaction.aspx?action=tglock&id=%ID%'>Toggle lock.</a>"
+    Public ReadOnly modMenu As String() = {"<a href='modaction.aspx?action=banpost&id=%ID%'>LANG</a>".Replace("LANG", banStr), "<a href='modaction.aspx?action=delpost&id=%ID%'>LANG</a>".Replace("LANG", deletepostStr), "<a href='modaction.aspx?action=tgsticky&id=%ID%'>LANG</a>".Replace("LANG", tgstickstr), "<a href='modaction.aspx?action=tglock&id=%ID%'>LANG</a>".Replace("LANG", tglockstr), "<a href='modaction.aspx?action=editpost&id=%ID%'>LANG</a>".Replace("LANG", editpostStr)}
+    Public ReadOnly bannedMessageHTML As String = "<br><strong style=''color: red;''>%MES%</strong>".Replace("%MES%", banMsgStr)
+
+#End Region
 
 End Module
+

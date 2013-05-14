@@ -26,6 +26,12 @@
     Public andStr As String = " and "
     Public p2str As String = " % image reply(ies) "
     Public omittedStr As String = " omitted. Click <a href='%POSTLINK%' target='_blank' class='replylink'>here</a> to view."
+    Public banStr As String = "Ban user"
+    Public deletepostStr As String = "Delete post"
+    Public tgstickstr As String = "Toggle sticky"
+    Public tglockstr As String = "Toggle Lock"
+    Public editpostStr As String = "Edit post"
+    Public posterIdstr As String = "Poster ID"
 
     Public ImageRequired As String = "You cannot start a new thread without an image."
     Public SuccessfulPostString As String = "Post Succesful !"
@@ -38,7 +44,14 @@
     Public BadOrNoImage As String = "No image or image contains errors."
     Public BannedMessage As String = "You are banned from posting."
     Public lockedMessage As String = "Thread is locked."
-    Public noBlankpost As String = "Blank post are not allowed"
+    Public noBlankpost As String = "Blank post are not allowed."
+    Public duplicateFile As String = "Duplicate image detected."
+    Public UnsupportedFile As String = "Unsupported file type."
+
+    Public smallRuleList As String = ""
+
+    Public banMsgStr As String = "User was banned for this post."
+    Public commentToolong As String = "<br/><span class='summary'>Comment is too long. Click <a href='%POSTLINK%' target='_blank'>here</a> to view</span>"
 
 #Region "Arabic"
     'Public NAMEString As String = "الاسم"

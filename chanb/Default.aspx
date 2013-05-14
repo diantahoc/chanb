@@ -5,6 +5,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" >
 <head>
+<%  Session.Add("chanb", "chanb") ' To prevent session destroy  %>
 <title><% Response.Write(BoardTitle)%></title>
 <link rel="Stylesheet" href='yotsubab.css' />
 <link rel="Stylesheet" href="mobile.css" />
@@ -33,8 +34,8 @@
 </td>
 </tr><tr>
 <th><% Response.Write(SUBJECTString)%></th>
-<td><input style="float:left;" name="subject" size="25" type="text">
-<input accesskey="s" style="margin-left:2px;" name="post" value="<% If Not Request.Item("id") = "" then Response.write(replyStr) else Response.Write(newthreadStr) %>" type="submit"></td>
+<td><input style="float:left;" name="subject" size="25" type="text"/>
+<input accesskey="s" style="margin-left:2px;" name="post" value="<% If Not Request.Item("id") = "" then Response.write(replyStr) else Response.Write(newthreadStr) %>" type="submit"/></td>
 </tr><tr>
 <th><% Response.Write(COMMENTString)%></th>
 <td><textarea name="comment" id="commentfield" rows="5" cols="35"></textarea></td>
@@ -48,7 +49,7 @@
 </td>   
 </tr><tr>
 <th><% Response.Write(PASSWORDString)%></th>
-<td><input name="password" size="12" autocomplete="off" type="text" value="<% Response.Write(GetSessionPassword(Request.Cookies, Session)) %>">
+<td><input name="password" size="12" autocomplete="off" type="text" value="<% Response.Write(GetSessionPassword(Request.Cookies, Session)) %>"/>
 <span>(<% Response.Write(forPD)%>)</span>
 </td>
 </tr>
@@ -69,12 +70,15 @@
 <hr />
  <form name="deletation" action="post.aspx" enctype="application/x-www-form-urlencoded" method="get">
 <div class="board">
+
  <%    
      
-     Dim isMod As Boolean = CBool(Session("mod"))
+     Dim para As New HTMLParameters()
+     para.IsModerator = CBool(Session("mod"))
+     para.ModeratorPowers = CStr(Session("modpowers"))
+     para.modMenu = CStr(Session("modmenu"))
      
-     Dim validID As Boolean = False
-     
+     Dim validID As Boolean = False  
      Try
          Dim i = CInt(Request.Item("id"))
          validID = True
@@ -85,8 +89,9 @@
      
      If Not (Request.Item("id") = "") And validID Then
          
-         'Display thread or post thread      
-         Dim opID As Integer = Request.Item("id")
+         'Display a thread and children posts 
+         Dim opID As Integer = CInt(Request.Item("id"))
+         opID = Math.Abs(opID)
          Dim po As WPost = FetchPostData(opID)
         
          If po.type Is Nothing Then
@@ -96,25 +101,30 @@
          ' Check if it is a reply or a thread , 0 = thread, 1 = reply
          ' If it is a reply, redirect to parent thread.
          If po.type = 1 Then Response.Redirect("default.aspx?id=" & po.parent & "#p" & po.PostID)
-    
-         'Write OP Post        
-         Response.Write(GetOPPostHTML(opID, False, isMod))
+         
+         'Write OP Post 
+         para.replyButton = False
+         para.isTrailPost = False
+         Response.Write(GetOPPostHTML(opID, para))
          'Write replies, if any.  
-         Response.Write(GetRepliesHTML(opID, isMod))
+         Response.Write(GetRepliesHTML(opID, para))
                  
      Else
          
          'Display a list of current threads
          Dim startIndex As Integer = 0
-         If Not (Request.Item("startindex") = "") Then startIndex = CInt(Request.Item("startindex")) * (ThreadPerPage)       
+         para.replyButton = True
+         para.isTrailPost = True
+         If Not (Request.Item("startindex") = "") Then startIndex = CInt(Request.Item("startindex")) * (ThreadPerPage)
          For Each x In GetThreads(startIndex, ThreadPerPage - 1 + startIndex, False)
-             Response.Write(GetThreadHTML(x, isMod, TrailPosts))
+             Response.Write(GetThreadHTML(x, para, TrailPosts))
          Next
          
      End If
      
      
 %>
+
 </div>
 <div style="float: right;">
 <div class="deleteform desktop">

@@ -20,10 +20,12 @@ Current Features
 * Duplicate image checking support.
 * Smart Linking of duplicate images to the same real file, therefore reducing the consumed disk space.
 * Poster ID support.
-* PDF Support (through the use of TallComponent PDFRasterizer library, not enabled by default).
+* PDF Support (proper thumbnail generation require TallComponent PDFRasterizer library, not enabled by default).
 * 4chan-like interface, and mobile support.
 * Moderator powers customization.
 * Code and spolier tags support.
+* Markdown support.
+* Integrated archive.
 
 There will be more of course.
 
@@ -35,7 +37,7 @@ Planned features
 * Admin panel
 * Installer
 * Online language adder and editor.
-* Integrated archive.
+* Video (FLV, WEBM) and audio (MP3, FLAC)
 
 How to install
 ==============

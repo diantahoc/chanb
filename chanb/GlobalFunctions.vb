@@ -1,5 +1,7 @@
 ﻿Imports System.Data.SqlClient
 
+#Const EnablePDF = True
+
 Public Module GlobalFunctions
 
     Dim g As New DBInitializer
@@ -30,7 +32,7 @@ Public Module GlobalFunctions
     End Function
 
     Private Function ProcessInputs(ByVal x As String) As String
-         Dim lowcaseX As String = x
+        Dim lowcaseX As String = x
         'HTML ISO 8879 Numerical Character References 
         'http://sunsite.berkeley.edu/amher/iso_8879.html
         lowcaseX = lowcaseX.Replace("&", "&amp;")
@@ -61,7 +63,7 @@ Public Module GlobalFunctions
 
     Function FetchPostData(ByVal id As Long) As WPost
         Dim cnx As New SqlConnection(SQLConnectionString)
-        Dim queryString As String = "SELECT type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua, posterID, sticky, locked FROM  board  WHERE (id = " & id & ")"
+        Dim queryString As String = "SELECT type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua, posterID, sticky, locked, mta FROM  board  WHERE (id = " & id & ")"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         Dim reader As SqlDataReader = queryObject.ExecuteReader
@@ -81,6 +83,7 @@ Public Module GlobalFunctions
             po.posterID = CStr(ConvertNoNull(reader(11)))
             If CInt(ConvertNoNull(reader(12))) = 1 Then po.isSticky = True Else po.isSticky = False
             If CInt(ConvertNoNull(reader(13))) = 1 Then po.locked = True Else po.locked = False
+            If CInt(ConvertNoNull(reader(14))) = 1 Then po.archived = True Else po.archived = False
         End While
         Return po
         reader.Close()
@@ -111,8 +114,8 @@ Public Module GlobalFunctions
     End Sub
 
     Private Sub CheckForPrunedThreads()
-        Dim currentThread As Integer() = GetThreads(0, (MaximumPages * ThreadPerPage) - 1, True) ' list of thread that haven't reached the last page. 
-        Dim allThread As Integer() = GetThreads(0, MaximumPages * ThreadPerPage, True) ' list of all threads.
+        Dim currentThread As Integer() = GetThreads(0, (MaximumPages * ThreadPerPage) - 1, True, False) ' list of thread that haven't reached the last page. 
+        Dim allThread As Integer() = GetThreads(0, MaximumPages * ThreadPerPage, True, False) ' list of all current threads.
         Dim l As New List(Of Integer) ' list of thread that should be pruned
         For Each x As Integer In allThread
             If Array.IndexOf(currentThread, x) = -1 Then
@@ -125,9 +128,14 @@ Public Module GlobalFunctions
         Next
     End Sub
 
-    Function GetThreadsCount() As Integer
+    Function GetThreadsCount(ByVal archive As Boolean) As Integer
         Dim cnx As New SqlConnection(SQLConnectionString)
-        Dim queryString As String = "Select Count(ID) as [Total Records] from board where (type=0)"
+        Dim queryString As String = ""
+        If archive Then
+            queryString = "Select Count(ID) as [Total Records] from board where (type=0) AND (mta=1)"
+        Else
+            queryString = "Select Count(ID) as [Total Records] from board where (type=0) AND (mta=0)"
+        End If
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         Dim i As Integer = 0
@@ -179,7 +187,7 @@ Public Module GlobalFunctions
     End Sub
 
     Function GetThreadChildrenPosts(ByVal id As Long) As Integer()
-        Dim ila As New List(Of Integer)   
+        Dim ila As New List(Of Integer)
         Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = "SELECT ID FROM board  WHERE (parentT = " & id & ") ORDER BY ID"
         Dim queryObject As New SqlCommand(queryString, cnx)
@@ -193,42 +201,68 @@ Public Module GlobalFunctions
         Return ila.ToArray
     End Function
 
-    Function GetThreads(ByVal startIndex As Integer, ByVal count As Integer, ByVal ignoreStickies As Boolean) As Integer()
-        Dim ila As New List(Of Integer)
-        Dim cnx As New SqlConnection(SQLConnectionString)
-        cnx.Open()
-        If Not ignoreStickies Then
-            Dim queryString1 As String = "SELECT ID FROM board  WHERE (type = 0) AND (sticky = 1) AND (mta = 0) ORDER BY ID"
-            Dim queryObject1 As New SqlCommand(queryString1, cnx)
-            Dim reader1 As SqlDataReader = queryObject1.ExecuteReader
-            While reader1.Read
+    Function GetThreads(ByVal startIndex As Integer, ByVal count As Integer, ByVal ignoreStickies As Boolean, ByVal arhive As Boolean) As Integer()
+        If Not arhive Then
+            Dim ila As New List(Of Integer)
+            Dim cnx As New SqlConnection(SQLConnectionString)
+            cnx.Open()
+            If Not ignoreStickies Then
+                Dim queryString1 As String = "SELECT ID FROM board  WHERE (type = 0) AND (sticky = 1) AND (mta = 0) ORDER BY ID"
+                Dim queryObject1 As New SqlCommand(queryString1, cnx)
+                Dim reader1 As SqlDataReader = queryObject1.ExecuteReader
+                While reader1.Read
+                    Try
+                        ila.Add(CInt(ConvertNoNull(reader1(0))))
+                    Catch ex As Exception
+                    End Try
+                End While
+                reader1.Close()
+            End If
+            Dim queryString As String = "SELECT ID FROM board  WHERE (type = 0) AND (sticky = 0) AND (mta = 0) ORDER BY bumplevel DESC"
+            Dim queryObject As New SqlCommand(queryString, cnx)
+            Dim reader As SqlDataReader = queryObject.ExecuteReader
+            While reader.Read
+                ila.Add(CInt(reader.Item(0)))
+            End While
+            reader.Close()
+            cnx.Close()
+
+            'MS SQL does not seem to support the MySQL Limit startIndex, count function
+            Dim il As New List(Of Integer)
+            For i As Integer = startIndex To count Step 1
                 Try
-                    ila.Add(CInt(ConvertNoNull(reader1(0))))
+                    il.Add(ila.Item(i))
                 Catch ex As Exception
                 End Try
+            Next
+            ila.Clear()
+            Return il.ToArray
+            il.Clear()
+        Else
+            'Get archived thread. Stickies are ignored in the archive
+            Dim ila As New List(Of Integer)
+            Dim cnx As New SqlConnection(SQLConnectionString)
+            cnx.Open()
+            Dim queryString As String = "SELECT ID FROM board  WHERE (type = 0) AND (mta = 1) ORDER BY bumplevel DESC"
+            Dim queryObject As New SqlCommand(queryString, cnx)
+            Dim reader As SqlDataReader = queryObject.ExecuteReader
+            While reader.Read
+                ila.Add(CInt(reader.Item(0)))
             End While
-            reader1.Close()
+            reader.Close()
+            cnx.Close()
+            'MS SQL does not seem to support the MySQL Limit startIndex, count function
+            Dim il As New List(Of Integer)
+            For i As Integer = startIndex To count Step 1
+                Try
+                    il.Add(ila.Item(i))
+                Catch ex As Exception
+                End Try
+            Next
+            ila.Clear()
+            Return il.ToArray
+            il.Clear()
         End If
-        Dim queryString As String = "SELECT ID FROM board  WHERE (type = 0) AND (sticky = 0) AND (mta = 0) ORDER BY bumplevel DESC"
-        Dim queryObject As New SqlCommand(queryString, cnx)
-        Dim reader As SqlDataReader = queryObject.ExecuteReader
-        While reader.Read
-            ila.Add(CInt(reader.Item(0)))
-        End While
-        reader.Close()
-        cnx.Close()
-
-        'MS SQL does not seem to support the MySQL Limit startIndex, count function
-        Dim il As New List(Of Integer)
-        For i As Integer = startIndex To count Step 1
-            Try
-                il.Add(ila.Item(i))
-            Catch ex As Exception
-            End Try
-        Next
-        ila.Clear()
-        Return il.ToArray
-        il.Clear()
     End Function
 
     Function IsModLoginValid(ByVal name As String, ByVal password As String) As Boolean
@@ -375,61 +409,104 @@ Public Module GlobalFunctions
 
                     Return sp
                 Case "PDF"
-                    'Download TallComponet PDF Rasterizer and add a project reference, and uncomment this section.
+#If EnablePDF Then
+ Dim dd As String = CStr(Date.UtcNow.ToFileTime)
+                    Dim p As String = STORAGEFOLDER & "\" & dd & "." & fileextension
+                    'Thumb path
+                    Dim thumb As String = STORAGEFOLDER & "\th" & dd & ".jpg"
+                    f.SaveAs(p)
 
-                    'Dim dd As String = CStr(Date.UtcNow.ToFileTime)
-                    'Dim p As String = STORAGEFOLDER & "\" & dd & "." & fileextension
-                    ''Thumb path
-                    'Dim thumb As String = STORAGEFOLDER & "\th" & dd & ".jpg"
-                    'f.SaveAs(p)
+                    Dim fs As New IO.FileStream(p, IO.FileMode.Open)
+                    Dim md5string As String = MD5(fs)
+                    fs.Close()
 
-                    'Dim fs As New IO.FileStream(p, IO.FileMode.Open)
-                    'Dim md5string As String = MD5(fs)
-                    'fs.Close()
+                    Dim sp As String = ""
 
-                    'Dim sp As String = ""
+                    If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
+                        If SmartLinkDuplicateImages = False Then
+                            FileIO.FileSystem.DeleteFile(p)
+                            FileIO.FileSystem.DeleteFile(thumb)
+                            Throw New ArgumentException(duplicateFile)
+                        Else
+                            Dim wpi As WPostImage = GetImageDataByMD5(md5string)
+                            FileIO.FileSystem.DeleteFile(p)
+                            sp = wpi.chanbName & ":" & CStr(wpi.size) & ":" & wpi.dimensions & ":" & wpi.realname & ":" & wpi.md5
+                        End If
+                    Else
 
-                    'If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
-                    '    If SmartLinkDuplicateImages = False Then
-                    '        FileIO.FileSystem.DeleteFile(p)
-                    '        FileIO.FileSystem.DeleteFile(thumb)
-                    '        Throw New ArgumentException(duplicateFile)
-                    '    Else
-                    '        Dim wpi As WPostImage = GetImageDataByMD5(md5string)
-                    '        FileIO.FileSystem.DeleteFile(p)
-                    '        sp = wpi.chanbName & ":" & CStr(wpi.size) & ":" & wpi.dimensions & ":" & wpi.realname & ":" & wpi.md5
-                    '    End If
-                    'Else
+                        Dim fileS As New IO.FileStream(p, IO.FileMode.Open)
 
-                    '    Dim fileS As New IO.FileStream(p, IO.FileMode.Open)
+                        Dim pd As New TallComponents.PDF.Rasterizer.Document(fileS)
+                        Dim page As TallComponents.PDF.Rasterizer.Page = pd.Pages(0)
 
-                    '    Dim pd As New TallComponents.PDF.Rasterizer.Document(fileS)
-                    '    Dim page As TallComponents.PDF.Rasterizer.Page = pd.Pages(0)
+                        Dim scale As Double = 150 / 72
 
-                    '    Dim scale As Double = 150 / 72
+                        Dim pdfBi As Drawing.Bitmap = New Drawing.Bitmap(CInt(scale * page.Width), CInt(scale * page.Height))
 
-                    '    Dim pdfBi As Drawing.Bitmap = New Drawing.Bitmap(CInt(scale * page.Width), CInt(scale * page.Height))
+                        Dim graph As Drawing.Graphics = Drawing.Graphics.FromImage(pdfBi)
+                        graph.SmoothingMode = Drawing.Drawing2D.SmoothingMode.AntiAlias
+                        graph.ScaleTransform(CSng(scale), CSng(scale))
+                        graph.Clear(Drawing.Color.White)
+                        page.Draw(graph)
 
-                    '    Dim graph As Drawing.Graphics = Drawing.Graphics.FromImage(pdfBi)
-                    '    graph.SmoothingMode = Drawing.Drawing2D.SmoothingMode.AntiAlias
-                    '    graph.ScaleTransform(CSng(scale), CSng(scale))
-                    '    graph.Clear(Drawing.Color.White)
-                    '    page.Draw(graph)
+                        graph.Dispose()
+                        fileS.Close()
 
-                    '    graph.Dispose()
-                    '    fileS.Close()
+                        If (pdfBi.Width * pdfBi.Height) < 62500 Then
+                            pdfBi.Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
+                        Else
+                            ResizeImage(pdfBi, 250).Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
+                        End If
+                        sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & pdfBi.Size.Width & "x" & pdfBi.Size.Height & ":" & f.FileName & ":" & md5string
+                        pdfBi.Dispose()
 
-                    '    If (pdfBi.Width * pdfBi.Height) < 62500 Then
-                    '        pdfBi.Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
-                    '    Else
-                    '        ResizeImage(pdfBi, 250).Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
-                    '    End If
-                    '    sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & pdfBi.Size.Width & "x" & pdfBi.Size.Height & ":" & f.FileName & ":" & md5string
-                    '    pdfBi.Dispose()
+                    End If
+                    Return sp
+#Else
+                    Dim dd As String = CStr(Date.UtcNow.ToFileTime)
+                    Dim p As String = STORAGEFOLDER & "\" & dd & "." & fileextension
+                    'Thumb path
+                    Dim thumb As String = STORAGEFOLDER & "\th" & dd & ".jpg"
+                    f.SaveAs(p)
 
-                    'End If
-                    'Return sp
-                    Return "" ' Uncomment this line if you want to support PDF files
+                    Dim fs As New IO.FileStream(p, IO.FileMode.Open)
+                    Dim md5string As String = MD5(fs)
+                    fs.Close()
+
+                    Dim sp As String = ""
+
+                    If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
+                        If SmartLinkDuplicateImages = False Then
+                            FileIO.FileSystem.DeleteFile(p)
+                            FileIO.FileSystem.DeleteFile(thumb)
+                            Throw New ArgumentException(duplicateFile)
+                        Else
+                            Dim wpi As WPostImage = GetImageDataByMD5(md5string)
+                            FileIO.FileSystem.DeleteFile(p)
+                            sp = wpi.ChanbName & ":" & CStr(wpi.Size) & ":" & wpi.Dimensions & ":" & wpi.RealName & ":" & wpi.MD5
+                        End If
+                    Else
+
+                        Dim pdfBi As Drawing.Bitmap = New Drawing.Bitmap(150, 30)
+
+                        Dim graph As Drawing.Graphics = Drawing.Graphics.FromImage(pdfBi)
+                        graph.FillRegion(Drawing.Brushes.White, New Drawing.Region(New Drawing.RectangleF(0, 0, 150, 30)))
+                        graph.DrawString("PDF File", New Drawing.Font(Drawing.FontFamily.GenericSansSerif, 20, Drawing.FontStyle.Regular, Drawing.GraphicsUnit.Pixel), Drawing.Brushes.Red, 0, 0)
+
+                        graph.Dispose()
+
+
+                        If (pdfBi.Width * pdfBi.Height) < 62500 Then
+                            pdfBi.Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
+                        Else
+                            ResizeImage(pdfBi, 250).Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
+                        End If
+                        sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & pdfBi.Size.Width & "x" & pdfBi.Size.Height & ":" & f.FileName & ":" & md5string
+                        pdfBi.Dispose()
+
+                    End If
+                    Return sp
+#End If
                 Case ""
                     Return ""
                 Case Else
@@ -901,6 +978,7 @@ Public Module GlobalFunctions
         Dim sr As String = sb.ToString
         sr = MatchBBCode("spoiler", sr)
         sr = MatchBBCode("code", sr)
+        sr = MatchBBCode("md", sr)
         Return sr
     End Function
 
@@ -962,6 +1040,26 @@ Public Module GlobalFunctions
                 Catch ex As Exception
                     Return data
                 End Try
+            Case "md"
+                Dim regSTR As String = "\[/?md\]"
+                Dim mdata As String = data.Replace("&#91;", "[").Replace("&#93;", "]").Replace("&#47;", "/")
+                Dim st As String() = Regex.Split(mdata, regSTR)
+                Dim ismath As Boolean = False
+                For i As Integer = 0 To st.Length - 1 Step 1
+                    If Not ismath Then
+                        'Not a match 
+                    Else
+                        Dim md As New MarkdownSharp.Markdown
+                        Dim mdtext As String = st.ElementAt(i)
+                        mdtext = RemoveHTMLEscapes(mdtext)
+                        mdtext = mdtext.Replace("<br>", "")
+                        mdata = mdata.Replace(st.ElementAt(i), md.Transform(mdtext))
+                    End If
+                    ismath = Not ismath
+                Next
+                mdata = mdata.Replace("[md]", "")
+                mdata = mdata.Replace("[/md]", "")
+                Return mdata
             Case Else
                 Return data
         End Select
@@ -1130,8 +1228,8 @@ Public Module GlobalFunctions
         ''Post text
         If parameters.isTrailPost Then
             Dim cm As String = ProcessComment(po.comment, CInt(po.PostID))
-            If cm.Length > 2000 Or cm.Split(CChar("<")).Length > 18 Then
-                cm = cm.Remove(1999)
+            If cm.Length > 1500 Then
+                cm = cm.Remove(1500)
                 cm = cm & commentToolong.Replace("%POSTLINK%", "default.aspx?id=" & CStr(po.PostID))
                 postHTML = postHTML.Replace("%POST TEXT%", cm)
             Else
@@ -1346,8 +1444,8 @@ Public Module GlobalFunctions
         postHTML = postHTML.Replace("%ID%", CStr(po.PostID))
         If para.isTrailPost Then
             Dim cm As String = ProcessComment(po.comment, po.parent)
-            If cm.Length > 2000 Or cm.Split(CChar("<")).Length > 18 Then
-                cm = cm.Remove(1999)
+            If cm.Length > 1500 Then
+                cm = cm.Remove(1500)
                 cm = cm & commentToolong.Replace("%POSTLINK%", "default.aspx?id=" & po.parent & "#p" & po.PostID)
                 postHTML = postHTML.Replace("%POST TEXT%", cm)
                 cm = ""
@@ -1427,7 +1525,7 @@ Public Module GlobalFunctions
         Return sb.ToString
     End Function
 
-    Sub DeleteAllPosts(ByVal deletefiles As Boolean)
+    Sub PermaDeleteAllPosts(ByVal deletefiles As Boolean)
         Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = "TRUNCATE TABLE board"
         Dim queryObject As New SqlCommand(queryString, cnx)
@@ -1451,15 +1549,40 @@ Public Module GlobalFunctions
     End Sub
 
     Sub DeletePost(ByVal id As Integer, ByVal dF As Boolean)
+        If EnableArchive Then
+            ArchivePost(id)
+        Else
+            Dim w As WPost = FetchPostData(id)
+            If w.type = "0" Then ' post is a thread, delete replies first.
+                For Each x In GetThreadChildrenPosts(id)
+                    DeleteP(x, dF)
+                Next
+                DeleteP(id, dF)
+            Else
+                DeleteP(id, dF)
+            End If
+        End If
+    End Sub
+
+    Sub ArchivePost(ByVal id As Integer)
         Dim w As WPost = FetchPostData(id)
         If w.type = "0" Then
             For Each x In GetThreadChildrenPosts(id)
-                DeleteP(x, dF)
+                ArchiveP(x)
             Next
-            DeleteP(id, dF)
+            ArchiveP(id)
         Else
-            DeleteP(id, dF)
+            ArchiveP(id)
         End If
+    End Sub
+
+    Private Sub ArchiveP(ByVal id As Integer)
+        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim queryObject As New SqlCommand("UPDATE board SET mta = 1 WHERE(id = " & id & ")", cnx)
+        cnx.Open()
+        queryObject.ExecuteNonQuery()
+        SqlConnection.ClearPool(cnx)
+        cnx.Close()
     End Sub
 
     Private Sub DeleteP(ByVal id As Integer, ByVal dF As Boolean)

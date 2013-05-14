@@ -14,6 +14,7 @@
     Public posterID As String
     Public isSticky As Boolean
     Public locked As Boolean
+    Public archived As Boolean
     Sub New(ByVal _id As Long)
         PostID = _id
     End Sub

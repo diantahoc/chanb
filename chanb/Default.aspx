@@ -64,7 +64,7 @@
 <li><span>You may highlight your code by using the [code][/code] tags. The [lang][/lang] tags are required in order to properly highlight your code. See a <a href="faq.aspx#codetags">list</a> of supported languages.</span></li>
 <li><span>This website is for demonstrating a live preview of ChanB imageboard. Expect your post to be deleted at any time.</span></li>
 <li><span>All times are UTC.</span></li>
-<li><span><% Response.Write("Currently there is " & CStr(GetThreadsCount()) & " thread(s).")%></span></li>
+<li><span><% Response.Write("Currently there is " & CStr(GetThreadsCount(False)) & " thread(s).")%></span></li>
 </ul>
 </div>
 <hr />
@@ -89,6 +89,8 @@
      
      If Not (Request.Item("id") = "") And validID Then
          
+        
+         
          'Display a thread and children posts 
          Dim opID As Integer = CInt(Request.Item("id"))
          opID = Math.Abs(opID)
@@ -98,6 +100,10 @@
              Response.Redirect("default.aspx")
          End If
         
+         If po.archived = True Then
+             Response.Redirect("archive.aspx?id=" & po.PostID)
+         End If
+         
          ' Check if it is a reply or a thread , 0 = thread, 1 = reply
          ' If it is a reply, redirect to parent thread.
          If po.type = 1 Then Response.Redirect("default.aspx?id=" & po.parent & "#p" & po.PostID)
@@ -116,7 +122,7 @@
          para.replyButton = True
          para.isTrailPost = True
          If Not (Request.Item("startindex") = "") Then startIndex = CInt(Request.Item("startindex")) * (ThreadPerPage)
-         For Each x In GetThreads(startIndex, ThreadPerPage - 1 + startIndex, False)
+         For Each x In GetThreads(startIndex, ThreadPerPage - 1 + startIndex, False, False)
              Response.Write(GetThreadHTML(x, para, TrailPosts))
          Next
          
@@ -135,7 +141,7 @@
 </form>
 <div class="pagelist desktop">
 <%
-    Dim threadCount As Integer = GetThreadsCount()   
+    Dim threadCount As Integer = GetThreadsCount(False)
     Dim pagesCount As Double = threadCount / ThreadPerPage  
     If pagesCount > (Fix(pagesCount)) Then
         pagesCount = Fix(pagesCount) + 1

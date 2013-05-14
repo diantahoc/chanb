@@ -242,10 +242,16 @@
     Public ReadOnly Property WebStorageFolderPath() As String
         Get
             If DataDB.KeyExist("WebStorageFolderPath") = False Then
-                If chanb.My.Request.ApplicationPath = "/" Then
-                    Return chanb.My.Request.ApplicationPath & StorageFolderName & "/"
+                Dim prefix As String = ""
+                If chanb.My.Request.ServerVariables("HTTPS") = "ON" Then
+                    prefix = "https://"
                 Else
-                    Return chanb.My.Request.ApplicationPath & "/" & StorageFolderName & "/"
+                    prefix = "http://"
+                End If
+                If chanb.My.Request.ApplicationPath = "/" Then
+                    Return prefix & chanb.My.Request.ServerVariables("HTTP_HOST") & chanb.My.Request.ApplicationPath & StorageFolderName & "/"
+                Else
+                    Return prefix & chanb.My.Request.ServerVariables("HTTP_HOST") & chanb.My.Request.ApplicationPath & "/" & StorageFolderName & "/"
                 End If
             Else
                 Return CStr(DataDB.GetKey("WebStorageFolderPath"))

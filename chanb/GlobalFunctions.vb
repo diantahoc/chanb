@@ -1069,15 +1069,15 @@ Public Module GlobalFunctions
                     Return data
                 End Try
             Case "md"
-                Dim md As New MarkdownSharp.Markdown
+                Dim md As New MarkdownSharp.Markdown 
                 For Each x In MatchBBCode(data, "md")
                     Dim mdt As String = x
                     mdt = RemoveHTMLEscapes(mdt)
-                    mdt = mdt.Replace("<br>", vbNewLine)
+                    mdt = mdt.Replace("<br>", "")
                     data = data.Replace(x, md.Transform(mdt))
                 Next
-                data = data.Replace("[md]", "")
-                data = data.Replace("[/md]", "")
+                data = data.Replace("[md]", String.Empty)
+                data = data.Replace("[/md]", String.Empty)
                 Return data
             Case Else
                 Return data

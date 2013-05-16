@@ -32,6 +32,10 @@
     Public tglockstr As String = "Toggle Lock"
     Public editpostStr As String = "Edit post"
     Public posterIdstr As String = "Poster ID"
+    Public topsrt As String = "Top"
+    Public catalogstr As String = "Catalog"
+    Public refreshStr As String = "Refresh"
+    Public bottomstr As String = "Bottom"
 
     Public ImageRequired As String = "You cannot start a new thread without an image."
     Public SuccessfulPostString As String = "Post Succesful !"
@@ -47,7 +51,8 @@
     Public noBlankpost As String = "Blank post are not allowed."
     Public duplicateFile As String = "Duplicate image detected."
     Public UnsupportedFile As String = "Unsupported file type."
-
+    Public arhivedMessage As String = "This thread has 404'ed and it is in the archive now."
+    Public invalidPostmodestr As String = "Invalid Posting mode"
     Public smallRuleList As String = ""
 
     Public banMsgStr As String = "User was banned for this post."

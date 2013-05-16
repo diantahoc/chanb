@@ -6,7 +6,15 @@ chanb
 </name>
 </assembly>
 <members>
-<member name="M:chanb.ValuesStore.AddKey(System.String,System.String)">
+<member name="F:chanb.oneth.form1">
+	<summary>
+form1 control.
+</summary>
+	<remarks>
+Auto-generated field.
+To modify move field declaration from designer file to code-behind file.
+</remarks>
+</member><member name="M:chanb.ValuesStore.AddKey(System.String,System.String)">
 	<summary>
  Update an existing key or add a new key.
  </summary>
@@ -77,6 +85,13 @@ To modify move field declaration from designer file to code-behind file.
 	<param name="id">id of the thread</param>
 	<param name="data">Poster data</param>
 	<remarks></remarks>
+</member><member name="M:chanb.GlobalFunctions.GetWpostList(System.Int32[])">
+	<summary>
+ Retrive all reply over a single sql connection.
+ </summary>
+	<param name="id"></param>
+	<returns></returns>
+	<remarks></remarks>
 </member><member name="M:chanb.GlobalFunctions.saveFile(System.Web.HttpPostedFile,System.Boolean)">
 	<summary>
  Save single file
@@ -108,10 +123,10 @@ To modify move field declaration from designer file to code-behind file.
 	<remarks></remarks>
 </member><member name="M:chanb.GlobalFunctions.MatchBBCode(System.String,System.String)">
 	<summary>
- Return the bbcode and the data inside.
+ Get a list of all matches for a given bb code.
  </summary>
-	<param name="codename"></param>
-	<param name="data"></param>
+	<param name="text"></param>
+	<param name="bbcode"></param>
 	<returns></returns>
 	<remarks></remarks>
 </member><member name="F:chanb.modaction.form1">

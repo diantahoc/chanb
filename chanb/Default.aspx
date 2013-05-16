@@ -67,10 +67,11 @@
 <li><span><% Response.Write("Currently there is " & CStr(GetThreadsCount(False)) & " thread(s).")%></span></li>
 </ul>
 </div>
+<div class="navLinks navLinksBot desktop">[<a href="./"><% Response.Write(returnStr)%></a>] [<a href="catalog.aspx"><% Response.Write(catalogstr)%></a>] [<a href="#bottom"><% Response.Write(bottomstr)%></a>] </div>
 <hr />
- <form name="deletation" action="post.aspx" enctype="application/x-www-form-urlencoded" method="get">
+<form name="deletation" action="post.aspx" enctype="application/x-www-form-urlencoded" method="get">
 <div class="board">
-
+<div id="top"></div>
  <%    
      
      Dim para As New HTMLParameters()
@@ -132,6 +133,13 @@
 %>
 
 </div>
+<div class="navLinks mobile" style="margin-top: 10px;">
+<span class="mobileib button"><a href="./"><% Response.Write(returnStr)%></a></span>
+<span class="mobileib button"><a href="#top"><% Response.Write(topsrt)%></a></span>
+<span class="mobileib button"><a href="#bottom_r" id="refresh_bottom" onmouseup="javascript:refresh();"><% Response.Write(refreshStr)%></a></span></div>
+
+<div class="navLinks navLinksBot desktop">[<a href="./"><% Response.Write(returnStr)%></a>] [<a href="catalog.aspx"><% Response.Write(catalogstr)%></a>] [<a href="#top"><% Response.Write(topsrt)%></a>] </div>
+<br />
 <div style="float: right;">
 <div class="deleteform desktop">
 <input type="text" name="deletePass" value="<% Response.Write(GetSessionPassword(Request.Cookies, Session)) %>" />

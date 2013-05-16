@@ -61,7 +61,7 @@ Public Module GlobalFunctions
         Return lowcaseX
     End Function
 
-    Function FetchPostData(ByVal id As Long) As WPost
+    Function FetchPostData(ByVal id As Integer) As WPost
         Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = "SELECT type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua, posterID, sticky, locked, mta FROM  board  WHERE (id = " & id & ")"
         Dim queryObject As New SqlCommand(queryString, cnx)
@@ -168,12 +168,13 @@ Public Module GlobalFunctions
     ''' <param name="id">id of the thread</param>
     ''' <param name="data">Poster data</param>
     ''' <remarks></remarks>
-    Private Sub ReplyTo(ByVal id As Integer, ByVal data As OPData)
+    Sub ReplyTo(ByVal id As Integer, ByVal data As OPData)
         Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = "INSERT INTO board (type, [time], comment, postername, email, [password], parentT, subject, imagename, IP, ua, posterID, mta) VALUES      ('1', " & ConvertTimeToSQLTIME(data.time) & ", N'" & data.Comment & "', N'" & data.name & "', N'" & data.email & "', N'" & data.password & "', '" & id & "', N'" & data.subject & "', N'" & data.imageName & "' , '" & data.IP & "' , '" & data.UserAgent & "','" & GenerateUID(id, data.IP) & "', 0 )"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         queryObject.ExecuteNonQuery()
+
         cnx.Close()
     End Sub
 
@@ -186,7 +187,7 @@ Public Module GlobalFunctions
         cnx.Close()
     End Sub
 
-    Function GetThreadChildrenPosts(ByVal id As Long) As Integer()
+    Function GetThreadChildrenPostsIDs(ByVal id As Long) As Integer()
         Dim ila As New List(Of Integer)
         Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = "SELECT ID FROM board  WHERE (parentT = " & id & ") ORDER BY ID"
@@ -199,6 +200,56 @@ Public Module GlobalFunctions
         reader.Close()
         cnx.Close()
         Return ila.ToArray
+    End Function
+
+    ''' <summary>
+    ''' Retrive all reply over a single sql connection.
+    ''' </summary>
+    ''' <param name="id"></param>
+    ''' <returns></returns>
+    ''' <remarks></remarks>
+    Private Function GetWpostList(ByVal id As Integer()) As WPost()
+        Dim il As New List(Of WPost)
+        If id.Length = 0 Then
+            Return il.ToArray
+        Else
+            Dim cnx As New SqlConnection(SQLConnectionString)
+
+            'Prepare sql connection string.
+            Dim sb As New StringBuilder
+            sb.Append("WHERE (ID = " & CStr(id(0)) & ")")
+
+            For i As Integer = 1 To id.Length - 1 Step 1
+                sb.Append(" OR (ID = " & id(i) & ") ")
+            Next
+
+            Dim queryString As String = "SELECT ID, type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua, posterID, sticky, locked, mta FROM  board  " & sb.ToString & " ORDER BY ID"
+            Dim queryObject As New SqlCommand(queryString, cnx)
+            cnx.Open()
+            Dim reader As SqlDataReader = queryObject.ExecuteReader
+            While reader.Read
+                Dim po As New WPost(CInt(ConvertNoNull(reader(0))))
+                po.type = CStr(ConvertNoNull(reader(1)))
+                po.time = CDate(ConvertNoNull(reader(2)))
+                po.comment = CStr(ConvertNoNull(reader(3)))
+                po.name = CStr(ConvertNoNull(reader(4)))
+                po.email = CStr(ConvertNoNull(reader(5)))
+                po.password = CStr(ConvertNoNull(reader(6)))
+                po.parent = CInt(ConvertNoNull(reader(7)))
+                po.subject = CStr(ConvertNoNull(reader(8)))
+                po._imageP = CStr(ConvertNoNull(reader(9)))
+                po.ip = CStr(ConvertNoNull(reader(10)))
+                po.ua = CStr(ConvertNoNull(reader(11)))
+                po.posterID = CStr(ConvertNoNull(reader(12)))
+                If CInt(ConvertNoNull(reader(13))) = 1 Then po.isSticky = True Else po.isSticky = False
+                If CInt(ConvertNoNull(reader(14))) = 1 Then po.locked = True Else po.locked = False
+                If CInt(ConvertNoNull(reader(15))) = 1 Then po.archived = True Else po.archived = False
+                il.Add(po)
+            End While
+            reader.Close()
+            cnx.Close()
+            Return il.ToArray
+        End If
     End Function
 
     Function GetThreads(ByVal startIndex As Integer, ByVal count As Integer, ByVal ignoreStickies As Boolean, ByVal arhive As Boolean) As Integer()
@@ -614,7 +665,6 @@ Public Module GlobalFunctions
         For Each x In list
             s.Append(x)
         Next
-
         list.Clear()
         Return s.ToString
     End Function
@@ -799,12 +849,18 @@ Public Module GlobalFunctions
                                 sb.Append("<meta HTTP-EQUIV='REFRESH' content='2; url=default.aspx'>")
                             End If
                         End If
-
                     Case "reply"
+                        Dim threadid As Integer = CInt(request.Item("threadid"))
 
-                        If IsLocked(CInt(request.Item("threadid"))) Then
+                        If IsLocked(threadid) Then
                             sb.Append(lockedMessage)
-                            sb.Append("<meta HTTP-EQUIV='REFRESH' content='5; url=default.aspx?id=" & request.Item("threadid") & "'>")
+                            sb.Append("<meta HTTP-EQUIV='REFRESH' content='5; url=default.aspx?id=" & threadid & "'>")
+                            Exit Select
+                        End If
+
+                        If IsArchived(threadid) Then
+                            sb.Append(arhivedMessage)
+                            sb.Append("<meta HTTP-EQUIV='REFRESH' content='5; url=archive.aspx?id=" & threadid & "'>")
                             Exit Select
                         End If
 
@@ -846,7 +902,7 @@ Public Module GlobalFunctions
                                 er.password = ProcessInputs(request.Item("password"))
                                 er.IP = request.UserHostAddress
                                 er.UserAgent = request.UserAgent.Replace("<", "").Replace(">", "")
-                                ReplyTo(CInt(request.Item("threadid")), er)
+                                ReplyTo(threadid, er)
                                 pos += 1
                             Next
                             sb.Append(SuccessfulPostString)
@@ -871,12 +927,12 @@ Public Module GlobalFunctions
                                 er.IP = request.UserHostAddress
                                 er.UserAgent = request.UserAgent.Replace("<", "").Replace(">", "") ' I replace < and > to prevent spoffing a user agent that contain <script> tags.
                                 If request.Cookies("pass") IsNot Nothing Then request.Cookies("pass").Value = request.Item("password") Else request.Cookies.Add(New HttpCookie("pass", request.Item("password")))
-                                ReplyTo(CInt(request.Item("threadid")), er)
+                                ReplyTo(threadid, er)
                                 sb.Append(SuccessfulPostString)
                             End If
                         End If
 
-                        If Not ProcessInputs(request.Item("email")) = "sage" And (GetRepliesCount(CInt(request.Item("threadid"))).TotalReplies <= BumpLimit) Then BumpThread(CInt(request.Item("threadid")))
+                        If Not ProcessInputs(request.Item("email")) = "sage" And (GetRepliesCount(threadid).TotalReplies <= BumpLimit) Then BumpThread(threadid)
 
                         sb.Append("<meta HTTP-EQUIV='REFRESH' content='1; url=default.aspx?id=" & request.Item("threadid") & "'>")
 
@@ -897,30 +953,29 @@ Public Module GlobalFunctions
                         End If
 
                     Case deleteStr
-                        Dim li As New List(Of String)
+                        Dim li As New List(Of Integer)
                         Dim deletPass As String = request.Item("deletePass")
                         For Each x As String In request.QueryString
                             If x.StartsWith("proc") Then
-                                li.Add(x.Replace("proc", ""))
+                                li.Add(CInt(x.Replace("proc", "")))
                             End If
                         Next
                         If li.Count = 0 Then
                             sb.Append(NoPostWasSelected)
                         Else
-                            For Each x In li
-                                Dim p As WPost = FetchPostData(CLng(x))
+                            For Each p As WPost In GetWpostList(li.ToArray)
                                 If p.password = deletPass Then
-                                    DeletePost(CInt(x), DeleteFiles)
-                                    sb.Append(PostDeletedSuccess.Replace("%", x))
+                                    DeletePost(CInt(p.PostID), DeleteFiles)
+                                    sb.Append(PostDeletedSuccess.Replace("%", CStr(p.PostID)))
                                 Else
-                                    sb.Append(CannotDeletePostBadPassword.Replace("%", x))
+                                    sb.Append(CannotDeletePostBadPassword.Replace("%", CStr(p.PostID)))
                                 End If
                                 sb.Append("<br/>")
                             Next
                         End If
 
                     Case Else
-                        sb.Append("Invalid Posting mode")
+                        sb.Append(invalidPostmodestr)
                         sb.Append("<meta HTTP-EQUIV='REFRESH' content='2; url=default.aspx'>")
                 End Select
             End If
@@ -976,93 +1031,80 @@ Public Module GlobalFunctions
         Next
 
         Dim sr As String = sb.ToString
-        sr = MatchBBCode("spoiler", sr)
-        sr = MatchBBCode("code", sr)
-        sr = MatchBBCode("md", sr)
+        sr = sr.Replace("&#91;", "[").Replace("&#93;", "]").Replace("&#47;", "/") ' replace [ ] / html equivalent with the real character to make sure the regex will catch them
+        sr = MatchAndProcessBBCodes("spoiler", sr)
+        sr = MatchAndProcessBBCodes("code", sr)
+        sr = MatchAndProcessBBCodes("md", sr)
         Return sr
     End Function
 
 #Region "BB codes processing"
 
-    ''' <summary>
-    ''' Return the bbcode and the data inside.
-    ''' </summary>
-    ''' <param name="codename"></param>
-    ''' <param name="data"></param>
-    ''' <returns></returns>
-    ''' <remarks></remarks>
-    Private Function MatchBBCode(ByVal codename As String, ByVal data As String) As String
+    Private Function MatchAndProcessBBCodes(ByVal codename As String, ByVal data As String) As String
         Select Case codename
             Case "spoiler"
-                Dim regSTR As String = "\[/?spoiler\]"
-                Dim mdata As String = data.Replace("&#91;", "[").Replace("&#93;", "]").Replace("&#47;", "/")
-                Dim st As String() = Regex.Split(mdata, regSTR)
-                Dim ismath As Boolean = False
-                For i As Integer = 0 To st.Length - 1 Step 1
-                    If Not ismath Then
-                        'Not a match 
-                    Else
-                        mdata = mdata.Replace(st.ElementAt(i), "<s>" & st.ElementAt(i) & "</s>")
-                    End If
-                    ismath = Not ismath
+                For Each x In MatchBBCode(data, "spoiler")
+                    data = data.Replace(x, "<s>" & x & "</s>")
                 Next
-                mdata = mdata.Replace("[spoiler]", "")
-                mdata = mdata.Replace("[/spoiler]", "")
-                Return mdata
+                data = data.Replace("[spoiler]", "")
+                data = data.Replace("[/spoiler]", "")
+                Return data
             Case "code"
                 Try
-                    Dim regSTR As String = "\[/?code\]"
-                    Dim mdata As String = data.Replace("&#91;", "[").Replace("&#93;", "]").Replace("&#47;", "/") ' replace [ ] / html equivalent with the real character to make sure the regex will catch them
-                    Dim st As String() = Regex.Split(mdata, regSTR)
-                    Dim ismath As Boolean = False
-                    For i As Integer = 0 To st.Length - 1 Step 1
-                        If Not ismath Then
-                            'Not a match 
-                        Else
-                            Dim codeStr As String = st.ElementAt(i)
-                            codeStr = codeStr.Replace("<br>", vbNewLine)
-
-                            Dim codeLang As String = GetCodeLang(codeStr)
-                            codeStr = codeStr.Replace("[lang]", "")
-                            codeStr = codeStr.Replace("[/lang]", "")
-                            If Not (codeLang = "") Then codeStr = codeStr.Replace(codeLang, "")
-                            codeStr = RemoveHTMLEscapes(codeStr)
-
-                            Dim colorizer As New ColorCode.CodeColorizer()
-
-                            mdata = mdata.Replace(st.ElementAt(i), colorizer.Colorize(codeStr, GetCCLI(codeLang)))
-                        End If
-                        ismath = Not ismath
+                    Dim colorizer As New ColorCode.CodeColorizer()
+                    For Each x In MatchBBCode(data, "code")
+                        Dim codeStr As String = x
+                        codeStr = codeStr.Replace("<br>", vbNewLine)
+                        Dim codeLang As String = GetCodeLang(codeStr)
+                        codeStr = codeStr.Replace("[lang]", "")
+                        codeStr = codeStr.Replace("[/lang]", "")
+                        If Not (codeLang = "") Then codeStr = codeStr.Replace(codeLang, "")
+                        codeStr = RemoveHTMLEscapes(codeStr)
+                        data = data.Replace(x, colorizer.Colorize(codeStr, GetCCLI(codeLang)))
                     Next
-                    mdata = mdata.Replace("[code]", "")
-                    mdata = mdata.Replace("[/code]", "")
-                    Return mdata
+                    data = data.Replace("[code]", "")
+                    data = data.Replace("[/code]", "")
+                    Return data
                 Catch ex As Exception
                     Return data
                 End Try
             Case "md"
-                Dim regSTR As String = "\[/?md\]"
-                Dim mdata As String = data.Replace("&#91;", "[").Replace("&#93;", "]").Replace("&#47;", "/")
-                Dim st As String() = Regex.Split(mdata, regSTR)
-                Dim ismath As Boolean = False
-                For i As Integer = 0 To st.Length - 1 Step 1
-                    If Not ismath Then
-                        'Not a match 
-                    Else
-                        Dim md As New MarkdownSharp.Markdown
-                        Dim mdtext As String = st.ElementAt(i)
-                        mdtext = RemoveHTMLEscapes(mdtext)
-                        mdtext = mdtext.Replace("<br>", "")
-                        mdata = mdata.Replace(st.ElementAt(i), md.Transform(mdtext))
-                    End If
-                    ismath = Not ismath
+                Dim md As New MarkdownSharp.Markdown
+                For Each x In MatchBBCode(data, "md")
+                    Dim mdt As String = x
+                    mdt = RemoveHTMLEscapes(mdt)
+                    mdt = mdt.Replace("<br>", vbNewLine)
+                    data = data.Replace(x, md.Transform(mdt))
                 Next
-                mdata = mdata.Replace("[md]", "")
-                mdata = mdata.Replace("[/md]", "")
-                Return mdata
+                data = data.Replace("[md]", "")
+                data = data.Replace("[/md]", "")
+                Return data
             Case Else
                 Return data
         End Select
+    End Function
+
+    ''' <summary>
+    ''' Get a list of all matches for a given bb code.
+    ''' </summary>
+    ''' <param name="text"></param>
+    ''' <param name="bbcode"></param>
+    ''' <returns></returns>
+    ''' <remarks></remarks>
+    Private Function MatchBBCode(ByVal text As String, ByVal bbcode As String) As String()
+        Dim il As New List(Of String)
+        Dim regSTR As String = "\[/?" & bbcode & "\]"
+        Dim st As String() = Regex.Split(text, regSTR)
+        Dim isAmatch As Boolean = False
+        For i As Integer = 0 To st.Length - 1 Step 1
+            If Not isAmatch Then
+                'Not a match 
+            Else
+                il.Add(st.ElementAt(i))
+            End If
+            isAmatch = Not isAmatch
+        Next
+        Return il.ToArray
     End Function
 
     Private Function RemoveHTMLEscapes(ByVal c As String) As String
@@ -1244,16 +1286,6 @@ Public Module GlobalFunctions
         Return postHTML
     End Function
 
-    'Private Function GenerateUID(ByVal po As WPost) As String
-    '    If po.type = "0" Then
-    '        Dim idstr As String = po.PostID & po.ip
-    '        Return New String(CType(MD5(idstr), Char()), 0, 8)
-    '    Else
-    '        Dim idstr As String = po.parent & po.ip
-    '        Return New String(CType(MD5(idstr), Char()), 0, 8)
-    '    End If
-    'End Function
-
     Function GetModPowers(ByVal modname As String) As String
         Dim cn As New SqlConnection(SQLConnectionString)
         cn.Open()
@@ -1418,8 +1450,8 @@ Public Module GlobalFunctions
 
     Function GetRepliesHTML(ByVal threadID As Integer, ByVal para As HTMLParameters) As String
         Dim sa As New StringBuilder
-        For Each x In GetThreadChildrenPosts(threadID)
-            sa.Append(GetSingleReplyHTML(x, para))
+        For Each po As WPost In GetWpostList(GetThreadChildrenPostsIDs(threadID))
+            sa.Append(GetSingleReplyHTML(po, para))
         Next
         sa.Append("<hr></hr>")
         Return sa.ToString
@@ -1427,6 +1459,10 @@ Public Module GlobalFunctions
 
     Private Function GetSingleReplyHTML(ByVal postid As Integer, ByVal para As HTMLParameters) As String
         Dim po As WPost = (FetchPostData(postid))
+        Return GetSingleReplyHTML(po, para)
+    End Function
+
+    Private Function GetSingleReplyHTML(ByVal po As WPost, ByVal para As HTMLParameters) As String
         Dim postHTML As String = postTemplate
         If po.email = "" Then
             postHTML = postHTML.Replace("%NAMESPAN%", "<span class='name'>%NAME%</span>")
@@ -1554,7 +1590,7 @@ Public Module GlobalFunctions
         Else
             Dim w As WPost = FetchPostData(id)
             If w.type = "0" Then ' post is a thread, delete replies first.
-                For Each x In GetThreadChildrenPosts(id)
+                For Each x In GetThreadChildrenPostsIDs(id)
                     DeleteP(x, dF)
                 Next
                 DeleteP(id, dF)
@@ -1567,7 +1603,7 @@ Public Module GlobalFunctions
     Sub ArchivePost(ByVal id As Integer)
         Dim w As WPost = FetchPostData(id)
         If w.type = "0" Then
-            For Each x In GetThreadChildrenPosts(id)
+            For Each x In GetThreadChildrenPostsIDs(id)
                 ArchiveP(x)
             Next
             ArchiveP(id)
@@ -1581,7 +1617,6 @@ Public Module GlobalFunctions
         Dim queryObject As New SqlCommand("UPDATE board SET mta = 1 WHERE(id = " & id & ")", cnx)
         cnx.Open()
         queryObject.ExecuteNonQuery()
-        SqlConnection.ClearPool(cnx)
         cnx.Close()
     End Sub
 
@@ -1690,6 +1725,24 @@ Public Module GlobalFunctions
                 p = False
             Else
                 p = True
+            End If
+        End While
+        cnx.Close()
+        Return p
+    End Function
+
+    Private Function IsArchived(ByVal id As Integer) As Boolean
+        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim queryString As String = "SELECT mta FROM board  WHERE (ID = " & id & " )"
+        Dim queryObject As New SqlCommand(queryString, cnx)
+        cnx.Open()
+        Dim reader As SqlDataReader = queryObject.ExecuteReader
+        Dim p As Boolean = False
+        While reader.Read
+            If CInt(ConvertNoNull(reader(0))) = 1 Then
+                p = True
+            Else
+                p = False
             End If
         End While
         cnx.Close()

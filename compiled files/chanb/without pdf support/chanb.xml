@@ -6,15 +6,7 @@ chanb
 </name>
 </assembly>
 <members>
-<member name="F:chanb.oneth.form1">
-	<summary>
-form1 control.
-</summary>
-	<remarks>
-Auto-generated field.
-To modify move field declaration from designer file to code-behind file.
-</remarks>
-</member><member name="M:chanb.ValuesStore.AddKey(System.String,System.String)">
+<member name="M:chanb.ValuesStore.AddKey(System.String,System.String)">
 	<summary>
  Update an existing key or add a new key.
  </summary>
@@ -28,6 +20,14 @@ To modify move field declaration from designer file to code-behind file.
  Project: Novelli Torrent
  </summary>
 	<remarks></remarks>
+</member><member name="F:chanb.catalog.form1">
+	<summary>
+form1 control.
+</summary>
+	<remarks>
+Auto-generated field.
+To modify move field declaration from designer file to code-behind file.
+</remarks>
 </member><member name="P:chanb.My.MyWebExtension.Computer">
 	<summary>
  Returns information about the host computer.
@@ -78,6 +78,14 @@ To modify move field declaration from designer file to code-behind file.
 	<summary>
   A strongly-typed resource class, for looking up localized strings, etc.
 </summary>
+</member><member name="F:chanb.oneth.form1">
+	<summary>
+form1 control.
+</summary>
+	<remarks>
+Auto-generated field.
+To modify move field declaration from designer file to code-behind file.
+</remarks>
 </member><member name="M:chanb.GlobalFunctions.ReplyTo(System.Int32,chanb.OPData)">
 	<summary>
  Append a post to thread

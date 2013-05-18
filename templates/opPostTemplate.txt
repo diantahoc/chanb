@@ -12,19 +12,11 @@
 <span class="dateTime postNum" data-utc="%DATE UTC UNIX%">%DATE UTC TEXT%<a href="%POST LINK%"> No.</a>
     <a href="%POST LINK%" title="Quote this post">%ID%</a>
 </span>
+%STICKY%
+%LOCKED%
 </div>
 
-<div class="file" id="f%ID%">
-<div class="fileInfo">
-<span class="fileText" id="fT%ID%">File: <a href="%IMAGE LINK%" target="_blank">%CHANB FILE NAME%</a>-(%FILE SIZE%, %IMAGE DIMENSIONS%, <span title="%FILE NAME%">%FILE NAME%</span>)
-<a href="http://www.google.com/searchbyimage?image_url=%THUMB LINK%" target="_blank">google</a>
-</span>
-</div>
-<a class="fileThumb" href="%IMAGE LINK%" target="_blank">
-<img src="%THUMB LINK%" alt="%FILE SIZE%" data-md5="%MD5%">
-<div class="mFileInfo mobile">%IMAGE DIMENSIONS% %FILE SIZE% <br/>%IMAGE EXT%</div>
-</a>
-</div>
+%IMAGE%
 
 <div class="postInfo desktop" id="pi%ID%">
 <input name="proc%ID%" value="delete" type="checkbox">

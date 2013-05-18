@@ -10,7 +10,8 @@
 <link rel="Stylesheet" href='yotsubab.css' />
 <link rel="Stylesheet" href="mobile.css" />
 <script src="scripts.js" type="text/javascript" language="javascript"></script>
-<script type="text/javascript" src="jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/jquery-ui.min.js"></script>
 </head> 
 <body>
 <div class="boardBanner"> 
@@ -33,6 +34,7 @@
      para.IsModerator = CBool(Session("mod"))
      para.ModeratorPowers = CStr(Session("modpowers"))
      para.modMenu = CStr(Session("modmenu"))
+     para.isCurrentThread = False
      
      Dim validID As Boolean = False  
      Try
@@ -74,8 +76,8 @@
              
              Response.Redirect("default.aspx?id=" & po.PostID)
              
-         
          End If
+         
      Else
          
          'Display a list of archived threads
@@ -98,41 +100,46 @@
 <input type="submit" name="mode" value="<% Response.Write(reportStr) %>" /></div>
 </div>
 </form>
-<div class="pagelist desktop">
-<%
-    Dim threadCount As Integer = GetThreadsCount(True)
-    Dim pagesCount As Double = threadCount / ThreadPerPage  
-    If pagesCount > (Fix(pagesCount)) Then
-        pagesCount = Fix(pagesCount) + 1
-    End If  
-    Dim startIndexA As Integer
-    Try
-        startIndexA = CInt(Request.Item("startindex"))
-    Catch ex As Exception
-        startIndexA = 0
-    End Try 
-    If startIndexA = 0 Then
-        Response.Write("<div class='prev'><span>" & prevStr & "</span></div>")
-    Else
-        Response.Write("<div class='prev'><form action='archive.aspx'><input name='startindex' type='hidden' value='" & startIndexA - 1 & "' /><input value='" & prevStr & "' type='submit'/></form></div>")
-    End If   
-    Response.Write("<div class='pages'>")
-    For i As Integer = 0 To (pagesCount - 1) Step 1
-        If i = startIndexA Then
-            Response.Write("[<strong><a href='archive.aspx?startindex=" & i & "'>" & i + 1 & "</a></strong>]")
-        Else
-            Response.Write("[<a href='archive.aspx?startindex=" & i & "'>" & i + 1 & "</a>]")
+<%  If Request.Item("id") = "" Then
+        
+        Response.Write("<div class='pagelist desktop'>")
+        
+        Dim threadCount As Integer = GetThreadsCount(False)
+        Dim pagesCount As Double = threadCount / ThreadPerPage
+        If pagesCount > (Fix(pagesCount)) Then
+            pagesCount = Fix(pagesCount) + 1
         End If
+        Dim startIndexA As Integer
+        Try
+            startIndexA = CInt(Request.Item("startindex"))
+        Catch ex As Exception
+            startIndexA = 0
+        End Try
+        If startIndexA = 0 Then
+            Response.Write("<div class='prev'><a class='form-button-disabled'>" & prevStr & "</a></div>")
+        Else
+            Response.Write("<div><a class='form-button' href='archive.aspx?startindex=" & CStr(startIndexA - 1) & "'>" & prevStr & "</a></div>")
+        End If
+        Response.Write("<div class='pages'>")
+        For i As Integer = 0 To (pagesCount - 1) Step 1
+            If i = startIndexA Then
+                Response.Write("[<strong><a href='archive.aspx?startindex=" & i & "'>" & i + 1 & "</a></strong>]")
+            Else
+                Response.Write("[<a href='archive.aspx?startindex=" & i & "'>" & i + 1 & "</a>]")
+            End If
    
-    Next 
-    Response.Write("</div>")   
-    If startIndexA = pagesCount - 1 Then ' last page
-        Response.Write("<div class='next'><span>" & nextStr & "</span></div>")
-    Else
-        Response.Write("<div class='next'><form action='archive.aspx'><input name='startindex' type='hidden' value='" & startIndexA + 1 & "' /><input value='" & nextStr & "' type='submit'/></form></div>")
+        Next
+        Response.Write("</div>")
+        If startIndexA = pagesCount - 1 Then ' last page
+            Response.Write("<div class='next'><a class='form-button-disabled'>" & nextStr & "</a></div>")
+        Else
+            Response.Write("<div><a class='form-button' href='archive.aspx?startindex=" & CStr(startIndexA + 1) & "'>" & nextStr & "</a></div>")
+        End If
     End If
-%>
-</div>
+    
+    Response.Write("</div>")
+    %>
+
 <div id="bottom"></div>
 <div id="absbot" class="absBotText"><% Response.Write(footerText)%></span></div>
 </body>

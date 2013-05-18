@@ -2,14 +2,12 @@
 
 <div class="fileInfo">
 <span data-filename="%FILE NAME%" class="fileText" id="fT%ID%">
-<a href="%IMAGE SRC%" target="_top">%FILE NAME%</a> - 
-(%FILE SIZE%, %IMAGE SIZE%)
-</span>
+<a href="%IMAGE SRC%" target="_top">%FILE NAME%</a><span style="color: rgb(0,0,0);"> - (%FILE SIZE%, %IMAGE SIZE%)</span></span>
+&nbsp;
 <a href="http://www.google.com/searchbyimage?image_url=%THUMB_LINK%" target="_blank">google</a>
 </div>
-
 <a class="fileThumb" href="%IMAGE SRC%" target="_blank">
-<img src="%THUMB_LINK%" alt="%IMAGE SIZE%" data-md5="%IMAGE MD5%">
+<img class="cimage" src="%THUMB_LINK%" alt="%IMAGE SIZE%" data-md5="%IMAGE MD5%">
 <div class="mFileInfo mobile">%IMAGE SIZE% %FILE SIZE% <br/>%IMAGE EXT%</div></a>
 
 </div>

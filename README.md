@@ -37,7 +37,9 @@ Planned features
 * Admin panel
 * Installer
 * Online language adder and editor.
-* Video (FLV, WEBM) and audio (MP3, FLAC)
+* Video (FLV, WEBM) and audio (MP3, FLAC) support.
+* Add Delphi syntax highlighting.
+* Add LaTeX support.
 
 How to install
 ==============

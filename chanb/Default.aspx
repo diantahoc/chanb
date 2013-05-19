@@ -222,7 +222,7 @@
         If startIndexA = pagesCount - 1 Then ' last page
             Response.Write("<div class='next'><a class='form-button-disabled'>" & nextStr & "</a></div>")
         Else
-            Response.Write("<div><a class='form-button' href='default.aspx?startindex=" & CStr(startIndexA + 1) & "'>" & nextStr & "</a></div>")
+            Response.Write("<div><a class='form-button'  href='default.aspx?startindex=" & CStr(startIndexA + 1) & "'>" & nextStr & "</a></div>")
         End If
     End If
     

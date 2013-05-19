@@ -21,7 +21,9 @@
     Public ResizeMethode As Integer = DI.ResizeMethod
     Public EnableArchive As Boolean = DI.EnableArchive
     Public DefaultModPowers As String = DI.DefaultModPowers  ' In that order: Ban, Delete, Toggle sticky, Toggle Locked, Edit post.
-    Public MaximumPostLenght As Integer = 0
+    '  Public MaximumPostLenght As Integer = 0
+    Public transmitRealFileName As Boolean = DI.TransmitRealFileName
+
 
 #End Region
 
@@ -43,7 +45,7 @@
 
     Public ReadOnly idHtml As String = "<span class='posteruid id_%UID%'>(ID: <span class='hand' title='%PO%.'>%UID%</span>)</span>".Replace("%PO%", posterIdstr)
     Public ReadOnly replyButtonHTML As String = "&nbsp;<span>[<a href='%POST LINK%' target='_blank' class='replylink'>%RE%</a>]</span>".Replace("%RE%", replyStr)
-    Public ReadOnly noscriptItemHTML As String = "<a href='%IMAGE SRC%' target='_blank'>%FILE NAME%<br/><img src='%THUMB_LINK%' style='width: 100px; height: 100px' /></a><br/>"
+    Public ReadOnly noscriptItemHTML As String = "<a href='%IMAGE DL%' target='_blank'>%FILE NAME%<br/><img src='%THUMB_LINK%' style='width: 100px; height: 100px' /></a><br/>"
     Public ReadOnly modMenu As String() = {"<a href='modaction.aspx?action=banpost&id=%ID%'>LANG</a>".Replace("LANG", banStr), "<a href='modaction.aspx?action=delpost&id=%ID%'>LANG</a>".Replace("LANG", deletepostStr), "<a href='modaction.aspx?action=tgsticky&id=%ID%'>LANG</a>".Replace("LANG", tgstickstr), "<a href='modaction.aspx?action=tglock&id=%ID%'>LANG</a>".Replace("LANG", tglockstr), "<a href='modaction.aspx?action=editpost&id=%ID%'>LANG</a>".Replace("LANG", editpostStr)}
     Public ReadOnly bannedMessageHTML As String = "<br><strong style=''color: red;''>%MES%</strong>".Replace("%MES%", banMsgStr)
 

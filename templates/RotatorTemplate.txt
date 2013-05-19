@@ -1,5 +1,5 @@
 ﻿<div class="rotator">
 <span>%IMAGECOUNT% images.</span>
-<script>document.write('<a href="javascript:gofirst(\'%ID%\');" class="goright"><img class="navigb" src="/res/up.png"/></a><a href="javascript:goleft(\'%ID%\');" class="goright"><img class="navigb" src="/res/prev.png"/></a><a href="javascript:goright(\'%ID%\');" class="goright"><img class="navigb" src="/res/next.png"/></a><a href="javascript:golast(\'%ID%\');" class="goright"><img class="navigb" src="/res/down.png"/></a><div id="rot%ID%">' + '%ITEMS%' + '</div>');</script>
+<script>document.write('<a href="javascript:gofirst(\'%ID%\');" class="goright"><img class="navigb" src="res/up.png"/></a><a href="javascript:goleft(\'%ID%\');" class="goright"><img class="navigb" src="res/prev.png"/></a><a href="javascript:goright(\'%ID%\');" class="goright"><img class="navigb" src="res/next.png"/></a><a href="javascript:golast(\'%ID%\');" class="goright"><img class="navigb" src="res/down.png"/></a><div id="rot%ID%">' + '%ITEMS%' + '</div>');</script>
 <noscript><br/>%NOS%</noscript>
 </div>

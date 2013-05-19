@@ -289,6 +289,18 @@
         End Get
     End Property
 
+    Public ReadOnly Property TransmitRealFileName() As Boolean
+        Get
+            If DataDB.KeyExist("TransmitRealFileName") = False Then
+                DataDB.AddKey("TransmitRealFileName", CStr(True))
+                DataDB.Save()
+                Return True
+            Else
+                Return CBool(DataDB.GetKey("TransmitRealFileName"))
+            End If
+        End Get
+    End Property
+
     Public Sub UpdateSetting(ByVal name As String, ByVal newData As String)
         DataDB.AddKey(name, newData)
         DataDB.Save()

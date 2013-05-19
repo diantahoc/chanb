@@ -572,7 +572,7 @@ Public Module GlobalFunctions
     End Function
 
     Private Function FileIsImage(ByVal f As HttpPostedFile) As Boolean
-        Dim extension As String = f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1)
+        Dim extension As String = f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1).ToLower
         Dim supportedImages As String() = {"jpg", "jpeg", "png", "bmp", "gif"}
         Dim bo As Boolean = False
         For Each x In supportedImages
@@ -583,7 +583,7 @@ Public Module GlobalFunctions
         Return bo
     End Function
 
-    Private Function GetImageDataByMD5(ByVal md5 As String) As WPostImage
+    Function GetImageDataByMD5(ByVal md5 As String) As WPostImage
         Dim wpi As New WPostImage
         Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = "SELECT TOP 1 imagename FROM board WHERE (imagename LIKE '%" & md5 & "%')"
@@ -609,7 +609,7 @@ Public Module GlobalFunctions
         Return wpi
     End Function
 
-    Private Function ImageExist(ByVal md5 As String, Optional ByVal excludedPost As Integer = -1) As Boolean
+    Function ImageExist(ByVal md5 As String, Optional ByVal excludedPost As Integer = -1) As Boolean
         Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = ""
         If excludedPost = -1 Then
@@ -1532,9 +1532,11 @@ Public Module GlobalFunctions
                     r = r.Replace("%IMAGE SIZE%", wpi.dimensions)
                     r = r.Replace("%THUMB_LINK%", GetImageWEBPATHRE(wpi.chanbName))
                     r = r.Replace("%IMAGE MD5%", wpi.MD5)
+                    If transmitRealFileName Then r = r.Replace("%IMAGE DL%", "img.aspx?md5=" & wpi.MD5) Else r = r.Replace("%IMAGE DL%", GetImageWEBPATH(wpi.ChanbName))
                     r = r.Replace("%IMAGE EXT%", wpi.Extension)
                     Dim nr As String = noscriptItemHTML
-                    nr = nr.Replace("%IMAGE SRC%", GetImageWEBPATH(wpi.chanbName))
+                    nr = nr.Replace("%IMAGE SRC%", GetImageWEBPATH(wpi.ChanbName))
+                    If transmitRealFileName Then nr = nr.Replace("%IMAGE DL%", "img.aspx?md5=" & wpi.MD5) Else nr = nr.Replace("%IMAGE DL%", GetImageWEBPATH(wpi.ChanbName))
                     nr = nr.Replace("%FILE NAME%", wpi.realname)
                     nr = nr.Replace("%THUMB_LINK%", GetImageWEBPATHRE(wpi.chanbName))
                     noscriptItems.Append(nr)
@@ -1553,7 +1555,8 @@ Public Module GlobalFunctions
                 r = r.Replace("%ID%", CStr(po.PostID))
                 r = r.Replace("%filec%", "file")
                 r = r.Replace("%AN%", "") ' No need for active/notactive class since there is no rotator.
-                r = r.Replace("%FILE NAME%", wpi.realname)
+                r = r.Replace("%FILE NAME%", wpi.RealName)
+                If transmitRealFileName Then r = r.Replace("%IMAGE DL%", "img.aspx?md5=" & wpi.MD5) Else r = r.Replace("%IMAGE DL%", GetImageWEBPATH(wpi.ChanbName))
                 r = r.Replace("%IMAGE SRC%", GetImageWEBPATH(wpi.chanbName))
                 r = r.Replace("%FILE SIZE%", FormatSizeString(wpi.size))
                 r = r.Replace("%IMAGE SIZE%", wpi.dimensions)

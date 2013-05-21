@@ -12,7 +12,7 @@
                     If powers(0) = "0" Then
                         Response.Write("You have no power to do that")
                     Else
-                        BanPosterByPost(CInt(Request.Item("postid")))
+                        BanPosterByPost(CInt(Request.Item("id")))
                         Response.Write("Banned the poster of " & Request.Item("id"))
                     End If
                 Case "delpost"

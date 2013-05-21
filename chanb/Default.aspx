@@ -116,7 +116,9 @@
      
      
      If Not (Request.Item("id") = "") And validID Then
-                   
+         
+         Response.Write("<script type='text/javascript'> timer(); </script>")
+         
          'Display a thread and children posts 
          Dim opID As Integer = CInt(Request.Item("id"))
          opID = Math.Abs(opID)
@@ -134,13 +136,17 @@
          ' If it is a reply, redirect to parent thread.
          If po.type = 1 Then Response.Redirect("default.aspx?id=" & po.parent & "#p" & po.PostID)
          
-         'Write OP Post 
+        
          para.replyButton = False
          para.isTrailPost = False
-         Response.Write(GetOPPostHTML(opID, para))
-         'Write replies, if any.  
-         Response.Write(GetRepliesHTML(opID, para))
-                 
+         
+         Response.Write("<div class='thread' id='t" & opID & "'>")
+         Response.Write(GetThreadHTML(opID, para))
+         Response.Write("</div><hr ></hr>")
+         
+         
+         
+         
      Else
         
          'Display a list of current threads
@@ -149,7 +155,7 @@
          para.isTrailPost = True
          If Not (Request.Item("startindex") = "") Then startIndex = CInt(Request.Item("startindex")) * (ThreadPerPage)
          For Each x In GetThreads(startIndex, ThreadPerPage - 1 + startIndex, False, False)
-             Response.Write(GetThreadHTML(x, para, TrailPosts))
+             Response.Write(GetStreamThreadHTML(x, para, TrailPosts))
          Next
          
      End If

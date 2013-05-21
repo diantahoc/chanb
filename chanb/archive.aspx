@@ -68,9 +68,10 @@
              'Write OP Post 
              para.replyButton = False
              para.isTrailPost = False
-             Response.Write(GetOPPostHTML(opID, para))
-             'Write replies, if any.  
-             Response.Write(GetRepliesHTML(opID, para))
+             
+             Response.Write("<div class='thread' id='t" & opID & "'>")
+             Response.Write(GetThreadHTML(opID, para))
+             Response.Write("</div><hr ></hr>")
          
          Else
              
@@ -86,7 +87,7 @@
          para.isTrailPost = True
          If Not (Request.Item("startindex") = "") Then startIndex = CInt(Request.Item("startindex")) * (ThreadPerPage)
          For Each x In GetThreads(startIndex, ThreadPerPage - 1 + startIndex, False, True)
-             Response.Write(GetThreadHTML(x, para, TrailPosts))
+             Response.Write(GetStreamThreadHTML(x, para, TrailPosts))
          Next
          
      End If

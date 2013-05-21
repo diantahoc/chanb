@@ -95,18 +95,18 @@ To modify move field declaration from designer file to code-behind file.
 	<remarks></remarks>
 </member><member name="M:chanb.GlobalFunctions.GetWpostList(System.Int32[])">
 	<summary>
- Retrive all reply over a single sql connection.
+ Retrive all ids over a single sql connection.
  </summary>
 	<param name="id"></param>
 	<returns></returns>
 	<remarks></remarks>
 </member><member name="M:chanb.GlobalFunctions.saveFile(System.Web.HttpPostedFile,System.Boolean)">
 	<summary>
- Save single file
+ Save single file.
  </summary>
 	<param name="f"></param>
 	<param name="reply"></param>
-	<returns></returns>
+	<returns>File Name.</returns>
 	<remarks></remarks>
 </member><member name="M:chanb.GlobalFunctions.saveMFile(System.Web.HttpFileCollection)">
 	<summary>
@@ -137,6 +137,30 @@ To modify move field declaration from designer file to code-behind file.
 	<param name="bbcode"></param>
 	<returns></returns>
 	<remarks></remarks>
+</member><member name="M:chanb.GlobalFunctions.GetStreamThreadHTML(System.Int32,chanb.HTMLParameters,System.Int32)">
+	<summary>
+ Return a string for thread displayed in the main page.
+ </summary>
+	<param name="threadID"></param>
+	<param name="para"></param>
+	<param name="trailposts"></param>
+	<returns></returns>
+	<remarks></remarks>
+</member><member name="M:chanb.GlobalFunctions.GetThreadHTML(System.Int32,chanb.HTMLParameters)">
+	<summary>
+ Get the complete thread html, over a single SQL query.
+ </summary>
+	<param name="threadID"></param>
+	<param name="p"></param>
+	<returns></returns>
+	<remarks></remarks>
+</member><member name="M:chanb.GlobalFunctions.DeleteP(System.Int32,System.Boolean)">
+	<summary>
+ Perma-delete the post. Does not archive.
+ </summary>
+	<param name="id"></param>
+	<param name="dF"></param>
+	<remarks></remarks>
 </member><member name="F:chanb.modaction.form1">
 	<summary>
 form1 control.
@@ -156,6 +180,14 @@ To modify move field declaration from designer file to code-behind file.
 </member><member name="F:chanb._mod.Head1">
 	<summary>
 Head1 control.
+</summary>
+	<remarks>
+Auto-generated field.
+To modify move field declaration from designer file to code-behind file.
+</remarks>
+</member><member name="F:chanb.api.form1">
+	<summary>
+form1 control.
 </summary>
 	<remarks>
 Auto-generated field.

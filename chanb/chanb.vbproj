@@ -90,14 +90,16 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="adminaction.aspx" />
+    <Content Include="api.aspx" />
+    <Content Include="archive.aspx" />
     <Content Include="chan.css" />
     <Content Include="Default.aspx" />
     <Content Include="faq.aspx" />
     <Content Include="favicon.ico" />
+    <Content Include="img.aspx" />
     <Content Include="js\jquery-ui.min.js" />
     <Content Include="js\jquery.bgiframe-2.1.2.js" />
     <Content Include="js\jquery.min.js" />
-    <Content Include="mainpageTE.htm" />
     <Content Include="mobile.css" />
     <Content Include="mod.aspx" />
     <Content Include="modaction.aspx" />
@@ -112,7 +114,6 @@
     <Content Include="res\sticky.png" />
     <Content Include="res\up.png" />
     <Content Include="scripts.js" />
-    <Content Include="tinyboardasp.vbproj" />
     <Content Include="Web.config" />
     <Content Include="yotsubab.css" />
   </ItemGroup>
@@ -122,6 +123,20 @@
     </Compile>
     <Compile Include="adminaction.aspx.vb">
       <DependentUpon>adminaction.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="api.aspx.designer.vb">
+      <DependentUpon>api.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="api.aspx.vb">
+      <DependentUpon>api.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="archive.aspx.designer.vb">
+      <DependentUpon>archive.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="archive.aspx.vb">
+      <DependentUpon>archive.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="BanData.vb" />
@@ -144,6 +159,14 @@
     <Compile Include="GlobalFunctions.vb" />
     <Compile Include="GlobalVariables.vb" />
     <Compile Include="HTMLParameters.vb" />
+    <Compile Include="img.aspx.designer.vb">
+      <DependentUpon>img.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="img.aspx.vb">
+      <DependentUpon>img.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="JSONAPI.vb" />
     <Compile Include="LangEngine.vb" />
     <Compile Include="Language.vb" />
     <Compile Include="mod.aspx.designer.vb">

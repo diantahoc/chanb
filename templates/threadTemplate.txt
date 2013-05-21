@@ -11,7 +11,5 @@
 </div>
 
 <span class="summary desktop %AN%">%TCOUNT% %AND% %ICOUNT% %omitStr%</span>
-<br/>
 %TRAILS%
-</div>
-<hr ></hr>
+</div><hr ></hr>

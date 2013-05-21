@@ -26,6 +26,7 @@ Current Features
 * Code and spolier tags support.
 * Markdown support.
 * Integrated archive.
+* Auto updater.
 
 There will be more of course.
 
@@ -40,6 +41,7 @@ Planned features
 * Video (FLV, WEBM) and audio (MP3, FLAC) support.
 * Add Delphi syntax highlighting.
 * Add LaTeX support.
+* Read and write JSON API.
 
 How to install
 ==============

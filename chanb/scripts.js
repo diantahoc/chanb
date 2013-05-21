@@ -98,6 +98,54 @@ function updatemode(f) {
     document.getElementById("ROD").value = f;
 }
 
+
+function timer() {
+
+    window.setInterval("fetchnewreplies()", 30000);
+  
+}
+
+function fetchnewreplies() {
+
+    var $threadDiv = $(".thread:first");
+
+
+    var threadID = $threadDiv.attr('id');
+
+
+    var lastpostID = $(".post.reply:last").attr('id');
+
+
+
+    $.get(
+    "api.aspx",
+    { mode: 'update', tid: threadID, lp: lastpostID },
+    function(data) {
+
+        //process here.
+        if (data.toString().length == 0) {
+
+           // alert("no new replies");
+        } else {
+
+            //alert("new replies!");
+
+            $threadDiv.append(data);
+
+            //alert(data.toString());
+
+        }
+    }
+);
+
+}
+
+function updatemodlink(id) {
+    var $newaction = $("#selc" + id);
+    var $actionlink = $("#modhref" + id);
+    $actionlink.attr('href', 'modaction.aspx?action=' + $newaction.attr("value") + '&id=' + id);   
+ }
+
 function extension() {
 
     var postdiv = document.getElementById("postdiv");

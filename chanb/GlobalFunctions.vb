@@ -93,13 +93,9 @@ Public Module GlobalFunctions
     Private Sub MakeThread(ByVal data As OPData)
         Dim cnx As New SqlConnection(SQLConnectionString)
         'Insert thread data
-        Dim queryString As String = "INSERT INTO board (type, time, comment, postername, email, password, subject, imagename, IP, bumplevel, ua, sticky, mta) VALUES ('0', " & ConvertTimeToSQLTIME(data.time) & ", N'" & data.Comment & "', N'" & data.name & "', N'" & data.email & "', N'" & data.password & "', N'" & data.subject & "', N'" & data.imageName & "','" & data.IP & "', " & ConvertTimeToSQLTIME(data.time) & ", '" & data.UserAgent & "', 0, 0 ) "
+        Dim queryString As String = "INSERT INTO board (type, time, comment, postername, email, password, subject, imagename, IP, bumplevel, ua, sticky, mta) OUTPUT INSERTED.ID  VALUES ('0', " & ConvertTimeToSQLTIME(data.time) & ", N'" & data.Comment & "', N'" & data.name & "', N'" & data.email & "', N'" & data.password & "', N'" & data.subject & "', N'" & data.imageName & "','" & data.IP & "', " & ConvertTimeToSQLTIME(data.time) & ", '" & data.UserAgent & "', 0, 0 ) "
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
-        queryObject.ExecuteNonQuery()
-        'Retrive thread ID
-        queryString = "SELECT ID FROM board WHERE (IP LIKE '" & data.IP & "') AND (ua LIKE '" & data.UserAgent & "') AND (password = N'" & data.password & "') AND (time =  CONVERT(DATETIME, " & ConvertTimeToSQLTIME(data.time) & ", 102))"
-        queryObject = New SqlCommand(queryString, cnx)
         Dim reader As SqlDataReader = queryObject.ExecuteReader
         Dim postID As Integer
         While reader.Read
@@ -208,12 +204,12 @@ Public Module GlobalFunctions
     End Function
 
     ''' <summary>
-    ''' Retrive all reply over a single sql connection.
+    ''' Retrive all ids over a single sql connection.
     ''' </summary>
     ''' <param name="id"></param>
     ''' <returns></returns>
     ''' <remarks></remarks>
-    Private Function GetWpostList(ByVal id As Integer()) As WPost()
+    Function GetWpostList(ByVal id As Integer()) As WPost()
         Dim il As New List(Of WPost)
         If id.Length = 0 Then
             Return il.ToArray
@@ -228,7 +224,7 @@ Public Module GlobalFunctions
                 sb.Append(" OR (ID = " & id(i) & ") ")
             Next
 
-            Dim queryString As String = "SELECT ID, type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua, posterID, sticky, locked, mta FROM  board  " & sb.ToString & " ORDER BY ID"
+            Dim queryString As String = "SELECT ID, type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua, posterID, sticky, locked, mta FROM  board  " & sb.ToString & " ORDER BY ID ASC"
             Dim queryObject As New SqlCommand(queryString, cnx)
             cnx.Open()
             Dim reader As SqlDataReader = queryObject.ExecuteReader
@@ -255,6 +251,42 @@ Public Module GlobalFunctions
             cnx.Close()
             Return il.ToArray
         End If
+    End Function
+
+    Private Function GetThreadData(ByVal threadID As Integer, ByVal includeArchivedPosts As Boolean) As WPost()
+        Dim il As New List(Of WPost)
+        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim queryString As String
+        If includeArchivedPosts Then
+            queryString = "SELECT ID, type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua, posterID, sticky, locked, mta FROM  board  WHERE (ID = " & threadID & ") OR (parentT = " & threadID & ") ORDER BY ID"
+        Else
+            queryString = "SELECT ID, type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua, posterID, sticky, locked, mta FROM  board  WHERE (ID = " & threadID & ") OR (parentT = " & threadID & ") AND (mta = 0) ORDER BY ID"
+        End If
+        Dim queryObject As New SqlCommand(queryString, cnx)
+        cnx.Open()
+        Dim reader As SqlDataReader = queryObject.ExecuteReader
+        While reader.Read
+            Dim po As New WPost(CInt(ConvertNoNull(reader(0))))
+            po.type = CStr(ConvertNoNull(reader(1)))
+            po.time = CDate(ConvertNoNull(reader(2)))
+            po.comment = CStr(ConvertNoNull(reader(3)))
+            po.name = CStr(ConvertNoNull(reader(4)))
+            po.email = CStr(ConvertNoNull(reader(5)))
+            po.password = CStr(ConvertNoNull(reader(6)))
+            po.parent = CInt(ConvertNoNull(reader(7)))
+            po.subject = CStr(ConvertNoNull(reader(8)))
+            po._imageP = CStr(ConvertNoNull(reader(9)))
+            po.ip = CStr(ConvertNoNull(reader(10)))
+            po.ua = CStr(ConvertNoNull(reader(11)))
+            po.posterID = CStr(ConvertNoNull(reader(12)))
+            If CInt(ConvertNoNull(reader(13))) = 1 Then po.isSticky = True Else po.isSticky = False
+            If CInt(ConvertNoNull(reader(14))) = 1 Then po.locked = True Else po.locked = False
+            If CInt(ConvertNoNull(reader(15))) = 1 Then po.archived = True Else po.archived = False
+            il.Add(po)
+        End While
+        reader.Close()
+        cnx.Close()
+        Return il.ToArray
     End Function
 
     Function GetThreads(ByVal startIndex As Integer, ByVal count As Integer, ByVal ignoreStickies As Boolean, ByVal arhive As Boolean) As Integer()
@@ -337,11 +369,11 @@ Public Module GlobalFunctions
     End Function
 
     ''' <summary>
-    ''' Save single file
+    ''' Save single file.
     ''' </summary>
     ''' <param name="f"></param>
     ''' <param name="reply"></param>
-    ''' <returns></returns>
+    ''' <returns>File Name.</returns>
     ''' <remarks></remarks>
     Private Function saveFile(ByVal f As HttpPostedFile, ByVal reply As Boolean) As String
         Dim isImage As Boolean = FileIsImage(f)
@@ -563,7 +595,7 @@ Public Module GlobalFunctions
                     End If
                     Return sp
 #End If
-                Case ""
+                Case "" ' A case of "" may occure when no file is uploaded. Simply return nothing.
                     Return ""
                 Case Else
                     Throw New ArgumentException("Unsupported file type")
@@ -572,7 +604,7 @@ Public Module GlobalFunctions
     End Function
 
     Private Function FileIsImage(ByVal f As HttpPostedFile) As Boolean
-        Dim extension As String = f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1).ToLower
+        Dim extension As String = f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1).ToLower ' ToLower because string comparaison is case sensitive.
         Dim supportedImages As String() = {"jpg", "jpeg", "png", "bmp", "gif"}
         Dim bo As Boolean = False
         For Each x In supportedImages
@@ -674,6 +706,8 @@ Public Module GlobalFunctions
         Return s.ToString
     End Function
 
+#Region "Image processing"
+
     Private Function DownSizeWithAspectRatio(ByVal targetMax As Integer, ByVal isi As Drawing.Size) As Drawing.Size
         Dim ratioP As Double = isi.Width / targetMax
         Return New Drawing.Size(CInt(Fix(isi.Width / ratioP)), CInt(Fix(isi.Height / ratioP)))
@@ -716,6 +750,8 @@ Public Module GlobalFunctions
         End Select
     End Function
 
+#End Region
+
     ''' <summary>
     ''' For full image
     ''' </summary>
@@ -742,7 +778,7 @@ Public Module GlobalFunctions
         End If
     End Function
 
-    Sub NewMod(ByVal name As String, ByVal pas As String, Optional ByVal powers As String = "")
+    Public Sub NewMod(ByVal name As String, ByVal pas As String, Optional ByVal powers As String = "")
         If powers = "" Then
             powers = DefaultModPowers
         End If
@@ -754,7 +790,7 @@ Public Module GlobalFunctions
         cnx.Close()
     End Sub
 
-    Function IsIPBanned(ByVal IP As String) As Boolean
+    Public Function IsIPBanned(ByVal IP As String) As Boolean
         Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = "SELECT ID FROM bans WHERE (IP LIKE '" & IP & "')"
         Dim queryObject As New SqlCommand(queryString, cnx)
@@ -799,7 +835,7 @@ Public Module GlobalFunctions
         Return BannedMessage
     End Function
 
-    Function ProcessPost(ByVal request As HttpRequest, ByVal Session As Web.SessionState.HttpSessionState) As String
+    Public Function ProcessPost(ByVal request As HttpRequest, ByVal Session As Web.SessionState.HttpSessionState) As String
         Dim sb As New StringBuilder
         sb.Append("<html><head>")
         Dim cont As Boolean = True
@@ -938,6 +974,7 @@ Public Module GlobalFunctions
                             End If
                         End If
 
+                        'Check if to bump thread or not
                         If Not ProcessInputs(request.Item("email")) = "sage" And (GetRepliesCount(threadid, True).TotalReplies <= BumpLimit) Then BumpThread(threadid)
 
                         sb.Append("<meta HTTP-EQUIV='REFRESH' content='1; url=default.aspx?id=" & request.Item("threadid") & "'>")
@@ -1041,6 +1078,7 @@ Public Module GlobalFunctions
         sr = MatchAndProcessBBCodes("spoiler", sr)
         sr = MatchAndProcessBBCodes("code", sr)
         sr = MatchAndProcessBBCodes("md", sr)
+        ' sr = MatchAndProcessBBCodes("latex", sr)
         Return sr
     End Function
 
@@ -1075,7 +1113,7 @@ Public Module GlobalFunctions
                     Return data
                 End Try
             Case "md"
-                Dim md As New MarkdownSharp.Markdown 
+                Dim md As New MarkdownSharp.Markdown
                 For Each x In MatchBBCode(data, "md")
                     Dim mdt As String = x
                     mdt = RemoveHTMLEscapes(mdt)
@@ -1085,6 +1123,22 @@ Public Module GlobalFunctions
                 data = data.Replace("[md]", String.Empty)
                 data = data.Replace("[/md]", String.Empty)
                 Return data
+                'Case "latex"
+                '    For Each x In MatchBBCode(data, "latex")
+                '        Dim tempfile As String = STORAGEFOLDER & "\temp" & Now.ToFileTime & ".tex"
+                '        Dim tempfileOUT As String = tempfile & "OUT"
+                '        Dim mdt As String = x
+                '        mdt = RemoveHTMLEscapes(mdt)
+                '        mdt = mdt.Replace("<br>", "")
+
+                '        IO.File.WriteAllText(tempfile, x)
+                '        Dim lx As New Latex2MathML.LatexToMathMLConverter(tempfile, Text.Encoding.UTF8, tempfileOUT)
+                '        lx.Convert()
+                '        data = data.Replace(x, "")
+                '    Next
+                '    data = data.Replace("[latex]", String.Empty)
+                '    data = data.Replace("[/latex]", String.Empty)
+                '    Return data
             Case Else
                 Return data
         End Select
@@ -1212,7 +1266,7 @@ Public Module GlobalFunctions
 
     Private Function IsXvalidQuote(ByVal x As String) As Boolean
         Dim b As Boolean = False
-        ' A valid quote should be in >>Int32 format.
+        ' A valid quote should be in >>Integer format.
         Try
             If x.StartsWith("&gt;&gt;") Then
                 Dim i = CInt(x.Replace("&gt;&gt;", ""))
@@ -1226,14 +1280,15 @@ Public Module GlobalFunctions
         Return b
     End Function
 
-    Function GetOPPostHTML(ByVal id As Integer, ByVal parameters As HTMLParameters) As String
+    Function GetOPPostHTML(ByVal id As Integer, ByVal p As HTMLParameters) As String
         Dim po As WPost = FetchPostData(id)
-        Dim imageData As WPostImage = GetWPostImage(po._imageP)
-        Dim postHTML As String = opPostTemplate
+        Return GetOPPostHTML(po, p)
+    End Function
 
+    Function GetOPPostHTML(ByVal po As WPost, ByVal parameters As HTMLParameters) As String
+        Dim postHTML As String = opPostTemplate
         Dim pageHandlerName As String = "default"
         If parameters.isCurrentThread = False Then pageHandlerName = "archive"
-
         If parameters.replyButton Then
             postHTML = postHTML.Replace("%REPLY BUTTON%", replyButtonHTML)
         Else
@@ -1269,8 +1324,7 @@ Public Module GlobalFunctions
         postHTML = postHTML.Replace("%DATE UTC UNIX%", CStr(po.time.ToFileTime))
         postHTML = postHTML.Replace("%DATE UTC TEXT%", GetTimeString(po.time))
         postHTML = postHTML.Replace("%POST LINK%", pageHandlerName & ".aspx?id=" & po.PostID & "#p" & po.PostID)
-        postHTML = postHTML.Replace("%REPLY COUNT%", CStr(GetRepliesCount(id, Not parameters.isCurrentThread).TotalReplies))
-        postHTML = postHTML.Replace("%IMAGE EXT%", imageData.Extension)
+        postHTML = postHTML.Replace("%REPLY COUNT%", CStr(GetRepliesCount(CInt(po.PostID), Not parameters.isCurrentThread).TotalReplies))
         If parameters.IsModerator Then postHTML = postHTML.Replace("%MODPANEL%", parameters.modMenu.Replace("%ID%", CStr(po.PostID))) Else postHTML = postHTML.Replace("%MODPANEL%", "")
         ''Post text  
         Dim cm As String = ProcessComment(po.comment, CInt(po.PostID), pageHandlerName)
@@ -1305,12 +1359,14 @@ Public Module GlobalFunctions
     Function GetModeratorHTMLMenu(ByVal id As String, ByVal powers As String) As String
         Dim power As String() = powers.Split(CChar("-"))
         Dim sb As New StringBuilder
+        sb.Append("<div id='moda%ID%'><select id='selc%ID%' onchange=""updatemodlink('%ID%')"">".Replace("%ID%", CStr(id)))
+
         For i As Integer = 0 To power.Length - 1 Step 1
             If power(i) = "1" Then
-                sb.Append(modMenu(i).Replace("%ID%", CStr(id)))
-                sb.Append("&nbsp;")
+                sb.Append(modMenu(i))
             End If
         Next
+        sb.Append("</select><a href='modaction.aspx?action=banpost&id=%ID%' id='modhref%ID%' class='form-button' target='_blank' >OK</a></div>".Replace("%ID%", CStr(id)))
         Return sb.ToString
     End Function
 
@@ -1336,8 +1392,8 @@ Public Module GlobalFunctions
 
     Sub BanPosterByPost(ByVal postID As Integer)
         Dim po As WPost = FetchPostData(postID)
+        Dim newText As String = po.comment & bannedMessageHTML
         If IsIPBanned(po.ip) = False Then
-            Dim newText As String = po.comment & bannedMessageHTML
             BanPoster(po.ip, postID)
             UpdatePostText(postID, newText, True)
         End If
@@ -1345,10 +1401,7 @@ Public Module GlobalFunctions
 
     Private Sub UpdatePostText(ByVal postID As Integer, ByVal newText As String, ByVal allowHTML As Boolean)
         Dim cnx As New SqlConnection(SQLConnectionString)
-        Dim queryString As String = ""
-        If newText.Length > 4000 Then
-            newText = newText.Remove(3999)
-        End If
+        Dim queryString As String
         If allowHTML Then
             queryString = "UPDATE board SET comment = N'" & newText & "' WHERE(ID = " & postID & ")"
         Else
@@ -1369,24 +1422,41 @@ Public Module GlobalFunctions
         cnx.Close()
     End Sub
 
-    Function GetThreadHTML(ByVal threadID As Integer, ByVal para As HTMLParameters, ByVal trailposts As Integer) As String
+    ''' <summary>
+    ''' Return a string for thread displayed in the main page.
+    ''' </summary>
+    ''' <param name="threadID"></param>
+    ''' <param name="para"></param>
+    ''' <param name="trailposts"></param>
+    ''' <returns></returns>
+    ''' <remarks></remarks>
+    Function GetStreamThreadHTML(ByVal threadID As Integer, ByVal para As HTMLParameters, ByVal trailposts As Integer) As String
         Dim postHtml As String = threadTemplate
         postHtml = postHtml.Replace("%ID%", CStr(threadID))
+
+        Dim OPandChildrenIDS As New List(Of Integer)
+
+        OPandChildrenIDS.Add(CInt(threadID))
+        OPandChildrenIDS.AddRange(GetLastXPosts(threadID, trailposts, Not para.isCurrentThread))
+
+        Dim wpolist As WPost() = GetWpostList(OPandChildrenIDS.ToArray)
+        OPandChildrenIDS.Clear()
+
+        postHtml = postHtml.Replace("%POST HTML%", GetOPPostHTML(wpolist(0), para))
+
         Dim trailswithimages As Integer = 0
-        If trailposts > 0 Then
+        If trailposts > 0 And (wpolist.Length - 1 > 0) Then
             Dim sb As New StringBuilder
-            For Each x As WPost In GetWpostList(GetLastXPosts(threadID, trailposts, Not para.isCurrentThread))
-                Dim t As String = GetSingleReplyHTML(x, para)
-                sb.Append(t)
-                If t.Contains("data-md5") Then
-                    trailswithimages += 1 ' TODO : Implement a different method for counting images replies.
+            For i As Integer = 1 To wpolist.Length - 1 Step 1
+                sb.Append(GetSingleReplyHTML(wpolist(i), para))
+                If Not wpolist(i)._imageP = "" Then
+                    trailswithimages += 1
                 End If
             Next
             postHtml = postHtml.Replace("%TRAILS%", sb.ToString)
         Else
             postHtml = postHtml.Replace("%TRAILS%", "")
         End If
-        postHtml = postHtml.Replace("%POST HTML%", GetOPPostHTML(threadID, para))
 
         Dim repC As ThreadReplies = GetRepliesCount(threadID, Not para.isCurrentThread)
         If repC.TotalReplies - trailposts <= 0 Then
@@ -1416,8 +1486,29 @@ Public Module GlobalFunctions
             End If
             postHtml = postHtml.Replace("%omitStr%", omittedStr)
         End If
-        postHtml = postHtml.Replace("%POSTLINK%", "default.aspx?id=" & threadID)
+        If para.isCurrentThread Then
+            postHtml = postHtml.Replace("%POSTLINK%", "default.aspx?id=" & threadID)
+        Else
+            postHtml = postHtml.Replace("%POSTLINK%", "archive.aspx?id=" & threadID)
+        End If
         Return postHtml
+    End Function
+
+    ''' <summary>
+    ''' Get the complete thread html, over a single SQL query.
+    ''' </summary>
+    ''' <param name="threadID"></param>
+    ''' <param name="p"></param>
+    ''' <returns></returns>
+    ''' <remarks></remarks>
+    Function GetThreadHTML(ByVal threadID As Integer, ByVal p As HTMLParameters) As String
+        Dim sb As New StringBuilder
+        Dim data As WPost() = GetThreadData(threadID, Not p.isCurrentThread)
+        sb.Append(GetOPPostHTML(data(0), p))
+        For i = 1 To data.Length - 1 Step 1
+            sb.Append(GetSingleReplyHTML(data(i), p))
+        Next
+        Return sb.ToString
     End Function
 
     Private Function GetTimeString(ByVal d As Date) As String
@@ -1468,7 +1559,7 @@ Public Module GlobalFunctions
         Return GetSingleReplyHTML(po, para)
     End Function
 
-    Private Function GetSingleReplyHTML(ByVal po As WPost, ByVal para As HTMLParameters) As String
+    Friend Function GetSingleReplyHTML(ByVal po As WPost, ByVal para As HTMLParameters) As String
         Dim postHTML As String = postTemplate
         Dim pageHandlerName As String = "default"
         If para.isCurrentThread = False Then pageHandlerName = "archive"
@@ -1522,23 +1613,23 @@ Public Module GlobalFunctions
                 Dim rotatorTemplat As String = rotatorTemplate
                 For Each ima In po._imageP.Split(CChar(";"))
                     Dim r As String = imageTemplate
-                    Dim wpi As WPostImage = GetWPOSTIMAGE(ima.Replace(";", ""))
+                    Dim wpi As WPostImage = GetWPostImage(ima.Replace(";", ""))
                     r = r.Replace("%ID%", CStr(po.PostID))
                     If Not advanced Then r = r.Replace("%AN%", "active") Else r = r.Replace("%AN%", "notactive")
                     r = r.Replace("%filec%", "")
-                    r = r.Replace("%FILE NAME%", wpi.realname)
-                    r = r.Replace("%IMAGE SRC%", GetImageWEBPATH(wpi.chanbName))
-                    r = r.Replace("%FILE SIZE%", FormatSizeString(wpi.size))
-                    r = r.Replace("%IMAGE SIZE%", wpi.dimensions)
-                    r = r.Replace("%THUMB_LINK%", GetImageWEBPATHRE(wpi.chanbName))
+                    r = r.Replace("%FILE NAME%", wpi.RealName)
+                    r = r.Replace("%IMAGE SRC%", GetImageWEBPATH(wpi.ChanbName))
+                    r = r.Replace("%FILE SIZE%", FormatSizeString(wpi.Size))
+                    r = r.Replace("%IMAGE SIZE%", wpi.Dimensions)
+                    r = r.Replace("%THUMB_LINK%", GetImageWEBPATHRE(wpi.ChanbName))
                     r = r.Replace("%IMAGE MD5%", wpi.MD5)
                     If transmitRealFileName Then r = r.Replace("%IMAGE DL%", "img.aspx?md5=" & wpi.MD5) Else r = r.Replace("%IMAGE DL%", GetImageWEBPATH(wpi.ChanbName))
                     r = r.Replace("%IMAGE EXT%", wpi.Extension)
                     Dim nr As String = noscriptItemHTML
                     nr = nr.Replace("%IMAGE SRC%", GetImageWEBPATH(wpi.ChanbName))
                     If transmitRealFileName Then nr = nr.Replace("%IMAGE DL%", "img.aspx?md5=" & wpi.MD5) Else nr = nr.Replace("%IMAGE DL%", GetImageWEBPATH(wpi.ChanbName))
-                    nr = nr.Replace("%FILE NAME%", wpi.realname)
-                    nr = nr.Replace("%THUMB_LINK%", GetImageWEBPATHRE(wpi.chanbName))
+                    nr = nr.Replace("%FILE NAME%", wpi.RealName)
+                    nr = nr.Replace("%THUMB_LINK%", GetImageWEBPATHRE(wpi.ChanbName))
                     noscriptItems.Append(nr)
                     items.Append(r)
                     advanced = True
@@ -1551,17 +1642,17 @@ Public Module GlobalFunctions
             Else
                 'Single image
                 Dim r As String = imageTemplate
-                Dim wpi As WPostImage = GetWPOSTIMAGE(po._imageP.Replace(";", ""))
+                Dim wpi As WPostImage = GetWPostImage(po._imageP.Replace(";", ""))
                 r = r.Replace("%ID%", CStr(po.PostID))
                 r = r.Replace("%filec%", "file")
                 r = r.Replace("%AN%", "") ' No need for active/notactive class since there is no rotator.
                 r = r.Replace("%FILE NAME%", wpi.RealName)
                 If transmitRealFileName Then r = r.Replace("%IMAGE DL%", "img.aspx?md5=" & wpi.MD5) Else r = r.Replace("%IMAGE DL%", GetImageWEBPATH(wpi.ChanbName))
-                r = r.Replace("%IMAGE SRC%", GetImageWEBPATH(wpi.chanbName))
-                r = r.Replace("%FILE SIZE%", FormatSizeString(wpi.size))
-                r = r.Replace("%IMAGE SIZE%", wpi.dimensions)
-                r = r.Replace("%THUMB_LINK%", GetImageWEBPATHRE(wpi.chanbName))
-                r = r.Replace("%IMAGE MD5%", wpi.md5)
+                r = r.Replace("%IMAGE SRC%", GetImageWEBPATH(wpi.ChanbName))
+                r = r.Replace("%FILE SIZE%", FormatSizeString(wpi.Size))
+                r = r.Replace("%IMAGE SIZE%", wpi.Dimensions)
+                r = r.Replace("%THUMB_LINK%", GetImageWEBPATHRE(wpi.ChanbName))
+                r = r.Replace("%IMAGE MD5%", wpi.MD5)
                 r = r.Replace("%IMAGE EXT%", wpi.Extension)
                 sb.Append(r)
             End If
@@ -1630,6 +1721,13 @@ Public Module GlobalFunctions
         cnx.Close()
     End Sub
 
+
+    ''' <summary>
+    ''' Perma-delete the post. Does not archive.
+    ''' </summary>
+    ''' <param name="id"></param>
+    ''' <param name="dF"></param>
+    ''' <remarks></remarks>
     Private Sub DeleteP(ByVal id As Integer, ByVal dF As Boolean)
         If DeleteFiles Then DeletePostFiles(id)
         Dim cnx As New SqlConnection(SQLConnectionString)
@@ -1646,10 +1744,10 @@ Public Module GlobalFunctions
             Exit Sub
         Else
             For Each x In w._imageP.Split(CChar(";"))
-                Dim ima As WPostImage = GetWPOSTIMAGE(w._imageP)
-                If ImageExist(ima.md5, postID) = False Then
-                    Dim realPath As String = STORAGEFOLDER & "\" & ima.chanbName
-                    Dim thumbPath As String = STORAGEFOLDER & "\th" & ima.chanbName
+                Dim ima As WPostImage = GetWPostImage(w._imageP)
+                If ImageExist(ima.MD5, postID) = False Then
+                    Dim realPath As String = STORAGEFOLDER & "\" & ima.ChanbName
+                    Dim thumbPath As String = STORAGEFOLDER & "\th" & ima.ChanbName
                     IO.File.Delete(realPath)
                     IO.File.Delete(thumbPath)
                 End If
@@ -1757,6 +1855,30 @@ Public Module GlobalFunctions
         End While
         cnx.Close()
         Return p
+    End Function
+
+    Public Function GetThreadRepliesAfter(ByVal threadID As Integer, ByVal x As Integer, ByVal includeArchived As Boolean) As Integer()
+        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim queryString As String
+        If includeArchived Then
+            queryString = "SELECT ID FROM board WHERE (parentT = " & threadID & ") AND ( ID > " & x & " ) ORDER BY ID ASC"
+        Else
+            queryString = "SELECT ID FROM board WHERE (parentT = " & threadID & ") AND ( ID > " & x & " ) AND (mta = 0) ORDER BY ID ASC"
+        End If
+        Dim queryObject As New SqlCommand(queryString, cnx)
+        Dim il As New List(Of Integer)
+        cnx.Open()
+
+        Dim reader As SqlDataReader = queryObject.ExecuteReader
+
+        While reader.Read
+            il.Add(CInt(ConvertNoNull(reader(0))))
+        End While
+
+        reader.Close()
+        cnx.Close()
+
+        Return il.ToArray
     End Function
 
     'Function LoginMod(ByVal name As String, ByVal pass As String) As HttpCookie

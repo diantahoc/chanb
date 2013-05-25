@@ -2,6 +2,13 @@
 
     Dim DI As New DataInitializer
 
+    Sub New()
+        StorageFolder = DI.PhysicalStorageFolderPath
+        StorageFolderThumbs = DI.PhysicalStorageFolderPath & "\thumbs"
+        If FileIO.FileSystem.DirectoryExists(StorageFolder) = False Then FileIO.FileSystem.CreateDirectory(StorageFolder)
+        If FileIO.FileSystem.DirectoryExists(StorageFolderThumbs) = False Then FileIO.FileSystem.CreateDirectory(StorageFolderThumbs)
+    End Sub
+
 #Region "Board configuration"
 
     Public BoardTitle As String = DI.BoardTitle
@@ -25,12 +32,14 @@
     Public EnableSmilies As Boolean = DI.EnableSmilies
     Public CaptchaLevel As Integer = DI.CaptchaLevel
     Public EnableCaptcha As Boolean = DI.EnableCaptcha
+    Public removeEXIFdata As Boolean = DI.RemoveEXIFData
 
 #End Region
 
 #Region "Server configuration"
 
     Public StorageFolder As String = DI.PhysicalStorageFolderPath
+    Public StorageFolderThumbs As String = DI.PhysicalStorageFolderPath & "\thumbs"
     Public StoragefolderWEB As String = DI.WebStorageFolderPath
     Public isInstalled As Boolean = DI.isInstalled
 

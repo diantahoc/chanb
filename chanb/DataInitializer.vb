@@ -13,31 +13,31 @@
 
     Public ReadOnly Property OPPostTemplate() As String
         Get
-            Return IO.File.ReadAllText(chanbDLLROOT & "opposttemplate.txt")
+            Return IO.File.ReadAllText(chanbDLLROOT & "templates\opposttemplate.html")
         End Get
     End Property
 
     Public ReadOnly Property ReplyPostTemplate() As String
         Get
-            Return IO.File.ReadAllText(chanbDLLROOT & "posttemplate.txt")
+            Return IO.File.ReadAllText(chanbDLLROOT & "templates\posttemplate.html")
         End Get
     End Property
 
     Public ReadOnly Property ThreadTemplate() As String
         Get
-            Return IO.File.ReadAllText(chanbDLLROOT & "threadtemplate.txt")
+            Return IO.File.ReadAllText(chanbDLLROOT & "templates\threadtemplate.html")
         End Get
     End Property
 
     Public ReadOnly Property ImageTemplate() As String
         Get
-            Return IO.File.ReadAllText(chanbDLLROOT & "imagetemplate.txt")
+            Return IO.File.ReadAllText(chanbDLLROOT & "templates\imagetemplate.html")
         End Get
     End Property
 
     Public ReadOnly Property ImageRotatorTemplate() As String
         Get
-            Return IO.File.ReadAllText(chanbDLLROOT & "rotatortemplate.txt")
+            Return IO.File.ReadAllText(chanbDLLROOT & "templates\rotatortemplate.html")
         End Get
     End Property
 
@@ -343,6 +343,18 @@
                 Return 5
             Else
                 Return CInt(DataDB.GetKey("CaptchaLevel"))
+            End If
+        End Get
+    End Property
+
+    Public ReadOnly Property RemoveEXIFData() As Boolean
+        Get
+            If DataDB.KeyExist("RemoveEXIFData") = False Then
+                DataDB.AddKey("RemoveEXIFData", CStr(True))
+                DataDB.Save()
+                Return True
+            Else
+                Return CBool(DataDB.GetKey("RemoveEXIFData"))
             End If
         End Get
     End Property

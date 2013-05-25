@@ -6,6 +6,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" >
 <head>
 <%  Session.Add("chanb", "chanb") ' To prevent session destroy
+    
     If Not isInstalled Then
         Response.Redirect("installer.aspx")
     End If
@@ -62,7 +63,7 @@
 
 </tr>
 
-<%  If EnableCaptcha Then Response.Write("<tr><th>" & EnterCaptchastr & "</th><td><img alt='Captcha Challenge' id='captchaImage' src='captcha.aspx' /><a onclick='refreshcaptcha();'><img alt='refresh' style='cursor:pointer; min-height:30px; min-width:30px;' src='res/refresh.png' id='refreshcaptchabutton' onmousemove='focusRCB();' onmouseout='unfocusRCB();' /></a><br /><input class='form-text' type='text' size ='30' name='usercaptcha' /></td></tr>")%>
+<%  If EnableCaptcha Then Response.Write("<tr><th>" & EnterCaptchastr & "</th><td><img alt='Captcha Challenge' id='captchaImage' src='captcha.aspx' /><a onclick='refreshcaptcha();'><img alt='refresh' style='cursor:pointer; min-height:30px; min-width:30px;' src='res/refresh.png' id='refreshcaptchabutton' onmousemove='focusRCB();' onmouseout='unfocusRCB();' /></a><br /><input autocomplete='off' class='form-text' type='text' size ='30' name='usercaptcha' /></td></tr>")%>
 <tr>
 <th><% Response.Write(filesStr)%></th>
 <td>
@@ -256,6 +257,6 @@
     Response.Write("</div>")
     %>
 <div id="bottom"></div>
-<div id="absbot" class="absBotText"><% Response.Write(footerText)%></span></div>
+<div id="absbot" class="absBotText"><span><% Response.Write(footerText)%></span></div>
 </body>
 </html>

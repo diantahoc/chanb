@@ -179,3 +179,11 @@ function getAttrb(id,name) {
     return document.getElementById(id).getAttribute(name).toString();
 }
 
+function showFullName(id) {
+    $("#file_short_name_" + id).addClass("hide");
+    $("#file_full_name_" + id).removeClass("hide");
+}
+function showShortName(id, f) {
+    $("#file_full_name_" + id).addClass("hide");
+    $("#file_short_name_" + id).removeClass("hide");
+}

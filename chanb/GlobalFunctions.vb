@@ -398,11 +398,11 @@ Public Module GlobalFunctions
             'Full image path
             Dim p As String = StorageFolder & "\" & dd & "." & fileextension
             'Thumb path
-            Dim thumb As String = ""
+            Dim thumb As String
             If fileextension = "png" Then
-                thumb = StorageFolder & "\th" & dd & ".png"
+                thumb = StorageFolderThumbs & "\th" & dd & ".png"
             Else
-                thumb = StorageFolder & "\th" & dd & ".jpg"
+                thumb = StorageFolderThumbs & "\th" & dd & ".jpg"
             End If
 
             'Check if resize is needed.
@@ -419,7 +419,8 @@ Public Module GlobalFunctions
                     ResizeImage(w, 250).Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
                 End If
             End If
-            'Save the file.
+
+            'Save the image.
             f.SaveAs(p)
 
             'Calculate the file hash. I save the file then calulate the hash because f.InputStream always return a null stream. 
@@ -457,7 +458,7 @@ Public Module GlobalFunctions
                     Dim dd As String = CStr(Date.UtcNow.ToFileTime)
                     Dim p As String = StorageFolder & "\" & dd & "." & fileextension
                     'Thumb path
-                    Dim thumb As String = StorageFolder & "\th" & dd & ".png"
+                    Dim thumb As String = StorageFolderThumbs & "\th" & dd & ".png"
                     f.SaveAs(p)
 
                     Dim fs As New IO.FileStream(p, IO.FileMode.Open)
@@ -497,7 +498,7 @@ Public Module GlobalFunctions
                     Dim dd As String = CStr(Date.UtcNow.ToFileTime)
                     Dim p As String = StorageFolder & "\" & dd & "." & fileextension
                     'Thumb path
-                    Dim thumb As String = StorageFolder & "\th" & dd & ".jpg"
+                    Dim thumb As String = StorageFolderThumbs & "\th" & dd & ".jpg"
                     f.SaveAs(p)
 
                     Dim fs As New IO.FileStream(p, IO.FileMode.Open)
@@ -550,7 +551,7 @@ Public Module GlobalFunctions
                     Dim dd As String = CStr(Date.UtcNow.ToFileTime)
                     Dim p As String = STORAGEFOLDER & "\" & dd & "." & fileextension
                     'Thumb path
-                    Dim thumb As String = STORAGEFOLDER & "\th" & dd & ".jpg"
+                    Dim thumb As String = StorageFolderThumbs & "\th" & dd & ".jpg"
                     f.SaveAs(p)
 
                     Dim fs As New IO.FileStream(p, IO.FileMode.Open)
@@ -776,12 +777,12 @@ Public Module GlobalFunctions
     ''' <returns></returns>
     ''' <remarks></remarks>
     Public Function GetImageWEBPATHRE(ByVal name As String) As String
-        Dim jpgThumb As String = StorageFolder & "\th" & name.Split(CChar(".")).ElementAt(0) & ".jpg"
+        Dim jpgThumb As String = StorageFolderThumbs & "\th" & name.Split(CChar(".")).ElementAt(0) & ".jpg"
         If FileIO.FileSystem.FileExists(jpgThumb) Then
-            Return StoragefolderWEB & "th" & name.Split(CChar(".")).ElementAt(0) & ".jpg"
+            Return StoragefolderWEB & "thumbs/th" & name.Split(CChar(".")).ElementAt(0) & ".jpg"
         Else
             'Must be a png thumbnail
-            Return StoragefolderWEB & "th" & name.Split(CChar(".")).ElementAt(0) & ".png"
+            Return StoragefolderWEB & "thumbs/th" & name.Split(CChar(".")).ElementAt(0) & ".png"
         End If
     End Function
 
@@ -1592,7 +1593,8 @@ Public Module GlobalFunctions
     End Function
 
     Private Function GetTimeString(ByVal d As Date) As String
-        Return d.ToString
+        Return d.Year & "-" & d.Month & "-" & d.Day & " " & d.Hour & ":" & d.Minute & ":" & d.Second
+        '   Return d.ToString
     End Function
 
     Private Function GetRepliesCount(ByVal threadID As Integer, ByVal countArchived As Boolean) As ThreadReplies
@@ -1698,6 +1700,11 @@ Public Module GlobalFunctions
                     If Not advanced Then r = r.Replace("%AN%", "active") Else r = r.Replace("%AN%", "notactive")
                     r = r.Replace("%filec%", "")
                     r = r.Replace("%FILE NAME%", wpi.RealName)
+                    If wpi.RealName.Length > 18 Then
+                        r = r.Replace("%FILE SNAME%", New String(CType(wpi.RealName, Char()), 0, 15) & "...")
+                    Else
+                        r = r.Replace("%FILE SNAME%", wpi.RealName)
+                    End If
                     r = r.Replace("%IMAGE SRC%", GetImageWEBPATH(wpi.ChanbName))
                     r = r.Replace("%FILE SIZE%", FormatSizeString(wpi.Size))
                     r = r.Replace("%IMAGE SIZE%", wpi.Dimensions)
@@ -1705,6 +1712,7 @@ Public Module GlobalFunctions
                     r = r.Replace("%IMAGE MD5%", wpi.MD5)
                     If transmitRealFileName Then r = r.Replace("%IMAGE DL%", "img.aspx?md5=" & wpi.MD5) Else r = r.Replace("%IMAGE DL%", GetImageWEBPATH(wpi.ChanbName))
                     r = r.Replace("%IMAGE EXT%", wpi.Extension)
+                    'No script item
                     Dim nr As String = noscriptItemHTML
                     nr = nr.Replace("%IMAGE SRC%", GetImageWEBPATH(wpi.ChanbName))
                     If transmitRealFileName Then nr = nr.Replace("%IMAGE DL%", "img.aspx?md5=" & wpi.MD5) Else nr = nr.Replace("%IMAGE DL%", GetImageWEBPATH(wpi.ChanbName))
@@ -1716,7 +1724,7 @@ Public Module GlobalFunctions
                 Next
                 rotatorTemplat = rotatorTemplat.Replace("%ID%", CStr(po.PostID))
                 rotatorTemplat = rotatorTemplat.Replace("%IMAGECOUNT%", CStr(count))
-                rotatorTemplat = rotatorTemplat.Replace("%ITEMS%", items.ToString.Replace(vbNewLine, "").Replace("'", "\'"))
+                rotatorTemplat = rotatorTemplat.Replace("%ITEMS%", items.ToString)
                 rotatorTemplat = rotatorTemplat.Replace("%NOS%", noscriptItems.ToString)
                 sb.Append(rotatorTemplat)
             Else
@@ -1727,6 +1735,11 @@ Public Module GlobalFunctions
                 r = r.Replace("%filec%", "file")
                 r = r.Replace("%AN%", "") ' No need for active/notactive class since there is no rotator.
                 r = r.Replace("%FILE NAME%", wpi.RealName)
+                If wpi.RealName.Length > 18 Then
+                    r = r.Replace("%FILE SNAME%", New String(CType(wpi.RealName, Char()), 0, 15) & "...")
+                Else
+                    r = r.Replace("%FILE SNAME%", wpi.RealName)
+                End If
                 If transmitRealFileName Then r = r.Replace("%IMAGE DL%", "img.aspx?md5=" & wpi.MD5) Else r = r.Replace("%IMAGE DL%", GetImageWEBPATH(wpi.ChanbName))
                 r = r.Replace("%IMAGE SRC%", GetImageWEBPATH(wpi.ChanbName))
                 r = r.Replace("%FILE SIZE%", FormatSizeString(wpi.Size))
@@ -1834,9 +1847,10 @@ Public Module GlobalFunctions
                 Dim ima As WPostImage = GetWPostImage(po._imageP)
                 If ImageExist(ima.MD5, CInt(po.PostID)) = False Then
                     Dim realPath As String = StorageFolder & "\" & ima.ChanbName
-                    Dim thumbPath As String = StorageFolder & "\th" & ima.ChanbName
+                    Dim thumbPath As String = StorageFolderThumbs & "\th" & ima.ChanbName
                     IO.File.Delete(realPath)
-                    IO.File.Delete(thumbPath)
+                    'Don't delete thumbs when archive is enabled.
+                    If Not EnableArchive Then IO.File.Delete(thumbPath)
                 End If
             Next
         End If

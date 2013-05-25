@@ -45,15 +45,9 @@ Planned features
 How to install
 ==============
 
-Copy the binary files to your application root, under a directory called bin. Make sure you copy the required dlls, and the templates files.
-
-Make a "db.txt" file in the same directory as chanb.dll, write inside of it the SQL connection string.
-
-Make sure you prepare the database with the SQL template provided. Note: The provided template drop all existing items before updating the database.
+Copy the binary files to your application root, under a directory called bin. Make sure you copy the required dlls, and the templates files under a directory called "templates", in the same dir as chanb.dll.
 
 And copy all the .aspx files to your application root.
-
-Make a "images" folder in your application root.
 
 Currently, you can change settings by editing the data.as file which is automatically made in the same folder as chanb.dll .
 

@@ -14,34 +14,33 @@ The website gets cleaned each while.
 Current Features
 ========
 
-* Multiple files per post .
-* Automatic set dumper (with file counting support).
-* SVG documents support.
-* Duplicate image checking support.
-* Smart Linking of duplicate images to the same real file, therefore reducing the consumed disk space.
-* Poster ID support.
-* PDF Support (proper thumbnail generation require TallComponent PDFRasterizer library, not enabled by default).
-* 4chan-like interface, and mobile support.
-* Moderator powers customization.
-* Code and spolier tags support.
-* Markdown support.
-* Integrated archive.
+* 4chan-like interface.
 * Auto updater.
-* Installer
-
-There will be more of course.
+* Automatic set dumper (with file counting support).
+* Code and spoiler tags support.
+* Duplicate image checking support.
+* Integrated archive.
+* Installer.
+* Markdown support.
+* Mobile support.
+* Moderator powers customization.
+* Multiple files per post.
+* PDF Support (proper thumbnail generation require TallComponent PDFRasterizer library, not enabled by default).
+* Poster ID support.
+* Smart Linking of duplicate images to the same real file, therefore reducing the consumed disk space.
+* SVG documents support.
 
 Planned features
-==============
+=================
 
-* Catalog
-* Multilanguage support.
-* Admin panel
-* Online language adder and editor.
-* Video (FLV, WEBM) and audio (MP3, FLAC) support.
 * Add Delphi syntax highlighting.
 * Add LaTeX support.
+* Admin panel.
+* Catalog.
+* Online language adder and editor.
+* Multilanguage support.
 * Read and write JSON API.
+* Video (FLV, WEBM, MP4) and audio (MP3, FLAC) support.
 
 How to install
 ==============

@@ -5,6 +5,7 @@
     Public EMAILString As String = "Email"
     Public COMMENTString As String = "Comment"
     Public PASSWORDString As String = "Password"
+    Public EnterCaptchastr As String = "Verification"
     Public newthreadStr As String = "New thread"
     Public filesStr As String = "Files(s)"
     Public replyStr As String = "Reply"
@@ -40,7 +41,7 @@
     Public ImageRequired As String = "You cannot start a new thread without an image."
     Public SuccessfulPostString As String = "Post Succesful !"
     Public FileToBig As String = "The provided file is larger than the allowed limit (" & CStr(MaximumFileSize / 1024 / 1024) & " MB)"
-    Public FloodDetected As String = "Flood detected, please allow " & TimeBetweenRequestes & " seconds before posting, reporting and deleting."
+    Public FloodDetected As String = "Flood detected, please allow % seconds before posting, reporting and deleting."
     Public CannotDeletePostBadPassword As String = "Cannot delete post % , bad password"
     Public PostDeletedSuccess As String = "Post number % has been deleted"
     Public NoPostWasSelected As String = "No post was selected"
@@ -53,7 +54,9 @@
     Public UnsupportedFile As String = "Unsupported file type."
     Public arhivedMessage As String = "This thread has 404'ed and it is in the archive now."
     Public invalidPostmodestr As String = "Invalid Posting mode"
+    Public wrongCaptcha As String = "You have mistyped the captcha. Please try again."
     Public smallRuleList As String = ""
+
 
     Public banMsgStr As String = "User was banned for this post."
     Public commentToolong As String = "<br/><span class='summary'>Comment is too long. Click <a href='%POSTLINK%' target='_blank'>here</a> to view</span>"

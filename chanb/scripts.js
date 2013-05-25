@@ -113,28 +113,18 @@ function fetchnewreplies() {
     var threadID = $threadDiv.attr('id');
 
 
-    var lastpostID = $(".post.reply:last").attr('id');
-
+    var lastpostID = $(".postContainer:last").attr('id');
 
 
     $.get(
     "api.aspx",
-    { mode: 'update', tid: threadID, lp: lastpostID },
+    { mode: 'fetch_replies_after', tid: threadID, lp: lastpostID },
     function(data) {
 
         //process here.
-        if (data.toString().length == 0) {
-
-           // alert("no new replies");
-        } else {
-
-            //alert("new replies!");
-
+        if (!data.toString().length == 0) {
             $threadDiv.append(data);
-
-            //alert(data.toString());
-
-        }
+        } 
     }
 );
 
@@ -153,3 +143,39 @@ function extension() {
     $("#postdiv").draggable();
 
 }
+
+
+function refreshcaptcha(level) {
+
+    if (level == null) {
+        var cap = document.getElementById("captchaImage");
+        cap.setAttribute("src", "captcha.aspx?" + Math.random().toString(10));
+     }
+    else {
+        var cap = document.getElementById("captchaImage");
+        cap.setAttribute("src", "captcha.aspx?l=" + level + "&y=" + Math.random().toString(10));
+    
+     }
+    
+        
+
+   
+
+}
+
+function focusRCB()
+
+{ document.getElementById('refreshcaptchabutton').setAttribute('src', 'res/refresh-high.png'); }
+
+function unfocusRCB()
+
+{ document.getElementById('refreshcaptchabutton').setAttribute('src', 'res/refresh.png'); }
+
+function updateAttrb(id, name, value) {
+    document.getElementById(id).setAttribute(name, value);
+}
+
+function getAttrb(id,name) {
+    return document.getElementById(id).getAttribute(name).toString();
+}
+

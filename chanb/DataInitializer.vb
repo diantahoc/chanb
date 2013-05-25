@@ -235,7 +235,11 @@
 
     Public ReadOnly Property PhysicalStorageFolderPath() As String
         Get
-            Return chanb.My.Request.PhysicalApplicationPath & "\" & StorageFolderName
+            If DataDB.KeyExist("PhysicalStorageFolderPath") = False Then
+                Return chanb.My.Request.PhysicalApplicationPath & "\" & StorageFolderName
+            Else
+                Return CStr(DataDB.GetKey("PhysicalStorageFolderPath"))
+            End If
         End Get
     End Property
 
@@ -259,9 +263,15 @@
         End Get
     End Property
 
-    Public ReadOnly Property FirstRun() As Boolean
+    Public ReadOnly Property isInstalled() As Boolean
         Get
-            Return DataDB.KeyExist("FirstRun")
+            If DataDB.KeyExist("isinstalled") = False Then
+                DataDB.AddKey("isinstalled", CStr(False))
+                DataDB.Save()
+                Return False
+            Else
+                Return CBool(DataDB.GetKey("isinstalled"))
+            End If
         End Get
     End Property
 
@@ -292,11 +302,47 @@
     Public ReadOnly Property TransmitRealFileName() As Boolean
         Get
             If DataDB.KeyExist("TransmitRealFileName") = False Then
-                DataDB.AddKey("TransmitRealFileName", CStr(True))
+                DataDB.AddKey("TransmitRealFileName", CStr(False))
+                DataDB.Save()
+                Return False
+            Else
+                Return CBool(DataDB.GetKey("TransmitRealFileName"))
+            End If
+        End Get
+    End Property
+
+    Public ReadOnly Property EnableSmilies() As Boolean
+        Get
+            If DataDB.KeyExist("EnableSmilies") = False Then
+                DataDB.AddKey("EnableSmilies", CStr(True))
                 DataDB.Save()
                 Return True
             Else
-                Return CBool(DataDB.GetKey("TransmitRealFileName"))
+                Return CBool(DataDB.GetKey("EnableSmilies"))
+            End If
+        End Get
+    End Property
+
+    Public ReadOnly Property EnableCaptcha() As Boolean
+        Get
+            If DataDB.KeyExist("EnableCaptcha") = False Then
+                DataDB.AddKey("EnableCaptcha", CStr(True))
+                DataDB.Save()
+                Return True
+            Else
+                Return CBool(DataDB.GetKey("EnableCaptcha"))
+            End If
+        End Get
+    End Property
+
+    Public ReadOnly Property CaptchaLevel() As Integer
+        Get
+            If DataDB.KeyExist("CaptchaLevel") = False Then
+                DataDB.AddKey("CaptchaLevel", "5")
+                DataDB.Save()
+                Return 5
+            Else
+                Return CInt(DataDB.GetKey("CaptchaLevel"))
             End If
         End Get
     End Property

@@ -1,4 +1,6 @@
 ﻿<%@ Import Namespace = "chanb.GlobalFunctions" %>
+<%@ Import Namespace = "chanb.GlobalVariables" %>
+
     <%  
         
     If Session.Item("mod") Is "" Or Session.Item("mod") Is Nothing Then Session("mod") = CStr(False)
@@ -19,7 +21,7 @@
                     If powers(1) = "0" Then
                         Response.Write("You have no power to do that")
                     Else
-                        DeletePost(Request.Item("id"), True)
+                        PrunePost(Request.Item("id"), deleteFiles)
                         Response.Write("Deleted post " & Request.Item("id"))
                     End If
                 Case "tgsticky"

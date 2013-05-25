@@ -4,8 +4,7 @@
 
 Public Module GlobalFunctions
 
-    Dim g As New DBInitializer
-    Dim SQLConnectionString As String = g.ConnectionString
+    Public dbi As New DBInitializer
 
     Function GetUserSelectedStyle(ByVal session As Web.SessionState.HttpSessionState) As String
         If CStr(session.Item("SS")) = "" Then
@@ -31,7 +30,7 @@ Public Module GlobalFunctions
         If TypeOf x Is DBNull Then Return Nothing Else Return x
     End Function
 
-    Private Function ProcessInputs(ByVal x As String) As String
+    Function ProcessInputs(ByVal x As String) As String
         Dim lowcaseX As String = x
         'HTML ISO 8879 Numerical Character References 
         'http://sunsite.berkeley.edu/amher/iso_8879.html
@@ -57,12 +56,12 @@ Public Module GlobalFunctions
         lowcaseX = lowcaseX.Replace("|", "&#124;")
         lowcaseX = lowcaseX.Replace("}", "&#125;")
         lowcaseX = lowcaseX.Replace("~", "&#126;")
-        lowcaseX = lowcaseX.Replace(My.Resources.doublequotes, "&quot;")
+        lowcaseX = lowcaseX.Replace("""", "&quot;")
         Return lowcaseX
     End Function
 
     Function FetchPostData(ByVal id As Integer) As WPost
-        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryString As String = "SELECT type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua, posterID, sticky, locked, mta FROM  board  WHERE (id = " & id & ")"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
@@ -91,10 +90,9 @@ Public Module GlobalFunctions
     End Function
 
     Private Sub MakeThread(ByVal data As OPData)
-        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
         'Insert thread data
-        Dim queryString As String = "INSERT INTO board (type, time, comment, postername, email, password, subject, imagename, IP, bumplevel, ua, sticky, mta) OUTPUT INSERTED.ID  VALUES ('0', " & ConvertTimeToSQLTIME(data.time) & ", N'" & data.Comment & "', N'" & data.name & "', N'" & data.email & "', N'" & data.password & "', N'" & data.subject & "', N'" & data.imageName & "','" & data.IP & "', " & ConvertTimeToSQLTIME(data.time) & ", '" & data.UserAgent & "', 0, 0 ) "
-        Dim queryObject As New SqlCommand(queryString, cnx)
+        Dim queryObject As New SqlCommand("INSERT INTO board (type, time, comment, postername, email, password, subject, imagename, IP, bumplevel, ua, sticky, mta) OUTPUT INSERTED.ID  VALUES ('0', " & ConvertTimeToSQLTIME(data.time) & ", N'" & data.Comment & "', N'" & data.name & "', N'" & data.email & "', N'" & data.password & "', N'" & data.subject & "', N'" & data.imageName & "','" & data.IP & "', " & ConvertTimeToSQLTIME(data.time) & ", '" & data.UserAgent & "', 0, 0 ) ", cnx)
         cnx.Open()
         Dim reader As SqlDataReader = queryObject.ExecuteReader
         Dim postID As Integer
@@ -115,17 +113,17 @@ Public Module GlobalFunctions
         Dim l As New List(Of Integer) ' list of thread that should be pruned
         For Each x As Integer In allThread
             If Array.IndexOf(currentThread, x) = -1 Then
-                'This thread should be deleted.
+                'This thread should be pruned.
                 l.Add(x)
             End If
         Next
         For Each x As Integer In l
-            DeletePost(x, DeleteFiles)
+            PrunePost(x, DeleteFiles)
         Next
     End Sub
 
     Function GetThreadsCount(ByVal archive As Boolean) As Integer
-        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryString As String = ""
         If archive Then
             queryString = "Select Count(ID) as [Total Records] from board where (type=0) AND (mta=1)"
@@ -165,17 +163,16 @@ Public Module GlobalFunctions
     ''' <param name="data">Poster data</param>
     ''' <remarks></remarks>
     Sub ReplyTo(ByVal id As Integer, ByVal data As OPData)
-        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryString As String = "INSERT INTO board (type, [time], comment, postername, email, [password], parentT, subject, imagename, IP, ua, posterID, mta) VALUES      ('1', " & ConvertTimeToSQLTIME(data.time) & ", N'" & data.Comment & "', N'" & data.name & "', N'" & data.email & "', N'" & data.password & "', '" & id & "', N'" & data.subject & "', N'" & data.imageName & "' , '" & data.IP & "' , '" & data.UserAgent & "','" & GenerateUID(id, data.IP) & "', 0 )"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         queryObject.ExecuteNonQuery()
-
         cnx.Close()
     End Sub
 
     Private Sub BumpThread(ByVal id As Integer)
-        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim updateQueryString As String = "UPDATE board SET bumplevel = " & ConvertTimeToSQLTIME(Date.UtcNow) & " WHERE(board.ID = " & id & ")"
         Dim q As New SqlCommand(updateQueryString, cnx)
         cnx.Open()
@@ -184,8 +181,8 @@ Public Module GlobalFunctions
     End Sub
 
     Function GetThreadChildrenPostsIDs(ByVal id As Long, ByVal includearchived As Boolean) As Integer()
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim ila As New List(Of Integer)
-        Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = ""
         If includearchived Then
             queryString = "SELECT ID FROM board  WHERE (parentT = " & id & ") ORDER BY ID"
@@ -214,7 +211,7 @@ Public Module GlobalFunctions
         If id.Length = 0 Then
             Return il.ToArray
         Else
-            Dim cnx As New SqlConnection(SQLConnectionString)
+            Dim cnx As New SqlConnection(dbi.ConnectionString)
 
             'Prepare sql connection string.
             Dim sb As New StringBuilder
@@ -253,9 +250,9 @@ Public Module GlobalFunctions
         End If
     End Function
 
-    Private Function GetThreadData(ByVal threadID As Integer, ByVal includeArchivedPosts As Boolean) As WPost()
+    Function GetThreadData(ByVal threadID As Integer, ByVal includeArchivedPosts As Boolean) As WPost()
         Dim il As New List(Of WPost)
-        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryString As String
         If includeArchivedPosts Then
             queryString = "SELECT ID, type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua, posterID, sticky, locked, mta FROM  board  WHERE (ID = " & threadID & ") OR (parentT = " & threadID & ") ORDER BY ID"
@@ -292,7 +289,7 @@ Public Module GlobalFunctions
     Function GetThreads(ByVal startIndex As Integer, ByVal count As Integer, ByVal ignoreStickies As Boolean, ByVal arhive As Boolean) As Integer()
         If Not arhive Then
             Dim ila As New List(Of Integer)
-            Dim cnx As New SqlConnection(SQLConnectionString)
+            Dim cnx As New SqlConnection(dbi.ConnectionString)
             cnx.Open()
             If Not ignoreStickies Then
                 Dim queryString1 As String = "SELECT ID FROM board  WHERE (type = 0) AND (sticky = 1) AND (mta = 0) ORDER BY ID"
@@ -329,7 +326,7 @@ Public Module GlobalFunctions
         Else
             'Get archived thread. Stickies are ignored in the archive
             Dim ila As New List(Of Integer)
-            Dim cnx As New SqlConnection(SQLConnectionString)
+            Dim cnx As New SqlConnection(dbi.ConnectionString)
             cnx.Open()
             Dim queryString As String = "SELECT ID FROM board  WHERE (type = 0) AND (mta = 1) ORDER BY bumplevel DESC"
             Dim queryObject As New SqlCommand(queryString, cnx)
@@ -354,7 +351,7 @@ Public Module GlobalFunctions
     End Function
 
     Function IsModLoginValid(ByVal name As String, ByVal password As String) As Boolean
-        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryString As String = "SELECT password FROM mods WHERE (username LIKE '" & name & "')"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
@@ -376,14 +373,13 @@ Public Module GlobalFunctions
     ''' <returns>File Name.</returns>
     ''' <remarks></remarks>
     Private Function saveFile(ByVal f As HttpPostedFile, ByVal reply As Boolean) As String
-        Dim isImage As Boolean = FileIsImage(f)
+        If FileIsImage(f) Then
 
-        If isImage Then
+            Dim w As Drawing.Image
 
             Try
                 'Check if the file is a valid image
-                Dim i As Drawing.Image = Drawing.Image.FromStream(f.InputStream)
-                i.Dispose()
+                w = Drawing.Image.FromStream(f.InputStream)
 
             Catch ex As Exception
                 'No image is required when replying
@@ -395,18 +391,18 @@ Public Module GlobalFunctions
                 End If
             End Try
 
-            Dim w As Drawing.Image = Drawing.Image.FromStream(f.InputStream)
+
             Dim fileextension As String = f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1)
 
             Dim dd As String = CStr(Date.UtcNow.ToFileTime)
             'Full image path
-            Dim p As String = STORAGEFOLDER & "\" & dd & "." & fileextension
+            Dim p As String = StorageFolder & "\" & dd & "." & fileextension
             'Thumb path
             Dim thumb As String = ""
             If fileextension = "png" Then
-                thumb = STORAGEFOLDER & "\th" & dd & ".png"
+                thumb = StorageFolder & "\th" & dd & ".png"
             Else
-                thumb = STORAGEFOLDER & "\th" & dd & ".jpg"
+                thumb = StorageFolder & "\th" & dd & ".jpg"
             End If
 
             'Check if resize is needed.
@@ -444,7 +440,7 @@ Public Module GlobalFunctions
                     'Delete previously saved files.
                     FileIO.FileSystem.DeleteFile(p)
                     FileIO.FileSystem.DeleteFile(thumb)
-                    sp = wpi.chanbName & ":" & CStr(wpi.size) & ":" & wpi.dimensions & ":" & wpi.realname & ":" & wpi.md5
+                    sp = wpi.ChanbName & ":" & CStr(wpi.Size) & ":" & wpi.Dimensions & ":" & wpi.RealName & ":" & wpi.MD5
                 End If
             Else
                 'chanb name : size in bytes : dimensions : realname : md5
@@ -459,9 +455,9 @@ Public Module GlobalFunctions
             Select Case fileextension.ToUpper()
                 Case "SVG"
                     Dim dd As String = CStr(Date.UtcNow.ToFileTime)
-                    Dim p As String = STORAGEFOLDER & "\" & dd & "." & fileextension
+                    Dim p As String = StorageFolder & "\" & dd & "." & fileextension
                     'Thumb path
-                    Dim thumb As String = STORAGEFOLDER & "\th" & dd & ".png"
+                    Dim thumb As String = StorageFolder & "\th" & dd & ".png"
                     f.SaveAs(p)
 
                     Dim fs As New IO.FileStream(p, IO.FileMode.Open)
@@ -479,7 +475,7 @@ Public Module GlobalFunctions
                         Else
                             Dim wpi As WPostImage = GetImageDataByMD5(md5string)
                             FileIO.FileSystem.DeleteFile(p)
-                            sp = wpi.chanbName & ":" & CStr(wpi.size) & ":" & wpi.dimensions & ":" & wpi.realname & ":" & wpi.md5
+                            sp = wpi.ChanbName & ":" & CStr(wpi.Size) & ":" & wpi.Dimensions & ":" & wpi.RealName & ":" & wpi.MD5
                         End If
                     Else
 
@@ -498,10 +494,10 @@ Public Module GlobalFunctions
                     Return sp
                 Case "PDF"
 #If EnablePDF Then
- Dim dd As String = CStr(Date.UtcNow.ToFileTime)
-                    Dim p As String = STORAGEFOLDER & "\" & dd & "." & fileextension
+                    Dim dd As String = CStr(Date.UtcNow.ToFileTime)
+                    Dim p As String = StorageFolder & "\" & dd & "." & fileextension
                     'Thumb path
-                    Dim thumb As String = STORAGEFOLDER & "\th" & dd & ".jpg"
+                    Dim thumb As String = StorageFolder & "\th" & dd & ".jpg"
                     f.SaveAs(p)
 
                     Dim fs As New IO.FileStream(p, IO.FileMode.Open)
@@ -518,7 +514,7 @@ Public Module GlobalFunctions
                         Else
                             Dim wpi As WPostImage = GetImageDataByMD5(md5string)
                             FileIO.FileSystem.DeleteFile(p)
-                            sp = wpi.chanbName & ":" & CStr(wpi.size) & ":" & wpi.dimensions & ":" & wpi.realname & ":" & wpi.md5
+                            sp = wpi.ChanbName & ":" & CStr(wpi.Size) & ":" & wpi.Dimensions & ":" & wpi.RealName & ":" & wpi.MD5
                         End If
                     Else
 
@@ -595,6 +591,16 @@ Public Module GlobalFunctions
                     End If
                     Return sp
 #End If
+                Case "MP3"
+                    Return ""
+                Case "FLAC"
+                    Return ""
+                Case "MKV"
+                    Return ""
+                Case "FLV"
+                    Return ""
+                Case "WEBM"
+                    Return ""
                 Case "" ' A case of "" may occure when no file is uploaded. Simply return nothing.
                     Return ""
                 Case Else
@@ -616,8 +622,8 @@ Public Module GlobalFunctions
     End Function
 
     Function GetImageDataByMD5(ByVal md5 As String) As WPostImage
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim wpi As New WPostImage
-        Dim cnx As New SqlConnection(SQLConnectionString)
         Dim queryString As String = "SELECT TOP 1 imagename FROM board WHERE (imagename LIKE '%" & md5 & "%')"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
@@ -632,17 +638,18 @@ Public Module GlobalFunctions
             Dim array As String() = imageNameStr.Split(CChar(";"))
             Dim selectedX As String = ""
             For Each x In array
-                Dim p As WPostImage = GetWPOSTIMAGE(x)
-                If p.md5 = md5 Then
+                Dim p As WPostImage = GetWPostImage(x)
+                If p.MD5 = md5 Then
                     wpi = p
                 End If
             Next
         End If
+        cnx.Close()
         Return wpi
     End Function
 
     Function ImageExist(ByVal md5 As String, Optional ByVal excludedPost As Integer = -1) As Boolean
-        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryString As String = ""
         If excludedPost = -1 Then
             queryString = "SELECT TOP 1 ID FROM board WHERE (imagename LIKE '%" & md5 & "%')"
@@ -664,13 +671,13 @@ Public Module GlobalFunctions
         Return b
     End Function
 
-    Private Function GetWPostImage(ByVal sp As String) As WPostImage
+    Function GetWPostImage(ByVal sp As String) As WPostImage
         Dim wp As New WPostImage
-        wp.chanbName = sp.Split(CChar(":")).ElementAt(0)
-        wp.size = CLng(sp.Split(CChar(":")).ElementAt(1))
-        wp.dimensions = sp.Split(CChar(":")).ElementAt(2)
-        wp.realname = sp.Split(CChar(":")).ElementAt(3)
-        wp.md5 = sp.Split(CChar(":")).ElementAt(4)
+        wp.ChanbName = sp.Split(CChar(":")).ElementAt(0)
+        wp.Size = CLng(sp.Split(CChar(":")).ElementAt(1))
+        wp.Dimensions = sp.Split(CChar(":")).ElementAt(2)
+        wp.RealName = sp.Split(CChar(":")).ElementAt(3)
+        wp.MD5 = sp.Split(CChar(":")).ElementAt(4)
         wp.Extension = wp.RealName.Split(CChar(".")).ElementAt(wp.RealName.Split(CChar(".")).Length - 1).ToUpper
         Return wp
     End Function
@@ -769,7 +776,7 @@ Public Module GlobalFunctions
     ''' <returns></returns>
     ''' <remarks></remarks>
     Public Function GetImageWEBPATHRE(ByVal name As String) As String
-        Dim jpgThumb As String = STORAGEFOLDER & "\th" & name.Split(CChar(".")).ElementAt(0) & ".jpg"
+        Dim jpgThumb As String = StorageFolder & "\th" & name.Split(CChar(".")).ElementAt(0) & ".jpg"
         If FileIO.FileSystem.FileExists(jpgThumb) Then
             Return StoragefolderWEB & "th" & name.Split(CChar(".")).ElementAt(0) & ".jpg"
         Else
@@ -782,8 +789,8 @@ Public Module GlobalFunctions
         If powers = "" Then
             powers = DefaultModPowers
         End If
-        Dim cnx As New SqlConnection(SQLConnectionString)
-        Dim queryString As String = "INSERT INTO mods (username, password, powers) VALUES ('" & name & "', '" & MD5(pas) & "', '" & powers & "')"
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
+        Dim queryString As String = "INSERT INTO mods (username, password, power) VALUES ('" & name & "', '" & MD5(pas) & "', '" & powers & "')"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         queryObject.ExecuteNonQuery()
@@ -791,7 +798,7 @@ Public Module GlobalFunctions
     End Sub
 
     Public Function IsIPBanned(ByVal IP As String) As Boolean
-        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryString As String = "SELECT ID FROM bans WHERE (IP LIKE '" & IP & "')"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
@@ -812,7 +819,7 @@ Public Module GlobalFunctions
     End Function
 
     Private Function GetBanData(ByVal IP As String) As BanData
-        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryString As String = "SELECT ID, perm, expiry, comment, post FROM bans WHERE (IP LIKE '" & IP & "')"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
@@ -836,47 +843,69 @@ Public Module GlobalFunctions
     End Function
 
     Public Function ProcessPost(ByVal request As HttpRequest, ByVal Session As Web.SessionState.HttpSessionState) As String
-        Dim sb As New StringBuilder
-        sb.Append("<html><head>")
+        ' Dim sb As New StringBuilder
+        Dim messageTemplate As String = GenericMessageTemplate
         Dim cont As Boolean = True
         If Session.Item("lastpost") Is "" Or Session.Item("lastpost") Is Nothing Then
             Session.Item("lastpost") = Now.ToString
         Else
             Dim i As Date = Date.Parse(CStr(Session.Item("lastpost")))
-            If (Now - i).TotalSeconds < TimeBetweenRequestes Then
-                sb.Append(FloodDetected)
+            If CInt((Now - i).TotalSeconds) < TimeBetweenRequestes Then
+                messageTemplate = messageTemplate.Replace("%MSG TITLE%", "Error")
+                messageTemplate = messageTemplate.Replace("%REDIRECT URL%", "")
+                messageTemplate = messageTemplate.Replace("%REDIRECT DELAY%", "60")
+                messageTemplate = messageTemplate.Replace("%MESSAGE TEXT%", FloodDetected.Replace("%", CStr(TimeBetweenRequestes)))
                 cont = False
             Else
                 Session.Item("lastpost") = Now.ToString
             End If
         End If
+        If EnableCaptcha Then
+            If Not Session("captcha").ToString = request.Item("usercaptcha") Then
+                messageTemplate = messageTemplate.Replace("%MSG TITLE%", "Error")
+                messageTemplate = messageTemplate.Replace("%REDIRECT URL%", "")
+                messageTemplate = messageTemplate.Replace("%REDIRECT DELAY%", "60")
+                messageTemplate = messageTemplate.Replace("%MESSAGE TEXT%", wrongCaptcha)
+                cont = False
+            End If
+        End If
         ''Post processing begin here 
         If cont Then
             If IsIPBanned(request.UserHostAddress) Then
-                sb.Append(MakeBannedMessage(request.UserHostAddress))
+                messageTemplate = messageTemplate.Replace("%MSG TITLE%", BannedMessage)
+                messageTemplate = messageTemplate.Replace("%REDIRECT URL%", "default.aspx")
+                messageTemplate = messageTemplate.Replace("%REDIRECT DELAY%", "60")
+                messageTemplate = messageTemplate.Replace("%MESSAGE TEXT%", MakeBannedMessage(request.UserHostAddress))
             Else
                 Dim sp As String = request.Item("mode")
                 Select Case sp
                     Case "thread"
                         If request.Files.Count = 0 Then
-                            sb.Append(ImageRequired)
+                            messageTemplate = messageTemplate.Replace("%MSG TITLE%", "Error")
+                            messageTemplate = messageTemplate.Replace("%REDIRECT URL%", "default.aspx")
+                            messageTemplate = messageTemplate.Replace("%REDIRECT DELAY%", "60")
+                            messageTemplate = messageTemplate.Replace("%MESSAGE TEXT%", ImageRequired)
+
                         Else
                             'Save file.
                             If request.Files("ufile").ContentLength = 0 Then
-                                sb.Append(BadOrNoImage)
+                                messageTemplate = messageTemplate.Replace("%MSG TITLE%", "Error")
+                                messageTemplate = messageTemplate.Replace("%REDIRECT URL%", "default.aspx")
+                                messageTemplate = messageTemplate.Replace("%REDIRECT DELAY%", "60")
+                                messageTemplate = messageTemplate.Replace("%MESSAGE TEXT%", ImageRequired)
+
                             Else
                                 'Check file size before saving.
                                 If request.Files("ufile").ContentLength > MaximumFileSize Then
-                                    sb.Append(FileToBig)
-                                    sb.Append("<meta HTTP-EQUIV='REFRESH' content='10; url=default.aspx'>")
+                                    messageTemplate = messageTemplate.Replace("%MSG TITLE%", "Error")
+                                    messageTemplate = messageTemplate.Replace("%REDIRECT URL%", "default.aspx")
+                                    messageTemplate = messageTemplate.Replace("%REDIRECT DELAY%", "10")
+                                    messageTemplate = messageTemplate.Replace("%MESSAGE TEXT%", FileToBig)
                                     Exit Select
                                 End If
                                 Dim s As String = saveFile(request.Files("ufile"), False)
                                 Dim er As New OPData
                                 er.Comment = ProcessInputs(request.Item("comment"))
-                                'If er.Comment.Length > 4000 Then
-                                '    er.Comment = er.Comment.Remove(3999)
-                                'End If
                                 er.email = ProcessInputs(request.Item("email"))
                                 If request.Item("postername") = "" Then er.name = AnonName Else er.name = ProcessInputs(request.Item("postername"))
                                 er.subject = ProcessInputs(request.Item("subject"))
@@ -887,22 +916,28 @@ Public Module GlobalFunctions
                                 er.UserAgent = request.UserAgent.Replace("<", "").Replace(">", "") ' I replace < and > to prevent spoffing a user agent that contain <script> tags.
                                 If request.Cookies("pass") IsNot Nothing Then request.Cookies("pass").Value = request.Item("password") Else request.Cookies.Add(New HttpCookie("pass", request.Item("password")))
                                 MakeThread(er)
-                                sb.Append(SuccessfulPostString)
-                                sb.Append("<meta HTTP-EQUIV='REFRESH' content='2; url=default.aspx'>")
+                                messageTemplate = messageTemplate.Replace("%MSG TITLE%", SuccessfulPostString)
+                                messageTemplate = messageTemplate.Replace("%REDIRECT URL%", "default.aspx")
+                                messageTemplate = messageTemplate.Replace("%REDIRECT DELAY%", "1")
+                                messageTemplate = messageTemplate.Replace("%MESSAGE TEXT%", SuccessfulPostString)
                             End If
                         End If
                     Case "reply"
                         Dim threadid As Integer = CInt(request.Item("threadid"))
 
                         If IsLocked(threadid) Then
-                            sb.Append(lockedMessage)
-                            sb.Append("<meta HTTP-EQUIV='REFRESH' content='5; url=default.aspx?id=" & threadid & "'>")
+                            messageTemplate = messageTemplate.Replace("%MSG TITLE%", "Error")
+                            messageTemplate = messageTemplate.Replace("%REDIRECT URL%", "default.aspx?id=" & threadid)
+                            messageTemplate = messageTemplate.Replace("%REDIRECT DELAY%", "5")
+                            messageTemplate = messageTemplate.Replace("%MESSAGE TEXT%", lockedMessage)
                             Exit Select
                         End If
 
                         If IsArchived(threadid) Then
-                            sb.Append(arhivedMessage)
-                            sb.Append("<meta HTTP-EQUIV='REFRESH' content='5; url=archive.aspx?id=" & threadid & "'>")
+                            messageTemplate = messageTemplate.Replace("%MSG TITLE%", "Error")
+                            messageTemplate = messageTemplate.Replace("%REDIRECT URL%", "archive.aspx?id=" & threadid)
+                            messageTemplate = messageTemplate.Replace("%REDIRECT DELAY%", "5")
+                            messageTemplate = messageTemplate.Replace("%MESSAGE TEXT%", arhivedMessage)
                             Exit Select
                         End If
 
@@ -928,9 +963,6 @@ Public Module GlobalFunctions
                                 Dim er As New OPData
                                 If Not advanced Then
                                     er.Comment = ProcessInputs(request.Item("comment"))
-                                    'If er.Comment.Length > 4000 Then
-                                    '    If countFiles Then er.Comment.Remove(3999 - CStr(vbNewLine & pos & "&#47;" & totalFiles).Length) Else er.Comment.Remove(3999)
-                                    'End If
                                     If countFiles Then er.Comment = er.Comment & CStr(vbNewLine & pos & "&#47;" & totalFiles)
                                     advanced = True
                                 Else
@@ -947,19 +979,19 @@ Public Module GlobalFunctions
                                 ReplyTo(threadid, er)
                                 pos += 1
                             Next
-                            sb.Append(SuccessfulPostString)
+                            messageTemplate = messageTemplate.Replace("%MSG TITLE%", SuccessfulPostString)
+                            messageTemplate = messageTemplate.Replace("%MESSAGE TEXT%", SuccessfulPostString)
+
                         Else
                             'Single file, or multiple files post.
                             Dim er As New OPData
-                            If ProcessInputs(request.Item("comment")) = "" And s = "" Then
+                            If (request.Item("comment").Length = 0 Or request.Item("comment").Trim.Length = 0) And s = "" Then
                                 'no image and no text
                                 'blank post
-                                sb.Append(noBlankpost)
+                                messageTemplate = messageTemplate.Replace("%MSG TITLE%", "Error")
+                                messageTemplate = messageTemplate.Replace("%MESSAGE TEXT%", noBlankpost)
                             Else
                                 er.Comment = ProcessInputs(request.Item("comment"))
-                                'If er.Comment.Length > 4000 Then
-                                '    er.Comment = er.Comment.Remove(3999)
-                                'End If
                                 er.email = ProcessInputs(request.Item("email"))
                                 If request.Item("postername") = "" Then er.name = AnonName Else er.name = ProcessInputs(request.Item("postername"))
                                 er.subject = ProcessInputs(request.Item("subject"))
@@ -970,14 +1002,16 @@ Public Module GlobalFunctions
                                 er.UserAgent = request.UserAgent.Replace("<", "").Replace(">", "") ' I replace < and > to prevent spoffing a user agent that contain <script> tags.
                                 If request.Cookies("pass") IsNot Nothing Then request.Cookies("pass").Value = request.Item("password") Else request.Cookies.Add(New HttpCookie("pass", request.Item("password")))
                                 ReplyTo(threadid, er)
-                                sb.Append(SuccessfulPostString)
+                                messageTemplate = messageTemplate.Replace("%MSG TITLE%", SuccessfulPostString)
+                                messageTemplate = messageTemplate.Replace("%MESSAGE TEXT%", SuccessfulPostString)
                             End If
                         End If
 
                         'Check if to bump thread or not
                         If Not ProcessInputs(request.Item("email")) = "sage" And (GetRepliesCount(threadid, True).TotalReplies <= BumpLimit) Then BumpThread(threadid)
 
-                        sb.Append("<meta HTTP-EQUIV='REFRESH' content='1; url=default.aspx?id=" & request.Item("threadid") & "'>")
+                        messageTemplate = messageTemplate.Replace("%REDIRECT URL%", "default.aspx?id=" & request.Item("threadid"))
+                        messageTemplate = messageTemplate.Replace("%REDIRECT DELAY%", "1")
 
                     Case reportStr
                         Dim il As New List(Of Integer)
@@ -987,12 +1021,21 @@ Public Module GlobalFunctions
                             End If
                         Next
                         If il.Count = 0 Then
-                            sb.Append(NoPostWasSelected)
+                            messageTemplate = messageTemplate.Replace("%MSG TITLE%", "Error")
+                            messageTemplate = messageTemplate.Replace("%REDIRECT URL%", "default.aspx")
+                            messageTemplate = messageTemplate.Replace("%REDIRECT DELAY%", "60")
+                            messageTemplate = messageTemplate.Replace("%MESSAGE TEXT%", NoPostWasSelected)
                         Else
+                            Dim t As New StringBuilder
                             For Each x In il
                                 ReportPost(x, request.UserHostAddress, Date.UtcNow)
-                                sb.Append(ReportedSucess.Replace("%", CStr(x)))
+                                t.Append(ReportedSucess.Replace("%", CStr(x)))
+                                t.Append("<br>")
                             Next
+                            messageTemplate = messageTemplate.Replace("%MSG TITLE%", "OK")
+                            messageTemplate = messageTemplate.Replace("%REDIRECT URL%", "")
+                            messageTemplate = messageTemplate.Replace("%REDIRECT DELAY%", "60")
+                            messageTemplate = messageTemplate.Replace("%MESSAGE TEXT%", t.ToString)
                         End If
 
                     Case deleteStr
@@ -1004,27 +1047,38 @@ Public Module GlobalFunctions
                             End If
                         Next
                         If li.Count = 0 Then
-                            sb.Append(NoPostWasSelected)
+                            messageTemplate = messageTemplate.Replace("%MSG TITLE%", "Error")
+                            messageTemplate = messageTemplate.Replace("%REDIRECT URL%", "")
+                            messageTemplate = messageTemplate.Replace("%REDIRECT DELAY%", "60")
+                            messageTemplate = messageTemplate.Replace("%MESSAGE TEXT%", NoPostWasSelected)
                         Else
+                            Dim t As New StringBuilder
                             For Each p As WPost In GetWpostList(li.ToArray)
                                 If p.password = deletPass Then
-                                    DeletePost(CInt(p.PostID), DeleteFiles)
-                                    sb.Append(PostDeletedSuccess.Replace("%", CStr(p.PostID)))
+                                    PrunePost(CInt(p.PostID), DeleteFiles)
+                                    t.Append(PostDeletedSuccess.Replace("%", CStr(p.PostID)))
                                 Else
-                                    sb.Append(CannotDeletePostBadPassword.Replace("%", CStr(p.PostID)))
+                                    t.Append(CannotDeletePostBadPassword.Replace("%", CStr(p.PostID)))
                                 End If
-                                sb.Append("<br/>")
+                                t.Append("<br/>")
                             Next
+
+                            messageTemplate = messageTemplate.Replace("%MSG TITLE%", "OK")
+                            messageTemplate = messageTemplate.Replace("%REDIRECT URL%", "")
+                            messageTemplate = messageTemplate.Replace("%REDIRECT DELAY%", "60")
+                            messageTemplate = messageTemplate.Replace("%MESSAGE TEXT%", t.ToString)
+
                         End If
 
                     Case Else
-                        sb.Append(invalidPostmodestr)
-                        sb.Append("<meta HTTP-EQUIV='REFRESH' content='2; url=default.aspx'>")
+                        messageTemplate = messageTemplate.Replace("%MSG TITLE%", "Error")
+                        messageTemplate = messageTemplate.Replace("%REDIRECT URL%", "default.aspx")
+                        messageTemplate = messageTemplate.Replace("%REDIRECT DELAY%", "2")
+                        messageTemplate = messageTemplate.Replace("%MESSAGE TEXT%", invalidPostmodestr)
                 End Select
             End If
         End If
-        sb.Append("</head></html>")
-        Return sb.ToString
+        Return messageTemplate
     End Function
 
     Private Function MD5(ByVal s As IO.Stream) As String
@@ -1032,7 +1086,7 @@ Public Module GlobalFunctions
         Return ByteArrayToString(md5s.ComputeHash(s))
     End Function
 
-    Private Function MD5(ByVal s As String) As String
+    Function MD5(ByVal s As String) As String
         Dim md5s As New System.Security.Cryptography.MD5CryptoServiceProvider
         Dim bytes() As Byte = System.Text.Encoding.ASCII.GetBytes(s)
         Return ByteArrayToString(md5s.ComputeHash(bytes))
@@ -1048,8 +1102,8 @@ Public Module GlobalFunctions
 
     Private Function ProcessComment(ByVal comment As String, ByVal parentPost As Integer, ByVal pageHandlerName As String) As String
         Dim sb As New StringBuilder
-        Dim li As String() = comment.Split(CChar(vbNewLine))
-        For Each x In li
+        Dim wf As New WordFilter
+        For Each x In comment.Split(CChar(vbNewLine))
             If Not (x = "") Then
                 'Check if greentext
                 If x.StartsWith("&gt;") And Not x.StartsWith("&gt;&gt;") Then
@@ -1065,64 +1119,88 @@ Public Module GlobalFunctions
                     'Some times, X start with a line terminator that is not vbnewline, so i remove it
                 ElseIf IsXvalidQuote(x.Remove(0, 1)) Then
                     sb.Append("<a href='" & pageHandlerName & ".aspx?id=" & parentPost & "#p" & x.Remove(0, 1).Replace("&gt;&gt;", "") & "'>" & x.Remove(0, 1) & "</a>")
-
                 Else
                     sb.Append(x)
                 End If
                 sb.Append("<br>")
             End If
         Next
-
         Dim sr As String = sb.ToString
         sr = sr.Replace("&#91;", "[").Replace("&#93;", "]").Replace("&#47;", "/") ' replace [ ] / html equivalent with the real character to make sure the regex will catch them
         sr = MatchAndProcessBBCodes("spoiler", sr)
         sr = MatchAndProcessBBCodes("code", sr)
         sr = MatchAndProcessBBCodes("md", sr)
-        ' sr = MatchAndProcessBBCodes("latex", sr)
         Return sr
     End Function
 
 #Region "BB codes processing"
 
+    'Private Function SuperBBProcessor(ByVal t As String) As String
+    '    Dim list As New List(Of CodeKicker.BBCode.BBTag)
+
+    '    list.Add(New CodeKicker.BBCode.BBTag("spoiler", "<s>", "</s>", False, True))
+    '    list.Add(New CodeKicker.BBCode.BBTag("code", "<pre>", "</pre>", False, True))
+
+    '    Dim parser As New CodeKicker.BBCode.BBCodeParser(list)
+    '    Return parser.ToHtml(t)
+    'End Function
+
     Private Function MatchAndProcessBBCodes(ByVal codename As String, ByVal data As String) As String
+        ' Dim trimchars As Char() = {CChar(vbNewLine), CChar(" ")}
         Select Case codename
             Case "spoiler"
-                For Each x In MatchBBCode(data, "spoiler")
-                    data = data.Replace(x, "<s>" & x & "</s>")
-                Next
-                data = data.Replace("[spoiler]", "")
-                data = data.Replace("[/spoiler]", "")
-                Return data
-            Case "code"
-                Try
-                    Dim colorizer As New ColorCode.CodeColorizer()
-                    For Each x In MatchBBCode(data, "code")
-                        Dim codeStr As String = x
-                        codeStr = codeStr.Replace("<br>", vbNewLine)
-                        Dim codeLang As String = GetCodeLang(codeStr)
-                        codeStr = codeStr.Replace("[lang]", "")
-                        codeStr = codeStr.Replace("[/lang]", "")
-                        If Not (codeLang = "") Then codeStr = codeStr.Replace(codeLang, "")
-                        codeStr = RemoveHTMLEscapes(codeStr)
-                        data = data.Replace(x, colorizer.Colorize(codeStr, GetCCLI(codeLang)))
+                If data.Contains("[spoiler]") And data.Contains("[/spoiler]") Then
+                    For Each x In MatchBBCode(data, "spoiler")
+                        data = data.Replace(x, "<s>" & x & "</s>")
                     Next
-                    data = data.Replace("[code]", "")
-                    data = data.Replace("[/code]", "")
+                    data = data.Replace("[spoiler]", "")
+                    data = data.Replace("[/spoiler]", "")
                     Return data
-                Catch ex As Exception
+                Else
                     Return data
-                End Try
+                End If
+            Case "code"
+                If data.Contains("[code]") And data.Contains("[/code]") Then
+                    Try
+                        Dim colorizer As New ColorCode.CodeColorizer()
+                        For Each x In MatchBBCode(data, "code")
+                            Dim codeStr As String = x
+                            codeStr = codeStr.Replace("<br>", vbNewLine)
+
+                            Dim codeLang As String = GetCodeLang(codeStr)
+                            If Not (codeLang = "") Then
+                                codeStr.Replace("[lang]" & codeLang & "[/lang]", "")
+                                codeStr = codeStr.Replace("[lang]", "")
+                                codeStr = codeStr.Replace("[/lang]", "")
+                            End If
+
+                            codeStr = RemoveHTMLEscapes(codeStr).Replace("&lt;", "<").Replace("&gt;", ">")
+                            data = data.Replace(x, colorizer.Colorize(codeStr, GetCCLI(codeLang)))
+                        Next
+                        data = data.Replace("[code]", "")
+                        data = data.Replace("[/code]", "")
+                        Return data
+                    Catch ex As Exception
+                        Return data
+                    End Try
+                Else
+                    Return data
+                End If
             Case "md"
-                Dim md As New MarkdownSharp.Markdown
-                For Each x In MatchBBCode(data, "md")
-                    Dim mdt As String = x
-                    mdt = RemoveHTMLEscapes(mdt)
-                    mdt = mdt.Replace("<br>", "")
-                    data = data.Replace(x, md.Transform(mdt))
-                Next
-                data = data.Replace("[md]", String.Empty)
-                data = data.Replace("[/md]", String.Empty)
-                Return data
+                If data.Contains("[md]") And data.Contains("[/md]") Then
+                    Dim md As New MarkdownSharp.Markdown
+                    For Each x In MatchBBCode(data, "md")
+                        Dim mdt As String = x
+                        mdt = mdt.Replace("<br>", String.Empty)
+                        mdt = RemoveHTMLEscapes(mdt)
+                        data = data.Replace(x, md.Transform(mdt))
+                    Next
+                    data = data.Replace("[md]", String.Empty)
+                    data = data.Replace("[/md]", String.Empty)
+                    Return data
+                Else
+                    Return data
+                End If
                 'Case "latex"
                 '    For Each x In MatchBBCode(data, "latex")
                 '        Dim tempfile As String = STORAGEFOLDER & "\temp" & Now.ToFileTime & ".tex"
@@ -1130,10 +1208,9 @@ Public Module GlobalFunctions
                 '        Dim mdt As String = x
                 '        mdt = RemoveHTMLEscapes(mdt)
                 '        mdt = mdt.Replace("<br>", "")
-
                 '        IO.File.WriteAllText(tempfile, x)
-                '        Dim lx As New Latex2MathML.LatexToMathMLConverter(tempfile, Text.Encoding.UTF8, tempfileOUT)
-                '        lx.Convert()
+                '        TexDotNet.TexUtilities.CreateExpressionTree(x)
+                '        Dim rend As New TexDotNet.
                 '        data = data.Replace(x, "")
                 '    Next
                 '    data = data.Replace("[latex]", String.Empty)
@@ -1295,7 +1372,7 @@ Public Module GlobalFunctions
             postHTML = postHTML.Replace("%REPLY BUTTON%", "")
         End If
         If EnableUserID Then
-            Dim idHt As String = idHtml
+            Dim idHt As String = uidHtml
             idHt = idHt.Replace("%UID%", po.posterID)
             postHTML = postHTML.Replace("%UID%", idHt)
         Else
@@ -1343,30 +1420,33 @@ Public Module GlobalFunctions
     End Function
 
     Function GetModPowers(ByVal modname As String) As String
-        Dim cn As New SqlConnection(SQLConnectionString)
-        cn.Open()
-        Dim q As New SqlCommand("SELECT power FROM mods WHERE (username LIKE '" & modname & "')", cn)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
+        cnx.Open()
+        Dim q As New SqlCommand("SELECT power FROM mods WHERE (username LIKE '" & modname & "')", cnx)
         Dim powstr As String = ""
         Dim reader As SqlDataReader = q.ExecuteReader
         While reader.Read
             powstr = CStr(ConvertNoNull(reader(0)))
         End While
         reader.Close()
-        cn.Close()
+        cnx.Close()
         Return powstr.Replace("'", "")
     End Function
 
     Function GetModeratorHTMLMenu(ByVal id As String, ByVal powers As String) As String
         Dim power As String() = powers.Split(CChar("-"))
         Dim sb As New StringBuilder
-        sb.Append("<div id='moda%ID%'><select id='selc%ID%' onchange=""updatemodlink('%ID%')"">".Replace("%ID%", CStr(id)))
-
+        Dim noscriptitem As New StringBuilder
+        sb.Append("<script>document.write('")
+        sb.Append("<div id=\'moda%ID%\'><select id=\'selc%ID%\' onchange=""updatemodlink(\'%ID%\')"">".Replace("%ID%", CStr(id)))
         For i As Integer = 0 To power.Length - 1 Step 1
             If power(i) = "1" Then
-                sb.Append(modMenu(i))
+                sb.Append(modMenu(i).Replace("'", "\'"))
+                noscriptitem.Append(modMenuNoscript(i))
             End If
         Next
-        sb.Append("</select><a href='modaction.aspx?action=banpost&id=%ID%' id='modhref%ID%' class='form-button' target='_blank' >OK</a></div>".Replace("%ID%", CStr(id)))
+
+        sb.Append("</select><a href=\'#\' id=\'modhref%ID%\' class=\'form-button\' target=\'_blank\' >OK</a></div>');</script><noscript>%NOSCRIPTMENU%</noscript>".Replace("%ID%", CStr(id)).Replace("%NOSCRIPTMENU%", noscriptitem.ToString))
         Return sb.ToString
     End Function
 
@@ -1375,7 +1455,7 @@ Public Module GlobalFunctions
     End Function
 
     Private Function GetLastXPosts(ByVal threadID As Integer, ByVal x As Integer, ByVal includearhived As Boolean) As Integer()
-        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim i As Integer = 0
         If includearhived Then i = 1
         Dim query As New SqlCommand("SELECT TOP " & x & " ID FROM board WHERE(parentT = " & threadID & ") AND (mta = " & i & ") ORDER BY ID DESC", cnx)
@@ -1400,7 +1480,7 @@ Public Module GlobalFunctions
     End Sub
 
     Private Sub UpdatePostText(ByVal postID As Integer, ByVal newText As String, ByVal allowHTML As Boolean)
-        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryString As String
         If allowHTML Then
             queryString = "UPDATE board SET comment = N'" & newText & "' WHERE(ID = " & postID & ")"
@@ -1414,7 +1494,7 @@ Public Module GlobalFunctions
     End Sub
 
     Private Sub BanPoster(ByVal IP As String, ByVal postID As Integer)
-        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryString As String = "INSERT INTO bans (perm, post, IP) VALUES (0, " & postID & ", '" & IP & "')"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
@@ -1516,7 +1596,7 @@ Public Module GlobalFunctions
     End Function
 
     Private Function GetRepliesCount(ByVal threadID As Integer, ByVal countArchived As Boolean) As ThreadReplies
-        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim s As String = ""
         If countArchived Then s = " AND ( mta = 1 )" Else s = " AND ( mta = 0 )"
         Dim textRepliesCount As String = "Select Count(ID) as [Total Records] from board where (parentT=" & threadID & ") AND (imagename LIKE '')" & s
@@ -1569,7 +1649,7 @@ Public Module GlobalFunctions
             postHTML = postHTML.Replace("%NAMESPAN%", "<a href='mailto:%EMAIL%' class='useremail'><span class='name'>%NAME%</span></a>")
         End If
         If EnableUserID Then
-            Dim idHt As String = idHtml
+            Dim idHt As String = uidHtml
             idHt = idHt.Replace("%UID%", po.posterID)
             postHTML = postHTML.Replace("%UID%", idHt)
         Else
@@ -1663,21 +1743,21 @@ Public Module GlobalFunctions
     End Function
 
     Sub PermaDeleteAllPosts(ByVal deletefiles As Boolean)
-        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryString As String = "TRUNCATE TABLE board"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         queryObject.ExecuteNonQuery()
         cnx.Close()
         If deletefiles Then
-            For Each x As IO.FileInfo In FileIO.FileSystem.GetDirectoryInfo(STORAGEFOLDER).GetFiles()
+            For Each x As IO.FileInfo In FileIO.FileSystem.GetDirectoryInfo(StorageFolder).GetFiles()
                 x.Delete()
             Next
         End If
     End Sub
 
     Private Sub ReportPost(ByVal id As Integer, ByVal reporterIP As String, ByVal time As Date)
-        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryString As String = "INSERT INTO reports  (postID, reporterIP, time) VALUES (" & id & ", '" & reporterIP & "', " & ConvertTimeToSQLTIME(time) & ")"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
@@ -1685,69 +1765,76 @@ Public Module GlobalFunctions
         cnx.Close()
     End Sub
 
-    Sub DeletePost(ByVal id As Integer, ByVal dF As Boolean)
+    Sub PrunePost(ByVal id As Integer, ByVal dF As Boolean)
         If EnableArchive Then
-            ArchivePost(id)
+            Archive(id)
         Else
             Dim w As WPost = FetchPostData(id)
             If w.type = "0" Then ' post is a thread, delete replies first.
-                For Each x In GetThreadChildrenPostsIDs(id, True)
-                    DeleteP(x, dF)
-                Next
-                DeleteP(id, dF)
+                If dF Then
+                    For Each x As WPost In GetThreadData(id, True)
+                        DeletePostFiles(x)
+                    Next
+                End If
+                DeleteThread(id)
             Else
-                DeleteP(id, dF)
+                If dF Then DeletePostFiles(w)
+                DeletePost(id)
             End If
         End If
     End Sub
 
-    Sub ArchivePost(ByVal id As Integer)
+    Sub Archive(ByVal id As Integer)
         Dim w As WPost = FetchPostData(id)
         If w.type = "0" Then
-            For Each x In GetThreadChildrenPostsIDs(id, True)
-                ArchiveP(x)
-            Next
-            ArchiveP(id)
+            ArchiveThread(id)
         Else
-            ArchiveP(id)
+            ArchivePost(id)
         End If
     End Sub
 
-    Private Sub ArchiveP(ByVal id As Integer)
-        Dim cnx As New SqlConnection(SQLConnectionString)
+    Private Sub ArchiveThread(ByVal threadid As Integer)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
+        cnx.Open()
+        Dim c As New SqlCommand("UPDATE board SET mta = 1 WHERE (parentT = " & threadid & ") OR (ID = " & threadid & ")", cnx)
+        c.ExecuteNonQuery()
+        cnx.Close()
+    End Sub
+
+    Private Sub ArchivePost(ByVal id As Integer)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryObject As New SqlCommand("UPDATE board SET mta = 1 WHERE(id = " & id & ")", cnx)
         cnx.Open()
         queryObject.ExecuteNonQuery()
         cnx.Close()
     End Sub
 
+    Private Sub DeleteThread(ByVal threadid As Integer)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
+        cnx.Open()
+        Dim c As New SqlCommand("DELETE FROM board WHERE (parentT = " & threadid & ") OR (ID = " & threadid & ")", cnx)
+        c.ExecuteNonQuery()
+        cnx.Close()
+    End Sub
 
-    ''' <summary>
-    ''' Perma-delete the post. Does not archive.
-    ''' </summary>
-    ''' <param name="id"></param>
-    ''' <param name="dF"></param>
-    ''' <remarks></remarks>
-    Private Sub DeleteP(ByVal id As Integer, ByVal dF As Boolean)
-        If DeleteFiles Then DeletePostFiles(id)
-        Dim cnx As New SqlConnection(SQLConnectionString)
-        Dim queryString As String = "DELETE FROM board WHERE(id = " & id & ")"
+    Private Sub DeletePost(ByVal id As Integer)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
+        Dim queryString As String = "DELETE FROM board WHERE (id = " & id & ")"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
         queryObject.ExecuteNonQuery()
         cnx.Close()
     End Sub
 
-    Private Sub DeletePostFiles(ByVal postID As Integer)
-        Dim w As WPost = FetchPostData(postID)
-        If w._imageP = "" Then
+    Private Sub DeletePostFiles(ByVal po As WPost)
+        If po._imageP = "" Then
             Exit Sub
         Else
-            For Each x In w._imageP.Split(CChar(";"))
-                Dim ima As WPostImage = GetWPostImage(w._imageP)
-                If ImageExist(ima.MD5, postID) = False Then
-                    Dim realPath As String = STORAGEFOLDER & "\" & ima.ChanbName
-                    Dim thumbPath As String = STORAGEFOLDER & "\th" & ima.ChanbName
+            For Each x In po._imageP.Split(CChar(";"))
+                Dim ima As WPostImage = GetWPostImage(po._imageP)
+                If ImageExist(ima.MD5, CInt(po.PostID)) = False Then
+                    Dim realPath As String = StorageFolder & "\" & ima.ChanbName
+                    Dim thumbPath As String = StorageFolder & "\th" & ima.ChanbName
                     IO.File.Delete(realPath)
                     IO.File.Delete(thumbPath)
                 End If
@@ -1777,7 +1864,7 @@ Public Module GlobalFunctions
     End Function
 
     Sub ToggleSticky(ByVal threadID As Integer)
-        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim i As Integer = 0 ' 0 unsticky the thread.
         If Not IsSticky(threadID) Then
             'Need to sticky it.
@@ -1791,7 +1878,7 @@ Public Module GlobalFunctions
     End Sub
 
     Private Function IsSticky(ByVal id As Integer) As Boolean
-        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryString As String = "SELECT sticky FROM board  WHERE (ID = " & id & " )"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
@@ -1809,7 +1896,7 @@ Public Module GlobalFunctions
     End Function
 
     Sub ToggleLock(ByVal threadID As Integer)
-        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim i As Integer = 0
         If Not IsLocked(threadID) Then
             i = 1
@@ -1822,7 +1909,7 @@ Public Module GlobalFunctions
     End Sub
 
     Private Function IsLocked(ByVal id As Integer) As Boolean
-        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryString As String = "SELECT locked FROM board  WHERE (ID = " & id & " )"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
@@ -1840,7 +1927,7 @@ Public Module GlobalFunctions
     End Function
 
     Private Function IsArchived(ByVal id As Integer) As Boolean
-        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryString As String = "SELECT mta FROM board  WHERE (ID = " & id & " )"
         Dim queryObject As New SqlCommand(queryString, cnx)
         cnx.Open()
@@ -1858,7 +1945,7 @@ Public Module GlobalFunctions
     End Function
 
     Public Function GetThreadRepliesAfter(ByVal threadID As Integer, ByVal x As Integer, ByVal includeArchived As Boolean) As Integer()
-        Dim cnx As New SqlConnection(SQLConnectionString)
+        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryString As String
         If includeArchived Then
             queryString = "SELECT ID FROM board WHERE (parentT = " & threadID & ") AND ( ID > " & x & " ) ORDER BY ID ASC"
@@ -1868,16 +1955,12 @@ Public Module GlobalFunctions
         Dim queryObject As New SqlCommand(queryString, cnx)
         Dim il As New List(Of Integer)
         cnx.Open()
-
         Dim reader As SqlDataReader = queryObject.ExecuteReader
-
         While reader.Read
             il.Add(CInt(ConvertNoNull(reader(0))))
         End While
-
         reader.Close()
         cnx.Close()
-
         Return il.ToArray
     End Function
 

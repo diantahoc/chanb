@@ -27,6 +27,7 @@ Current Features
 * Markdown support.
 * Integrated archive.
 * Auto updater.
+* Installer
 
 There will be more of course.
 
@@ -36,7 +37,6 @@ Planned features
 * Catalog
 * Multilanguage support.
 * Admin panel
-* Installer
 * Online language adder and editor.
 * Video (FLV, WEBM) and audio (MP3, FLAC) support.
 * Add Delphi syntax highlighting.

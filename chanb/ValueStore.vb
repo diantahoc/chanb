@@ -30,6 +30,14 @@ Public Class ValuesStore
         Return Nothing
     End Function
 
+    Function GetKeyList() As String()
+        Dim illist As New List(Of String)
+        For Each x In il
+            If x.Contains(CChar("╝")) Then illist.Add(x.Split(CChar("╝")).ElementAt(0))
+        Next
+        Return illist.toarray
+    End Function
+
     ''' <summary>
     ''' Update an existing key or add a new key.
     ''' </summary>

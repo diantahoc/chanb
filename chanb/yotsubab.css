@@ -132,7 +132,7 @@ Extra code for chanb
  
 .hide    
 {
-    display: none;
+    display: none !important;
 }
 
  
@@ -237,3 +237,25 @@ border-radius: 5px 5px 5px 5px;
 {
     padding: 2px 2px 2px 2px ;
     } 
+
+
+.installersection
+{
+    padding: 20px 20px 20px 20px ;
+    display: inline-block;
+    background: none repeat scroll 0% 0% rgb(255, 255, 255);
+    border-radius: 5px 5px 5px 5px;
+    -moz-box-shadow: 0px 0px 10px rgba(169, 169, 169, 0.5);
+    -webkit-box-shadow: 0px 0px 10 rgba(169, 169, 169, 0.5);
+    outline: 0px none;
+    box-shadow: 0px 0px 10px rgba(169, 169, 169, 0.5);
+    text-align:left ;
+    min-width: 650px;
+}
+
+.installersection:hover
+{
+  -moz-box-shadow: 0px 0px 10px rgba(255, 0, 0,0.5);
+-webkit-box-shadow: 0px 0px 10 rgba(255, 0, 0,0.5);
+box-shadow: 0px 0px 10px rgba(255, 0, 0,0.5);
+}

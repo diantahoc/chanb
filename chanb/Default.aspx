@@ -5,7 +5,12 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" >
 <head>
-<%  Session.Add("chanb", "chanb") ' To prevent session destroy  %>
+<%  Session.Add("chanb", "chanb") ' To prevent session destroy
+    If Not isInstalled Then
+        Response.Redirect("installer.aspx")
+    End If
+    
+    %>
 <title><% Response.Write(BoardTitle)%></title>
 <link rel="Stylesheet" href='yotsubab.css' />
 <link rel="Stylesheet" href="mobile.css" />
@@ -27,36 +32,50 @@
 
 <table>
 <tbody>
+
 <tr>
-<th><% Response.Write(NAMEString)%></th>
-<td><input class="form-text" type="text" size="30" name="postername" /></td>
-</tr><tr>
+    <th><% Response.Write(NAMEString)%></th>
+    <td><input class="form-text" type="text" size="30" name="postername" /></td>
+</tr>
+
+<tr>
 <th><% Response.Write(EMAILString)%></th>
 <td>
 <input class="form-text"  name="email" size="30" type="text"/>
 </td>
-</tr><tr>
+</tr>
+
+<tr>
 <th><% Response.Write(SUBJECTString)%></th>
 <td><input class="form-text" style="float:left;" name="subject" size="30" type="text"/>
-
-<a class="form-button" onclick="$(this).closest('form').submit()"><% If Not Request.Item("id") = "" then Response.write(replyStr) else Response.Write(newthreadStr) %></a>
-
+<script type="text/javascript">document.write('<a class="form-button" onclick="$(this).closest(\'form\').submit()"><% If Not Request.Item("id") = "" then Response.write(replyStr) else Response.Write(newthreadStr) %></a>');</script>
 <noscript>
 <input style="margin-left:2px;" name="post" value="<% If Not Request.Item("id") = "" then Response.write(replyStr) else Response.Write(newthreadStr) %>" type="submit"/>
 </noscript>
 </td>
-</tr><tr>
+</tr>
+
+<tr>
+
 <th><% Response.Write(COMMENTString)%></th>
 <td><textarea class="form-textarea" name="comment" id="commentfield" rows="5" cols="35"></textarea></td>
-</tr><tr>
+
+</tr>
+
+<%  If EnableCaptcha Then Response.Write("<tr><th>" & EnterCaptchastr & "</th><td><img alt='Captcha Challenge' id='captchaImage' src='captcha.aspx' /><a onclick='refreshcaptcha();'><img alt='refresh' style='cursor:pointer; min-height:30px; min-width:30px;' src='res/refresh.png' id='refreshcaptchabutton' onmousemove='focusRCB();' onmouseout='unfocusRCB();' /></a><br /><input class='form-text' type='text' size ='30' name='usercaptcha' /></td></tr>")%>
+<tr>
 <th><% Response.Write(filesStr)%></th>
 <td>
     <div id="files" >
-    <input type="file" name="ufile" class="file" maxlength="<% response.write(maximumfilesize / 1024) %>" id="file1" />
+    <input type="file" name="ufile" class="file" maxlength="<% response.write(maximumfilesize) %>" id="file2" />
     </div>  
     <%If Not Request.Item("id") = "" Then Response.Write("<input type='checkbox' name='finp' value='yes'>" & eachfileInNewpost & "</input><br/><input type='checkbox' name='countf' value='yes'>" & countFiles & "</input><br/><a class='form-button' onclick='createUf();' >" & addAnotherF & "</a>")%> 
 </td>   
-</tr><tr>
+</tr>
+
+<tr>
+
+
 <th><% Response.Write(PASSWORDString)%></th>
 <td><input class="form-text" name="password" size="12" autocomplete="off" type="text" value="<% Response.Write(GetSessionPassword(Request.Cookies, Session)) %>"/>
 <span>(<% Response.Write(forPD)%>)</span>
@@ -90,7 +109,7 @@
 <% If Not Request.Item("id") = "" Then Response.Write("<span class='mobileib button'><a href='./'>" & returnStr & "</a></span>") %>
 <span class="mobileib button"><a href="#bottom"><% Response.Write(bottomstr)%></a></span>
 <span class="mobileib button"><a href="catalog.aspx"><% Response.Write(catalogstr)%></a></span>
-<span class="mobileib button"><a href="javascript:document.location.reload();" id="refresh_bottom"><% Response.Write(refreshStr)%></a></span>
+<span class="mobileib button"><a href="javascript:document.location.reload();" id="refresh_top"><% Response.Write(refreshStr)%></a></span>
 </div>
 <hr />
 <div id="top"></div>
@@ -117,7 +136,7 @@
      
      If Not (Request.Item("id") = "") And validID Then
          
-         Response.Write("<script type='text/javascript'> timer(); </script>")
+         Response.Write("<script type='text/javascript'> timer();</script>")
          
          'Display a thread and children posts 
          Dim opID As Integer = CInt(Request.Item("id"))
@@ -168,8 +187,10 @@
 <input type="text" class="form-text" name="deletePass" value="<% Response.Write(GetSessionPassword(Request.Cookies, Session)) %>" />
 <input type="hidden" value="" id="ROD" name="mode" />
 
-<a class="form-button" onclick="updatemode('<% Response.Write(deleteStr) %>');$(this).closest('form').submit();"><% Response.Write(deleteStr) %></a>
-<a class="form-button" onclick="updatemode('<% Response.Write(reportStr) %>');$(this).closest('form').submit();"><% Response.Write(reportStr) %></a>
+<script type="text/javascript">
+    document.write("<a id='scriptbutton1' class=\"form-button\" onclick=\"updatemode('<% Response.Write(deleteStr) %>');$(this).closest('form').submit();\"><% Response.Write(deleteStr) %></a>\n<a id='scriptbutton2' class=\"form-button\" onclick=\"updatemode('<% Response.Write(reportStr) %>');$(this).closest('form').submit();\"><% Response.Write(reportStr) %></a>");
+</script>
+
 
 <noscript>
 <input type="submit" name="mode" value="<% Response.Write(deleteStr) %>" />
@@ -225,7 +246,7 @@
    
         Next
         Response.Write("</div>")
-        If startIndexA = pagesCount - 1 Then ' last page
+        If startIndexA = pagesCount - 1 Or threadCount = 0 Then ' last page
             Response.Write("<div class='next'><a class='form-button-disabled'>" & nextStr & "</a></div>")
         Else
             Response.Write("<div><a class='form-button'  href='default.aspx?startindex=" & CStr(startIndexA + 1) & "'>" & nextStr & "</a></div>")

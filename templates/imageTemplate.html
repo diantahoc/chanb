@@ -5,23 +5,30 @@
 <span data-filename="%FILE NAME%" class="fileText" id="fT%ID%">
 
 <span onmouseover="showFullName('%ID%%IMAGE MD5%');" onmouseout="showShortName('%ID%%IMAGE MD5%');">
-<a id="file_full_name_%ID%%IMAGE MD5%" class="hide" href="%IMAGE DL%" target="_top">%FILE NAME%</a>
-<a id="file_short_name_%ID%%IMAGE MD5%" href="%IMAGE DL%" target="_top">%FILE SNAME%</a>
+<a id="file_full_name_%ID%%IMAGE MD5%" class="hide" href="%IMAGE DL%" target="_blank">%FILE NAME%</a>
+<a id="file_short_name_%ID%%IMAGE MD5%" class="hide" href="%IMAGE DL%" target="_blank">%FILE SNAME%</a>
 </span>
-<noscript><a href="%IMAGE DL%" target="_top">%FILE NAME%</a></noscript>
+<script type="text/javascript">showShortName('%ID%%IMAGE MD5%');</script>
+<noscript><a href="%IMAGE DL%" target="_blank">%FILE NAME%</a></noscript>
 
 <span style="color: rgb(0,0,0);"> - (%FILE SIZE%, %IMAGE SIZE%) </span>
 
 </span>
-
-<a href="http://www.google.com/searchbyimage?image_url=%THUMB_LINK%" target="_blank">google</a>
-
+%Search Engine Links%
 </div>
 
 <a class="fileThumb" href="%IMAGE DL%" target="_blank">
 
-<img class="cimage" src="%THUMB_LINK%" alt="%IMAGE SIZE%" data-md5="%IMAGE MD5%">
+<!--onclick="showFull('%ID%%IMAGE MD5%','%IMAGE DL%')"--> 
+<img id="thumb%ID%%IMAGE MD5%" class="cimage" src="%THUMB_LINK%" alt="%IMAGE SIZE%" data-md5="%IMAGE MD5%"/>
+
+<!--<img onclick="showThumb('%ID%%IMAGE MD5%')" id="full%ID%%IMAGE MD5%" />-->
 
 <div class="mFileInfo mobile">%IMAGE SIZE% %FILE SIZE% <br/>%IMAGE EXT%</div></a>
+
+<!--<script type="text/javascript">
+    $(".fileThumb").removeAttr("target");
+    $(".fileThumb").removeAttr("href");
+</script>-->
 
 </div>

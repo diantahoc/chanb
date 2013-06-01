@@ -12,14 +12,15 @@
                     Dim sq As New Data.SqlClient.SqlConnection(Request.Item("dbconnectionstring"))
                     sq.Open()
                     sq.Close()
-                    Response.Write("SQL connection was sucessfully established.")
+                    Response.Write(FormatHTMLMessage("OK", "SQL connection was sucessfully established.", "", "8888", False))
                 Catch ex As Exception
-                    Response.Write("SQL connection error: " & ex.Message)
+           
+                    Response.Write(FormatHTMLMessage("Error", "SQL connection error: " & ex.Message, "", "8888", True))
                 End Try
             Case "Upload and run script"
                 
                 If Request.Item("dbconnectionstring") = "" Then
-                    Response.Write("Invalid connection string specified")
+                    Response.Write(FormatHTMLMessage("Error", "Invalid connection string specified", "", "8888", True))
                     Response.End()
                 End If
                 
@@ -81,7 +82,7 @@
 
                 'Check for structured table
                 
-                Dim tablestocheck As String() = {"board", "bans", "mods", "reports"}
+                Dim tablestocheck As String() = {"board", "bans", "mods", "reports", "lockedT", "ioqueue"}
                 
                 Dim res As Integer = 1
                 

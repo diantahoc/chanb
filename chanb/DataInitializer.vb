@@ -41,6 +41,18 @@
         End Get
     End Property
 
+    Public ReadOnly Property FullPageTemplate() As String
+        Get
+            Return IO.File.ReadAllText(chanbDLLROOT & "templates\fullPageTemplate.html")
+        End Get
+    End Property
+
+    Public ReadOnly Property CatalogItemTemplate() As String
+        Get
+            Return IO.File.ReadAllText(chanbDLLROOT & "templates\catalogItemTemplate.html")
+        End Get
+    End Property
+
     Public ReadOnly Property BoardTitle() As String
         Get
             If DataDB.KeyExist("boardtitle") = False Then
@@ -355,6 +367,18 @@
                 Return True
             Else
                 Return CBool(DataDB.GetKey("RemoveEXIFData"))
+            End If
+        End Get
+    End Property
+
+    Public ReadOnly Property StaticMode() As Boolean
+        Get
+            If DataDB.KeyExist("StaticMode") = False Then
+                DataDB.AddKey("StaticMode", CStr(False))
+                DataDB.Save()
+                Return False
+            Else
+                Return CBool(DataDB.GetKey("StaticMode"))
             End If
         End Get
     End Property

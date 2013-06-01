@@ -7,7 +7,7 @@
 
     Try
         Select Case Request.Item("mode")
-            Case "fetch_replies_after" ' tid = thread id , lp = last post 
+            Case "fetchrepliesafter" ' tid = thread id , lp = last post 
                 Dim threadid As Integer = CInt(Request.Item("tid").Replace("t", ""))
                 Dim lastpost As Integer = CInt(Request.Item("lp").Replace("pc", ""))
                 Dim pa As New HTMLParameters
@@ -18,7 +18,7 @@
                 pa.modMenu = CStr(Session("modmenu"))
                 pa.replyButton = False
                 Response.Write(WpostsToJsonList(GetThreadRepliesAfter(threadid, lastpost, False), pa))
-            Case "get_files_list" ' tid = thread id , ft = file types jpg,bmp, list ... , ar = boolean include archived
+            Case "getfileslist" ' tid = thread id , ft = file types jpg,bmp, list ... , ar = boolean include archived
                 Dim tid As Integer = CInt(Request.Item("tid"))
                 Dim allowedfiles As New List(Of String)
                 For Each x In Request.Item("ft").Split(CChar(","))

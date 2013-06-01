@@ -1,0 +1,150 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+<title>%BTITLE%</title>
+<link rel="Stylesheet" href='%ROOT%yotsubab.css' />
+<link rel="Stylesheet" href="%ROOT%mobile.css" />
+<script src="%ROOT%scripts.js" type="text/javascript" language="javascript"></script>
+<script type="text/javascript" src="%ROOT%js/jquery.min.js"></script>
+<script type="text/javascript" src="%ROOT%js/jquery-ui.min.js"></script>
+</head> 
+<body>
+<div class="boardBanner"> 
+<div class="boardTitle">%BTITLE%</div>
+<div class="boardSubtitle">%BDESC%</div>
+</div>
+%POSTING MODE%
+<div id="postdiv" align="center" class="%POSTDIVCLASS%">
+
+<form enctype="multipart/form-data" action="%ROOT%post.aspx" method="post" title="%LANG newthreadStr%">
+<input type="hidden" name="mode" value="%POST FORM MODE%" />
+<input type="hidden" name="threadid" value="%POST FORM TID%" />
+
+<table>
+<tbody>
+
+<tr>
+    <th>%LANG nameString%</th>
+    <td><input class="form-text" type="text" size="30" name="postername" /></td>
+</tr>
+
+<tr>
+<th>%LANG emailString%</th>
+<td>
+<input class="form-text"  name="email" size="30" type="text"/>
+</td>
+</tr>
+
+<tr>
+<th>%LANG subjectString%</th>
+<td><input class="form-text" style="float:left;" name="subject" size="30" type="text"/>
+<a id='submitFormjs' class="form-button hide" onclick="$(this).closest('form').submit();">%POST FORM BUTTON%</a>
+<script type="text/javascript"> $("#submitFormjs").removeClass("hide");</script>
+<noscript>
+<input style="margin-left:2px;" name="post" value="%POST FORM BUTTON%" type="submit"/>
+</noscript>
+</td>
+</tr>
+
+<tr>
+<th>%LANG commentString%</th>
+<td><textarea class="form-textarea" name="comment" id="commentfield" rows="5" cols="35"></textarea></td>
+</tr>
+%CAPTCHA PHOLDER%
+<tr>
+<th>%LANG fileStr%</th>
+<td>
+    <div id="files" >
+    <input type="file" name="ufile" class="file" id="file2" />
+    </div>  
+    %ADD NEW FILES PHOLDER%
+</td>   
+</tr>
+
+<tr>
+
+<th>%LANG passwordStr%</th>
+<td><input class="form-text" name="password" id='formps' size="12" autocomplete="off" type="password" value="%SESSION PASSWORD%"  onfocus="showPassword('formps')" onunload="hidePassword('formps')" />
+<span>(%LANG FOR PD%)</span>
+</td>
+</tr>
+</tbody>
+</table>
+</form>
+</div>
+
+<div id="rulesdiv" align="center">
+<ul class="rules">
+<li><span>Maximum file size is %MAXIMUM FILE SIZE%.</span></li>
+<li><span>Supported file types are : JPG, JPEG, BMP, PNG, SVG, and PDF.</span></li>
+%THREAD COUNT%
+%POSTING RULES%
+<li><span>This website is for demonstrating a live preview of ChanB imageboard. Expect your post to be gone at any time.</span></li>
+</ul>
+</div>
+
+<div class="navLinks navLinksBot desktop">
+%RETURN BUTTON DESKTOP%
+[<a href="%ROOT%catalog.aspx">%LANG catalogStr%</a>] 
+[<a href="#bottom">%LANG bottomStr%</a>] 
+[<a href="archive.aspx">%LANG archiveStr%</a>]
+</div>
+
+<div class="navLinks mobile" style="margin-top: 10px;">
+%RETURN BUTTON MOBILE%
+<span class="mobileib button"><a href="#bottom">%LANG bottomStr%</a></span>
+<span class="mobileib button"><a href="%ROOT%catalog.aspx">%LANG catalogStr%</a></span>
+<span class="mobileib button"><a href="javascript:document.location.reload();" id="refresh_top">%LANG refreshStr%</a></span>
+<span class="mobileib button"><a href="archive.aspx">%LANG archiveStr%</a></span>
+</div>
+<hr />
+<div id="top"></div>
+
+<form id="delfrm" name="deletation" action="%ROOT%post.aspx" enctype="application/x-www-form-urlencoded" method="get">
+
+<div class="board">
+
+%BODY%
+
+</div>
+
+<div style="float: right;">
+<div class="deleteform desktop">
+<input type="password" class="form-text" name="deletePass" id='formdelP' value="%SESSION PASSWORD%" onfocus="showPassword('formdelP')" onunload="hidePassword('formdelP')"  />
+<input type="hidden" value="" id="ROD" name="mode" />
+
+<script type="text/javascript">
+    document.write("<a id='scriptbutton1' class=\"form-button\" onclick=\"updatemode('%LANG deleteStr%');$(this).closest('form').submit();\">%LANG deleteStr%</a>\n<a id='scriptbutton2' class=\"form-button\" onclick=\"updatemode('%LANG deleteStr%');$(this).closest('form').submit();\">%LANG deleteStr%</a>");
+</script>
+
+<noscript>
+<input type="submit" name="mode" value="%LANG deleteStr%" />
+<input type="submit" name="mode" value="%LANG reportStr%" />
+</noscript>
+</div>
+</div>
+</form>
+
+
+<div class="navLinks mobile" style="margin-top: 10px;">
+
+%RETURN BUTTON MOBILE%
+<span class="mobileib button"><a href="#top">%LANG topStr%</a></span>
+<span class="mobileib button"><a href="%ROOT%catalog.aspx">%LANG catalogStr%</a></span>
+<span class="mobileib button"><a href="javascript:document.location.reload();" id="refresh_bottom">%LANG refreshStr%</a></span>
+<span class="mobileib button"><a href="archive.aspx">%LANG archiveStr%</a></span>
+</div>
+
+<div class="navLinks navLinksBot desktop">
+%RETURN BUTTON DESKTOP%
+[<a href="%ROOT%catalog.aspx">%LANG catalogStr%</a>] 
+[<a href="#top">%LANG topStr%</a>] 
+[<a href="archive.aspx">%LANG archiveStr%</a>]
+</div>
+
+<br />
+%PAGES LIST%
+<div id="bottom"></div>
+<div id="absbot" class="absBotText"><span>%FOOTER TEXT%</span></div>
+</body>
+</html>

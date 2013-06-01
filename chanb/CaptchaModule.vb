@@ -3,10 +3,33 @@ Public Module CaptchaModule
 
     Public Sub GenerateCAPTCHA(ByVal request As HttpRequest, ByVal session As HttpSessionState, ByVal response As HttpResponse)
         If EnableCaptcha = False Then
-            response.StatusCode = 404
-            response.Write("captcha is disabled")
-            response.End()
-            Exit Sub
+
+            If request.Item("check") Is Nothing Or request.Item("check") = "" Then
+                response.StatusCode = 404
+                response.Write("captcha is disabled")
+                response.End()
+                Exit Sub
+            Else
+                response.Write("correct")
+                response.End()
+            End If
+
+        Else
+
+            If Not request.Item("check") Is Nothing Then
+                Dim g As String = request.Item("check")
+
+                If request.Item("check") = session("captcha").ToString Then
+                    response.Write("correct")
+                    response.End()
+                Else
+                    response.Write("incorrect")
+                    response.End()
+                End If
+
+            End If
+
+          
         End If
 
         Dim r As New Random

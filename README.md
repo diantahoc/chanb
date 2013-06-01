@@ -17,6 +17,7 @@ Current Features
 * 4chan-like interface.
 * Auto updater.
 * Automatic set dumper (with file counting support).
+* Catalog.
 * Code and spoiler tags support.
 * Duplicate image checking support.
 * Integrated archive.
@@ -28,6 +29,7 @@ Current Features
 * PDF Support (proper thumbnail generation require TallComponent PDFRasterizer library, not enabled by default).
 * Poster ID support.
 * Smart Linking of duplicate images to the same real file, therefore reducing the consumed disk space.
+* Static mode.
 * SVG documents support.
 
 Planned features
@@ -36,7 +38,6 @@ Planned features
 * Add Delphi syntax highlighting.
 * Add LaTeX support.
 * Admin panel.
-* Catalog.
 * Online language adder and editor.
 * Multilanguage support.
 * Read and write JSON API.

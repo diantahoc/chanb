@@ -1,8 +1,6 @@
 ﻿function quote(id) {
-
     document.getElementById("commentfield").value += ">>" + id + "\n";
 }
-
 
 function createUf() {
     var divTag = document.createElement("input");
@@ -12,8 +10,7 @@ function createUf() {
     divTag.setAttribute("name", idstr);
     divTag.setAttribute("id", "uf" + idstr);
     divTag.setAttribute("type", "file");
-
-
+    
     var delbutton = document.createElement("input");
 
     delbutton.setAttribute("onclick", "javascript:delUf('" + idstr + "')");
@@ -101,7 +98,7 @@ function updatemode(f) {
 
 function timer() {
 
-    window.setInterval("fetchnewreplies()", 30000);
+    window.setInterval("fetchnewreplies()", 15000);
   
 }
 
@@ -118,7 +115,7 @@ function fetchnewreplies() {
 
     $.get(
     "api.aspx",
-    { mode: 'fetch_replies_after', tid: threadID, lp: lastpostID },
+    { mode: 'fetchrepliesafter', tid: threadID, lp: lastpostID },
     function(data) {
 
         //process here.
@@ -136,40 +133,37 @@ function updatemodlink(id) {
     $actionlink.attr('href', 'modaction.aspx?action=' + $newaction.attr("value") + '&id=' + id);   
  }
 
-function extension() {
+//function extension() {
 
-    var postdiv = document.getElementById("postdiv");
-    postdiv.setAttribute("style", "border-style: dashed; border-width: thin; clip: rect(0px, auto, auto, auto); display:inline-block; ");
-    $("#postdiv").draggable();
+//    var postdiv = document.getElementById("postdiv");
+//    postdiv.setAttribute("style", "border-style: dashed; border-width: thin; clip: rect(0px, auto, auto, auto); display:inline-block; ");
+//    $("#postdiv").draggable();
 
-}
-
+//}
 
 function refreshcaptcha(level) {
 
     if (level == null) {
         var cap = document.getElementById("captchaImage");
-        cap.setAttribute("src", "captcha.aspx?" + Math.random().toString(10));
+        cap.setAttribute("src", "/captcha.aspx?" + Math.random().toString(10));
      }
     else {
         var cap = document.getElementById("captchaImage");
-        cap.setAttribute("src", "captcha.aspx?l=" + level + "&y=" + Math.random().toString(10));
+        cap.setAttribute("src", "/captcha.aspx?l=" + level + "&y=" + Math.random().toString(10));
     
      }
-    
-        
 
-   
+     document.getElementById("usercaptcha").value = ""; 
 
 }
 
 function focusRCB()
 
-{ document.getElementById('refreshcaptchabutton').setAttribute('src', 'res/refresh-high.png'); }
+{ document.getElementById('refreshcaptchabutton').setAttribute('src', '/res/refresh-high.png'); }
 
 function unfocusRCB()
 
-{ document.getElementById('refreshcaptchabutton').setAttribute('src', 'res/refresh.png'); }
+{ document.getElementById('refreshcaptchabutton').setAttribute('src', '/res/refresh.png'); }
 
 function updateAttrb(id, name, value) {
     document.getElementById(id).setAttribute(name, value);
@@ -187,3 +181,29 @@ function showShortName(id, f) {
     $("#file_full_name_" + id).addClass("hide");
     $("#file_short_name_" + id).removeClass("hide");
 }
+
+function showFull(md5,src) {
+
+    document.getElementById("full" + md5).setAttribute("src", src);
+    $("#thumb" + md5).addClass("hide");
+    $("#full" + md5).removeClass("hide");
+ }
+
+
+function showThumb(md5) {
+
+    $("#thumb" + md5).removeClass("hide");
+    $("#full" + md5).addClass("hide");
+}
+
+function showPassword(id) {
+
+    document.getElementById(id).setAttribute("type", "text");
+    
+    }
+
+    function hidePassword(id) {
+//        $("#" + id).setAttribute("type", "password");
+        document.getElementById(id).setAttribute("type", "password");
+    
+ }

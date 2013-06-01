@@ -37,7 +37,7 @@
 
 
 
-<div class='installersection'>      
+<div class='whitebox'>      
            <h2 style="text-align: center !important;">
            <span style=" text-align: center !important; ">Configure database connection</span>
            <br />
@@ -52,7 +52,7 @@
 <br />
 <br />
 
-<div class='installersection'>           
+<div class='whitebox'>           
             <h2 style="text-align: center !important;">
            <span style="text-align: center !important;">Configure database structure</span>
            <br />
@@ -73,7 +73,7 @@
 
 
 
-<div class='installersection'>  
+<div class='whitebox'>  
             <h2 style="text-align: center !important;">
            <span style="text-align: center !important; ">Server configuration</span>
            <br />
@@ -107,7 +107,7 @@
 
 
 
-<div class='installersection'>  
+<div class='whitebox'>  
            
             <h2 style="text-align: center !important;">
            <span style="text-align: center !important; ">Board configuration</span>
@@ -220,7 +220,7 @@
 
 
 
-<div class='installersection'>  
+<div class='whitebox'>  
   <h2 style="text-align: center !important;">
            <span style="text-align: center !important; ">Administration credentials</span>
            <br />

@@ -1,4 +1,4 @@
-﻿Imports System.Data.SqlClient
+﻿Imports System.Data.Common
 
 #Const EnablePDF = True
 
@@ -30,42 +30,92 @@ Public Module GlobalFunctions
         If TypeOf x Is DBNull Then Return Nothing Else Return x
     End Function
 
-    Function ProcessInputs(ByVal x As String) As String
-        Dim lowcaseX As String = x
+    Private Function EscapeChar(ByVal x As String) As String
         'HTML ISO 8879 Numerical Character References 
         'http://sunsite.berkeley.edu/amher/iso_8879.html
-        lowcaseX = lowcaseX.Replace("&", "&amp;")
-        lowcaseX = lowcaseX.Replace("<", "&lt;")
-        lowcaseX = lowcaseX.Replace(">", "&gt;")
-        lowcaseX = lowcaseX.Replace("%", "&#37;")
-        lowcaseX = lowcaseX.Replace("$", "&#36;")
-        lowcaseX = lowcaseX.Replace("'", "&#39;")
-        lowcaseX = lowcaseX.Replace("(", "&#40;")
-        lowcaseX = lowcaseX.Replace(")", "&#41;")
-        lowcaseX = lowcaseX.Replace("*", "&#42;")
-        lowcaseX = lowcaseX.Replace("+", "&#43;")
-        lowcaseX = lowcaseX.Replace("/", "&#47;")
-        lowcaseX = lowcaseX.Replace(":", "&#58;")
-        lowcaseX = lowcaseX.Replace("=", "&#61;")
-        lowcaseX = lowcaseX.Replace("@", "&#64;")
-        lowcaseX = lowcaseX.Replace("[", "&#91;")
-        lowcaseX = lowcaseX.Replace("]", "&#93;")
-        lowcaseX = lowcaseX.Replace("\", "&#92;")
-        lowcaseX = lowcaseX.Replace("^", "&#94;")
-        lowcaseX = lowcaseX.Replace("{", "&#123;")
-        lowcaseX = lowcaseX.Replace("|", "&#124;")
-        lowcaseX = lowcaseX.Replace("}", "&#125;")
-        lowcaseX = lowcaseX.Replace("~", "&#126;")
-        lowcaseX = lowcaseX.Replace("""", "&quot;")
-        Return lowcaseX
+        Select Case x
+            Case ";"
+                Return "&#59;"
+            Case "#"
+                Return "&#35;"
+            Case "&"
+                Return "&amp;"
+            Case "<"
+                Return "&lt;"
+            Case ">"
+                Return "&gt;"
+            Case "%"
+                Return "&#37;"
+            Case "$"
+                Return "&#36;"
+            Case "'"
+                Return "&#39;"
+            Case "("
+                Return "&#40;"
+            Case ")"
+                Return "&#41;"
+            Case "*"
+                Return "&#42;"
+            Case "+"
+                Return "&#43;"
+            Case "/"
+                Return "&#47;"
+            Case ":"
+                Return "&#58;"
+            Case "="
+                Return "&#61;"
+            Case "@"
+                Return "&#64;"
+            Case "["
+                Return "&#91;"
+            Case "]"
+                Return "&#93;"
+            Case "\"
+                Return "&#92;"
+            Case "^"
+                Return "&#94;"
+            Case "{"
+                Return "&#123;"
+            Case "}"
+                Return "&#125;"
+            Case "|"
+                Return "&#124;"
+            Case "~"
+                Return "&#126;"
+            Case """" ' means "
+                Return "&quot;"
+            Case Else
+                Return x
+        End Select
+    End Function
+
+    Private Function ProcessInputs(ByVal str As String) As String
+        Dim sb As New StringBuilder
+        For Each c As Char In CType(str, Char())
+            sb.Append(EscapeChar(c))
+        Next
+        Return sb.ToString
+    End Function
+
+    Private Function RemoveSpecialChars(ByVal t As String) As String
+        t = t.Replace(";", " ")
+        t = t.Replace("'", " ")
+        t = t.Replace(":", " ")
+        t = t.Replace("?", " ")
+        t = t.Replace("""", " ")
+        t = t.Replace("#", " ")
+        t = t.Replace("<", " ")
+        t = t.Replace(">", " ")
+        t = t.Replace("*", " ")
+        t = t.Replace("&", " ")
+        t = t.Replace("%", " ")
+        Return t
     End Function
 
     Function FetchPostData(ByVal id As Integer) As WPost
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryString As String = "SELECT type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua, posterID, sticky, locked, mta FROM  board  WHERE (id = " & id & ")"
-        Dim queryObject As New SqlCommand(queryString, cnx)
-        cnx.Open()
-        Dim reader As SqlDataReader = queryObject.ExecuteReader
+        Dim queryObject As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
+        Dim reader As IDataReader = queryObject.Reader
         Dim po As New WPost(id)
         While reader.Read
             po.type = CStr(ConvertNoNull(reader(0)))
@@ -84,29 +134,84 @@ Public Module GlobalFunctions
             If CInt(ConvertNoNull(reader(13))) = 1 Then po.locked = True Else po.locked = False
             If CInt(ConvertNoNull(reader(14))) = 1 Then po.archived = True Else po.archived = False
         End While
+        queryObject.Connection.Close()
         Return po
-        reader.Close()
-        cnx.Close()
     End Function
 
-    Private Sub MakeThread(ByVal data As OPData)
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
-        'Insert thread data
-        Dim queryObject As New SqlCommand("INSERT INTO board (type, time, comment, postername, email, password, subject, imagename, IP, bumplevel, ua, sticky, mta) OUTPUT INSERTED.ID  VALUES ('0', " & ConvertTimeToSQLTIME(data.time) & ", N'" & data.Comment & "', N'" & data.name & "', N'" & data.email & "', N'" & data.password & "', N'" & data.subject & "', N'" & data.imageName & "','" & data.IP & "', " & ConvertTimeToSQLTIME(data.time) & ", '" & data.UserAgent & "', 0, 0 ) ", cnx)
-        cnx.Open()
-        Dim reader As SqlDataReader = queryObject.ExecuteReader
+    Private Function MakeThread(ByVal data As OPData) As Integer
+        Dim queryStr As String = ""
+        Dim command As DbCommand = DatabaseEngine.GenerateDbCommand()
+
+        Select Case dbType
+            Case "mssql"
+                queryStr = "INSERT INTO board (type, time, comment, postername, email, password, subject, imagename, IP, bumplevel, ua, sticky, mta) OUTPUT INSERTED.ID " & _
+                                          " VALUES (@type, @time, @comment, @postername, @email, @password, @subject, @imagename, @IP, @bumplevel, @ua, @sticky, @mta)"
+            Case "mysql"
+                queryStr = "INSERT INTO board (type, time, comment, postername, email, password, subject, imagename, IP, bumplevel, ua, sticky, mta) " & _
+                "  VALUES (@type, @time, @comment, @postername, @email, @password, @subject, @imagename, @IP, @bumplevel, @ua, @sticky, @mta)  ; SELECT last_insert_id()"
+            Case Else
+                If isInstalled Then
+                    Throw New Exception(dbTypeInvalid)
+                End If
+        End Select
+
+        command.CommandText = queryStr
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@type", 0, System.Data.DbType.Int32)) ' Set post type to thread
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@time", data.time, System.Data.DbType.DateTime))
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@comment", data.Comment, System.Data.DbType.String))
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@postername", data.name, System.Data.DbType.String))
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@email", data.email, System.Data.DbType.String))
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@password", data.password, System.Data.DbType.String))
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@subject", data.subject, System.Data.DbType.String))
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@imagename", data.imageName, System.Data.DbType.String))
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@IP", data.IP, System.Data.DbType.String))
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@bumplevel", Now, System.Data.DbType.DateTime))
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@ua", data.UserAgent, System.Data.DbType.String))
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@sticky", 0, System.Data.DbType.Int32))
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@mta", 0, System.Data.DbType.Int32))
+
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(command)
+
         Dim postID As Integer
-        While reader.Read
-            postID = CInt(reader(0))
+        While query.Reader.Read
+            postID = CInt(query.Reader(0))
         End While
-        reader.Close()
-        'Update thread data with OP posterID
-        queryObject = New SqlCommand("UPDATE board SET posterID = '" & GenerateUID(postID, data.IP) & "' WHERE (IP LIKE '" & data.IP & "') AND (ua LIKE '" & data.UserAgent & "') AND (password = N'" & data.password & "') AND (time =  CONVERT(DATETIME, " & ConvertTimeToSQLTIME(data.time) & ", 102))", cnx)
-        queryObject.ExecuteNonQuery()
-        cnx.Close()
+
+        query.Reader.Close()
+        command.Dispose()
+
+        'We need to update op poster ID
+        If EnableUserID Then
+            command = DatabaseEngine.GenerateDbCommand
+
+            command.CommandText = "UPDATE board SET posterID = @posterID WHERE (ID = @tid)"
+
+            command.Parameters.Add(DatabaseEngine.MakeParameter("@posterID", GenerateUID(postID, data.IP), System.Data.DbType.String))
+            command.Parameters.Add(DatabaseEngine.MakeParameter("@tid", postID, System.Data.DbType.Int32))
+
+            DatabaseEngine.ExecuteNonQuery(command, query.Connection)
+
+        End If
+       
+        query.Connection.Close()
+
         If StaticHTML Then UpdateThreadHtml(postID)
-        CheckForPrunedThreads()
-    End Sub
+        CheckForPrunedThreads() ' Check for thread that reach beyond the last page, and prune them when necessary.
+        Return postID
+    End Function
 
     Private Sub CheckForPrunedThreads()
         Dim currentThread As Integer() = GetThreads(0, (MaximumPages * ThreadPerPage) - 1, True, False) ' list of thread that haven't reached the last page. 
@@ -123,36 +228,69 @@ Public Module GlobalFunctions
         Next
     End Sub
 
-    Function GetThreadsCount(ByVal archive As Boolean) As Integer
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
+    Public Function GetThreadsCount(ByVal archive As Boolean) As Integer
         Dim queryString As String = ""
-        If archive Then
-            queryString = "Select Count(ID) as [Total Records] from board where (type=0) AND (mta=1)"
-        Else
-            queryString = "Select Count(ID) as [Total Records] from board where (type=0) AND (mta=0)"
-        End If
-        Dim queryObject As New SqlCommand(queryString, cnx)
-        cnx.Open()
+        If archive Then queryString = "Select Count(ID) as T FROM board where (type=0) AND (mta=1) " Else queryString = "Select Count(ID) as T FROM board where (type=0) AND (mta=0)"
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
         Dim i As Integer = 0
-        Dim reader As SqlDataReader = queryObject.ExecuteReader
-        While reader.Read
-            i = CInt(reader(0))
+        While query.Reader.Read
+            i = CInt(query.Reader(0))
         End While
-        cnx.Close()
+        query.Connection.Close()
         Return i
     End Function
 
     Private Function ConvertTimeToSQLTIME(ByVal d As Date) As String
-        ' 'MM/DD/YYY H:MM:SS AMPM'
-        Dim s As String = "'" & d.Month & "/" & d.Day & "/" & d.Year & " " '& d.Hour & ":" & d.Minute & ":" & d.Second & "'"
-        If d.Hour > 12 Then
-            Dim t As String = d.Hour - 12 & ":" & d.Minute & ":" & d.Second & " PM"
-            s = s & t & "'"
-        Else
-            Dim t As String = d.Hour & ":" & d.Minute & ":" & d.Second & " AM"
-            s = s & t & "'"
-        End If
-        Return s
+        Select Case dbType
+            Case "mssql"
+                ' 'MM/DD/YYYY H:MM:SS AMPM'
+                Dim s As String = "'" & d.Month & "/" & d.Day & "/" & d.Year & " " '& d.Hour & ":" & d.Minute & ":" & d.Second & "'"
+                If d.Hour > 12 Then
+                    Dim t As String = d.Hour - 12 & ":" & d.Minute & ":" & d.Second & " PM"
+                    s = s & t & "'"
+                Else
+                    Dim t As String = d.Hour & ":" & d.Minute & ":" & d.Second & " AM"
+                    s = s & t & "'"
+                End If
+                Return s
+            Case "mysql"
+                ' 'YYYY-MM-DD HH:MI:SS'
+                Return "'" & d.Year & "-" & d.Month & "-" & d.Day & " " & d.Hour & ":" & d.Minute & ":" & d.Second & "'"
+            Case Else
+                If isInstalled Then
+                    Return ""
+                    Throw New Exception(dbTypeInvalid)
+                Else
+                    Return ""
+                End If
+        End Select
+    End Function
+
+
+    Private Function PrepareSQLDateTimeString(ByVal d As Date) As String
+        Select Case dbType
+            Case "mssql"
+                ' 'MM/DD/YYYY H:MM:SS AMPM'
+                Dim s As String = d.Month & "/" & d.Day & "/" & d.Year & " " '& d.Hour & ":" & d.Minute & ":" & d.Second & "'"
+                If d.Hour > 12 Then
+                    Dim t As String = d.Hour - 12 & ":" & d.Minute & ":" & d.Second & " PM"
+                    s = s & t & "'"
+                Else
+                    Dim t As String = d.Hour & ":" & d.Minute & ":" & d.Second & " AM"
+                    s = s & t
+                End If
+                Return s
+            Case "mysql"
+                ' 'YYYY-MM-DD HH:MI:SS'
+                Return d.Year & "-" & d.Month & "-" & d.Day & " " & d.Hour & ":" & d.Minute & ":" & d.Second
+            Case Else
+                If isInstalled Then
+                    Return ""
+                    Throw New Exception(dbTypeInvalid)
+                Else
+                    Return ""
+                End If
+        End Select
     End Function
 
     ''' <summary>
@@ -161,26 +299,93 @@ Public Module GlobalFunctions
     ''' <param name="id">id of the thread</param>
     ''' <param name="data">Poster data</param>
     ''' <remarks></remarks>
-    Sub ReplyTo(ByVal id As Integer, ByVal data As OPData)
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
-        Dim queryString As String = "INSERT INTO board (type, [time], comment, postername, email, [password], parentT, subject, imagename, IP, ua, posterID, mta) VALUES      ('1', " & ConvertTimeToSQLTIME(data.time) & ", N'" & data.Comment & "', N'" & data.name & "', N'" & data.email & "', N'" & data.password & "', '" & id & "', N'" & data.subject & "', N'" & data.imageName & "' , '" & data.IP & "' , '" & data.UserAgent & "','" & GenerateUID(id, data.IP) & "', 0 )"
-        Dim queryObject As New SqlCommand(queryString, cnx)
-        cnx.Open()
-        queryObject.ExecuteNonQuery()
-        cnx.Close()
+    Private Sub ReplyTo(ByVal id As Integer, ByVal data As OPData)
+        Dim command As DbCommand = DatabaseEngine.GenerateDbCommand
+
+        command.CommandText = "INSERT INTO board (type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua, posterID, mta) VALUES" & _
+                                "(@type, @time, @comment, @postername, @email, @password, @parentT, @subject, @imagename, @IP, @ua, @posterId, @mta)"
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@type", 1, System.Data.DbType.Int32)) ' Mark the post as a reply
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@parentT", id, System.Data.DbType.Int32)) ' Set the post owner thread
+
+        'Insert Post data
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@time", data.time, System.Data.DbType.DateTime))
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@comment", data.Comment, System.Data.DbType.String))
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@postername", data.name, System.Data.DbType.String))
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@email", data.email, System.Data.DbType.String))
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@password", data.password, System.Data.DbType.String))
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@subject", data.subject, System.Data.DbType.String))
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@imagename", data.imageName, System.Data.DbType.String))
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@IP", data.IP, System.Data.DbType.String)) '
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@ua", data.UserAgent, System.Data.DbType.String)) '
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@posterId", GenerateUID(id, data.IP), System.Data.DbType.String)) '
+
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@mta", 0, System.Data.DbType.Int32)) ' Mark the post as not archived
+
+        DatabaseEngine.ExecuteNonQuery(command)
     End Sub
+
+    Private Function IsPosterNameAlreadyTaken(ByVal IP As String, ByVal name As String, ByVal tid As Integer) As Boolean
+        If name = "" Then name = AnonNameStr
+        If name = AnonNameStr Then
+            Return False
+        Else
+            Dim command As DbCommand = DatabaseEngine.GenerateDbCommand
+            Dim queryStr As String = ""
+            Select Case dbType
+                Case "mssql"
+                    queryStr = "SELECT TOP 1 IP FROM board WHERE (postername = @name) AND (parentT = @tid OR ID = @tid) ORDER BY ID"
+                Case "mysql"
+                    queryStr = "SELECT IP FROM board WHERE (postername = @name) AND (parentT = @tid OR ID = @tid) ORDER BY ID LIMIT 0,1"
+                Case Else
+                    If isInstalled Then
+                        Throw New Exception(dbTypeInvalid)
+                    End If
+            End Select
+
+            command.CommandText = queryStr
+
+            command.Parameters.Add(DatabaseEngine.MakeParameter("@name", name, Data.DbType.String))
+            command.Parameters.Add(DatabaseEngine.MakeParameter("@tid", tid, Data.DbType.Int32))
+
+
+            Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(command)
+            Dim takerIP As String = ""
+            While query.Reader.Read
+                takerIP = CStr(ConvertNoNull(query.Reader(0)))
+            End While
+            query.Connection.Close()
+            If takerIP = "" Then
+                'New name
+                Return False
+            Else
+                'Already used name
+                Return Not (takerIP = IP)
+            End If
+            ' If the takerIP ( the first one who posted with that name ) Have the same IP as the IP variable, then it is the same person, otherwise It is not the same person and we should note that the name was taken.
+        End If
+    End Function
 
     Private Sub BumpThread(ByVal id As Integer)
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
-        Dim updateQueryString As String = "UPDATE board SET bumplevel = " & ConvertTimeToSQLTIME(Date.UtcNow) & " WHERE(board.ID = " & id & ")"
-        Dim q As New SqlCommand(updateQueryString, cnx)
-        cnx.Open()
-        q.ExecuteNonQuery()
-        cnx.Close()
+        Dim command As DbCommand = DatabaseEngine.GenerateDbCommand
+        command.CommandText = "UPDATE board SET bumplevel = @bump WHERE (ID = @id)"
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@bump", Now, Data.DbType.DateTime))
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@id", id, Data.DbType.Int32))
+        DatabaseEngine.ExecuteNonQuery(command)
     End Sub
 
-    Function GetThreadChildrenPostsIDs(ByVal id As Long, ByVal includearchived As Boolean) As Integer()
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
+    Public Function GetThreadChildrenPostsIDs(ByVal id As Long, ByVal includearchived As Boolean) As Integer()
         Dim ila As New List(Of Integer)
         Dim queryString As String = ""
         If includearchived Then
@@ -188,14 +393,11 @@ Public Module GlobalFunctions
         Else
             queryString = "SELECT ID FROM board  WHERE (parentT = " & id & ") AND (mta = 0) ORDER BY ID"
         End If
-        Dim queryObject As New SqlCommand(queryString, cnx)
-        cnx.Open()
-        Dim reader As SqlDataReader = queryObject.ExecuteReader()
-        While reader.Read
-            ila.Add(CInt(reader(0)))
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
+        While query.Reader.Read
+            ila.Add(CInt(query.Reader(0)))
         End While
-        reader.Close()
-        cnx.Close()
+        query.Connection.Close()
         Return ila.ToArray
     End Function
 
@@ -210,8 +412,6 @@ Public Module GlobalFunctions
         If id.Length = 0 Then
             Return il.ToArray
         Else
-            Dim cnx As New SqlConnection(dbi.ConnectionString)
-
             'Prepare sql connection string.
             Dim sb As New StringBuilder
             sb.Append("WHERE (ID = " & CStr(id(0)) & ")")
@@ -221,95 +421,94 @@ Public Module GlobalFunctions
             Next
 
             Dim queryString As String = "SELECT ID, type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua, posterID, sticky, locked, mta FROM  board  " & sb.ToString & " ORDER BY ID ASC"
-            Dim queryObject As New SqlCommand(queryString, cnx)
-            cnx.Open()
-            Dim reader As SqlDataReader = queryObject.ExecuteReader
-            While reader.Read
-                Dim po As New WPost(CInt(ConvertNoNull(reader(0))))
-                po.type = CStr(ConvertNoNull(reader(1)))
-                po.time = CDate(ConvertNoNull(reader(2)))
-                po.comment = CStr(ConvertNoNull(reader(3)))
-                po.name = CStr(ConvertNoNull(reader(4)))
-                po.email = CStr(ConvertNoNull(reader(5)))
-                po.password = CStr(ConvertNoNull(reader(6)))
-                po.parent = CInt(ConvertNoNull(reader(7)))
-                po.subject = CStr(ConvertNoNull(reader(8)))
-                po._imageP = CStr(ConvertNoNull(reader(9)))
-                po.ip = CStr(ConvertNoNull(reader(10)))
-                po.ua = CStr(ConvertNoNull(reader(11)))
-                po.posterID = CStr(ConvertNoNull(reader(12)))
-                If CInt(ConvertNoNull(reader(13))) = 1 Then po.isSticky = True Else po.isSticky = False
-                If CInt(ConvertNoNull(reader(14))) = 1 Then po.locked = True Else po.locked = False
-                If CInt(ConvertNoNull(reader(15))) = 1 Then po.archived = True Else po.archived = False
+            Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
+            While query.Reader.Read
+                Dim po As New WPost(CInt(ConvertNoNull(query.Reader(0))))
+                po.type = CStr(ConvertNoNull(query.Reader(1)))
+                po.time = CDate(ConvertNoNull(query.Reader(2)))
+                po.comment = CStr(ConvertNoNull(query.Reader(3)))
+                po.name = CStr(ConvertNoNull(query.Reader(4)))
+                po.email = CStr(ConvertNoNull(query.Reader(5)))
+                po.password = CStr(ConvertNoNull(query.Reader(6)))
+                po.parent = CInt(ConvertNoNull(query.Reader(7)))
+                po.subject = CStr(ConvertNoNull(query.Reader(8)))
+                po._imageP = CStr(ConvertNoNull(query.Reader(9)))
+                po.ip = CStr(ConvertNoNull(query.Reader(10)))
+                po.ua = CStr(ConvertNoNull(query.Reader(11)))
+                po.posterID = CStr(ConvertNoNull(query.Reader(12)))
+                If CInt(ConvertNoNull(query.Reader(13))) = 1 Then po.isSticky = True Else po.isSticky = False
+                If CInt(ConvertNoNull(query.Reader(14))) = 1 Then po.locked = True Else po.locked = False
+                If CInt(ConvertNoNull(query.Reader(15))) = 1 Then po.archived = True Else po.archived = False
                 il.Add(po)
             End While
-            reader.Close()
-            cnx.Close()
+            query.Connection.Close()
             Return il.ToArray
         End If
     End Function
 
     Function GetThreadData(ByVal threadID As Integer, ByVal includeArchivedPosts As Boolean) As WPost()
         Dim il As New List(Of WPost)
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
-        Dim queryString As String
+        Dim queryString As String = ""
         If includeArchivedPosts Then
             queryString = "SELECT ID, type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua, posterID, sticky, locked, mta FROM  board  WHERE (ID = " & threadID & ") OR (parentT = " & threadID & ") ORDER BY ID"
         Else
             queryString = "SELECT ID, type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua, posterID, sticky, locked, mta FROM  board  WHERE (ID = " & threadID & ") OR (parentT = " & threadID & ") AND (mta = 0) ORDER BY ID"
         End If
-        Dim queryObject As New SqlCommand(queryString, cnx)
-        cnx.Open()
-        Dim reader As SqlDataReader = queryObject.ExecuteReader
-        While reader.Read
-            Dim po As New WPost(CInt(ConvertNoNull(reader(0))))
-            po.type = CStr(ConvertNoNull(reader(1)))
-            po.time = CDate(ConvertNoNull(reader(2)))
-            po.comment = CStr(ConvertNoNull(reader(3)))
-            po.name = CStr(ConvertNoNull(reader(4)))
-            po.email = CStr(ConvertNoNull(reader(5)))
-            po.password = CStr(ConvertNoNull(reader(6)))
-            po.parent = CInt(ConvertNoNull(reader(7)))
-            po.subject = CStr(ConvertNoNull(reader(8)))
-            po._imageP = CStr(ConvertNoNull(reader(9)))
-            po.ip = CStr(ConvertNoNull(reader(10)))
-            po.ua = CStr(ConvertNoNull(reader(11)))
-            po.posterID = CStr(ConvertNoNull(reader(12)))
-            If CInt(ConvertNoNull(reader(13))) = 1 Then po.isSticky = True Else po.isSticky = False
-            If CInt(ConvertNoNull(reader(14))) = 1 Then po.locked = True Else po.locked = False
-            If CInt(ConvertNoNull(reader(15))) = 1 Then po.archived = True Else po.archived = False
+
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
+
+        While query.Reader.Read
+            Dim po As New WPost(CInt(ConvertNoNull(query.Reader(0))))
+            po.type = CStr(ConvertNoNull(query.Reader(1)))
+            po.time = CDate(ConvertNoNull(query.Reader(2)))
+            po.comment = CStr(ConvertNoNull(query.Reader(3)))
+            po.name = CStr(ConvertNoNull(query.Reader(4)))
+            po.email = CStr(ConvertNoNull(query.Reader(5)))
+            po.password = CStr(ConvertNoNull(query.Reader(6)))
+            po.parent = CInt(ConvertNoNull(query.Reader(7)))
+            po.subject = CStr(ConvertNoNull(query.Reader(8)))
+            po._imageP = CStr(ConvertNoNull(query.Reader(9)))
+            po.ip = CStr(ConvertNoNull(query.Reader(10)))
+            po.ua = CStr(ConvertNoNull(query.Reader(11)))
+            po.posterID = CStr(ConvertNoNull(query.Reader(12)))
+            If CInt(ConvertNoNull(query.Reader(13))) = 1 Then po.isSticky = True Else po.isSticky = False
+            If CInt(ConvertNoNull(query.Reader(14))) = 1 Then po.locked = True Else po.locked = False
+            If CInt(ConvertNoNull(query.Reader(15))) = 1 Then po.archived = True Else po.archived = False
             il.Add(po)
         End While
-        reader.Close()
-        cnx.Close()
+
+        query.Connection.Close()
         Return il.ToArray
     End Function
 
     Function GetThreads(ByVal startIndex As Integer, ByVal count As Integer, ByVal ignoreStickies As Boolean, ByVal arhive As Boolean) As Integer()
         If Not arhive Then
             Dim ila As New List(Of Integer)
-            Dim cnx As New SqlConnection(dbi.ConnectionString)
-            cnx.Open()
+
+            Dim query As ChanbQuery
+
             If Not ignoreStickies Then
-                Dim queryString1 As String = "SELECT ID FROM board  WHERE (type = 0) AND (sticky = 1) AND (mta = 0) ORDER BY ID"
-                Dim queryObject1 As New SqlCommand(queryString1, cnx)
-                Dim reader1 As SqlDataReader = queryObject1.ExecuteReader
-                While reader1.Read
+                Dim stickiesQueryStr As String = "SELECT ID FROM board  WHERE (type = 0) AND (sticky = 1) AND (mta = 0) ORDER BY ID"
+                query = DatabaseEngine.ExecuteQueryReader(stickiesQueryStr)
+
+                While query.Reader.Read
                     Try
-                        ila.Add(CInt(ConvertNoNull(reader1(0))))
+                        ila.Add(CInt(ConvertNoNull(query.Reader(0))))
                     Catch ex As Exception
                     End Try
                 End While
-                reader1.Close()
+                query.Reader.Close()
             End If
+
             Dim queryString As String = "SELECT ID FROM board  WHERE (type = 0) AND (sticky = 0) AND (mta = 0) ORDER BY bumplevel DESC"
-            Dim queryObject As New SqlCommand(queryString, cnx)
-            Dim reader As SqlDataReader = queryObject.ExecuteReader
-            While reader.Read
-                ila.Add(CInt(reader.Item(0)))
+
+            If query Is Nothing Then query = DatabaseEngine.ExecuteQueryReader(queryString) Else query = DatabaseEngine.ExecuteQueryReader(queryString, query.Connection)
+
+            While query.Reader.Read
+                ila.Add(CInt(query.Reader.Item(0)))
             End While
-            reader.Close()
-            cnx.Close()
+            query.Reader.Close()
+            query.Connection.Close()
 
             'MS SQL does not seem to support the MySQL Limit startIndex, count function
             Dim il As New List(Of Integer)
@@ -325,17 +524,17 @@ Public Module GlobalFunctions
         Else
             'Get archived thread. Stickies are ignored in the archive
             Dim ila As New List(Of Integer)
-            Dim cnx As New SqlConnection(dbi.ConnectionString)
-            cnx.Open()
+
             Dim queryString As String = "SELECT ID FROM board  WHERE (type = 0) AND (mta = 1) ORDER BY bumplevel DESC"
-            Dim queryObject As New SqlCommand(queryString, cnx)
-            Dim reader As SqlDataReader = queryObject.ExecuteReader
-            While reader.Read
-                ila.Add(CInt(reader.Item(0)))
+
+            Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
+
+            While query.Reader.Read
+                ila.Add(CInt(query.Reader.Item(0)))
             End While
-            reader.Close()
-            cnx.Close()
-            'MS SQL does not seem to support the MySQL Limit startIndex, count function
+            query.Reader.Close()
+            query.Connection.Close()
+
             Dim il As New List(Of Integer)
             For i As Integer = startIndex To count Step 1
                 Try
@@ -350,17 +549,13 @@ Public Module GlobalFunctions
     End Function
 
     Function IsModLoginValid(ByVal name As String, ByVal password As String) As Boolean
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryString As String = "SELECT password FROM mods WHERE (username LIKE '" & name & "')"
-        Dim queryObject As New SqlCommand(queryString, cnx)
-        cnx.Open()
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
         Dim sqlPassMd5 As String = ""
-        Dim reader As SqlDataReader = queryObject.ExecuteReader
-        While reader.Read
-            sqlPassMd5 = CStr(ConvertNoNull(reader(0)))
+        While query.Reader.Read
+            sqlPassMd5 = CStr(ConvertNoNull(query.Reader(0)))
         End While
-        reader.Close()
-        cnx.Close()
+        query.Connection.Close()
         Return (MD5(password) = sqlPassMd5)
     End Function
 
@@ -393,7 +588,7 @@ Public Module GlobalFunctions
             End Try
 
 
-            Dim fileextension As String = f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1)
+            Dim fileextension As String = f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1).ToLower
 
             Dim dd As String = CStr(Date.UtcNow.ToFileTime)
             'Full image path
@@ -446,7 +641,7 @@ Public Module GlobalFunctions
                 End If
             Else
                 'chanb name : size in bytes : dimensions : realname : md5
-                sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & w.Size.Width & "x" & w.Size.Height & ":" & f.FileName & ":" & md5string
+                sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & w.Size.Width & "x" & w.Size.Height & ":" & RemoveSpecialChars(f.FileName) & ":" & md5string
                 w.Dispose()
             End If
             Return sp
@@ -500,7 +695,7 @@ Public Module GlobalFunctions
                         Else
                             ResizeImage(svgBi, 250).Save(thumb)
                         End If
-                        sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & svgBi.Size.Width & "x" & svgBi.Size.Height & ":" & f.FileName & ":" & md5string
+                        sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & svgBi.Size.Width & "x" & svgBi.Size.Height & ":" & RemoveSpecialChars(f.FileName) & ":" & md5string
                         svgBi.Dispose()
                     End If
 
@@ -554,7 +749,7 @@ Public Module GlobalFunctions
                         Else
                             ResizeImage(pdfBi, 250).Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
                         End If
-                        sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & pdfBi.Size.Width & "x" & pdfBi.Size.Height & ":" & f.FileName & ":" & md5string
+                        sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & pdfBi.Size.Width & "x" & pdfBi.Size.Height & ":" & RemoveSpecialChars(f.FileName) & ":" & md5string
                         pdfBi.Dispose()
 
                     End If
@@ -600,21 +795,44 @@ Public Module GlobalFunctions
                         Else
                             ResizeImage(pdfBi, 250).Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
                         End If
-                        sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & pdfBi.Size.Width & "x" & pdfBi.Size.Height & ":" & f.FileName & ":" & md5string
+                        sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & pdfBi.Size.Width & "x" & pdfBi.Size.Height & ":" & RemoveSpecialChars(f.FileName) & ":" & md5string
                         pdfBi.Dispose()
 
                     End If
                     Return sp
 #End If
-                Case "MP3"
-                    Return ""
-                Case "FLAC"
-                    Return ""
-                Case "MKV"
-                    Return ""
-                Case "FLV"
-                    Return ""
                 Case "WEBM"
+
+                    Dim dd As String = CStr(Date.UtcNow.ToFileTime)
+                    Dim p As String = StorageFolder & "\" & dd & "." & fileextension
+                    'Thumb path
+                    Dim thumb As String = StorageFolderThumbs & "\th" & dd & ".jpg"
+                    f.SaveAs(p)
+
+                    Dim fs As New IO.FileStream(p, IO.FileMode.Open)
+                    Dim md5string As String = MD5(fs)
+                    fs.Close()
+
+                    Dim sp As String = ""
+
+                    If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
+                        If SmartLinkDuplicateImages = False Then
+                            FileIO.FileSystem.DeleteFile(p)
+                            FileIO.FileSystem.DeleteFile(thumb)
+                            Throw New ArgumentException(duplicateFile)
+                        Else
+                            Dim wpi As WPostImage = GetImageDataByMD5(md5string)
+                            FileIO.FileSystem.DeleteFile(p)
+                            sp = wpi.ChanbName & ":" & CStr(wpi.Size) & ":" & wpi.Dimensions & ":" & wpi.RealName & ":" & wpi.MD5
+                        End If
+                    Else
+
+
+                        sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & "video" & ":" & RemoveSpecialChars(f.FileName) & ":" & md5string
+
+
+                    End If
+                    Return sp
                     Return ""
                 Case "" ' A case of "" may occure when no file is uploaded. Simply return nothing.
                     Return ""
@@ -634,7 +852,7 @@ Public Module GlobalFunctions
 
     Private Function FileIsImage(ByVal f As HttpPostedFile) As Boolean
         Dim extension As String = f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1).ToLower ' ToLower because string comparaison is case sensitive.
-        Dim supportedImages As String() = {"jpg", "jpeg", "png", "bmp", "gif"}
+        Dim supportedImages As String() = {"jpg", "jpeg", "png", "bmp", "gif", "apng"}
         Dim bo As Boolean = False
         For Each x In supportedImages
             If extension = x Then
@@ -645,15 +863,22 @@ Public Module GlobalFunctions
     End Function
 
     Function GetImageDataByMD5(ByVal md5 As String) As WPostImage
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
+        Dim queryString As String = ""
+        Select Case dbType
+            Case "mssql"
+                queryString = "SELECT TOP 1 imagename FROM board WHERE (imagename LIKE '%" & md5 & "%')"
+            Case "mysql"
+                queryString = "SELECT imagename FROM board WHERE (imagename LIKE '%" & md5 & "%') LIMIT 0,1"
+            Case Else
+                If isInstalled Then
+                    Throw New Exception(dbTypeInvalid)
+                End If
+        End Select
         Dim wpi As New WPostImage
-        Dim queryString As String = "SELECT TOP 1 imagename FROM board WHERE (imagename LIKE '%" & md5 & "%')"
-        Dim queryObject As New SqlCommand(queryString, cnx)
-        cnx.Open()
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
         Dim imageNameStr As String = ""
-        Dim reader As SqlDataReader = queryObject.ExecuteReader
-        While reader.Read
-            imageNameStr = CStr(ConvertNoNull(reader(0)))
+        While query.Reader.Read
+            imageNameStr = CStr(ConvertNoNull(query.Reader(0)))
         End While
         If imageNameStr = "" Then
             Throw New ArgumentException("No image exist with the specified MD5.")
@@ -667,34 +892,46 @@ Public Module GlobalFunctions
                 End If
             Next
         End If
-        cnx.Close()
+        query.Connection.Close()
         Return wpi
     End Function
 
-    Function ImageExist(ByVal md5 As String, Optional ByVal excludedPost As Integer = -1) As Boolean
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
+    Public Function ImageExist(ByVal md5 As String, Optional ByVal excludedPost As Integer = -1) As Boolean
         Dim queryString As String = ""
-        If excludedPost = -1 Then
-            queryString = "SELECT TOP 1 ID FROM board WHERE (imagename LIKE '%" & md5 & "%')"
-        Else
-            queryString = "SELECT TOP 1 ID FROM board WHERE (ID <> " & excludedPost & ") AND (imagename LIKE '%" & md5 & "%')"
-        End If
-        Dim queryObject As New SqlCommand(queryString, cnx)
-        cnx.Open()
-        Dim reader As SqlDataReader = queryObject.ExecuteReader
+        Select Case dbType
+            Case "mssql"
+                If excludedPost = -1 Then
+                    queryString = "SELECT TOP 1 ID FROM board WHERE (imagename LIKE '%" & md5 & "%')"
+                Else
+                    queryString = "SELECT TOP 1 ID FROM board WHERE (ID <> " & excludedPost & ") AND (imagename LIKE '%" & md5 & "%')"
+                End If
+            Case "mysql"
+                If excludedPost = -1 Then
+                    queryString = "SELECT ID FROM board WHERE (imagename LIKE '%" & md5 & "%') LIMIT 0,1"
+                Else
+                    queryString = "SELECT ID FROM board WHERE (ID <> " & excludedPost & ") AND (imagename LIKE '%" & md5 & "%') LIMIT 0,1"
+                End If
+            Case Else
+                If isInstalled Then
+                    Throw New Exception(dbTypeInvalid)
+                End If
+        End Select
+
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
+
         Dim b As Boolean = False
-        While reader.Read
-            If TypeOf reader(0) Is DBNull Then
+        While query.Reader.Read
+            If ConvertNoNull(query.Reader(0)) Is Nothing Then
                 b = False
             Else
                 b = True
             End If
         End While
-        cnx.Close()
+        query.Connection.Close()
         Return b
     End Function
 
-    Function GetWPostImage(ByVal sp As String) As WPostImage
+    Public Function GetWPostImage(ByVal sp As String) As WPostImage
         Dim wp As New WPostImage
         wp.ChanbName = sp.Split(CChar(":")).ElementAt(0)
         wp.Size = CLng(sp.Split(CChar(":")).ElementAt(1))
@@ -812,52 +1049,34 @@ Public Module GlobalFunctions
         If powers = "" Then
             powers = DefaultModPowers
         End If
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
-        Dim queryString As String = "INSERT INTO mods (username, password, power) VALUES ('" & name & "', '" & MD5(pas) & "', '" & powers & "')"
-        Dim queryObject As New SqlCommand(queryString, cnx)
-        cnx.Open()
-        queryObject.ExecuteNonQuery()
-        cnx.Close()
+        DatabaseEngine.ExecuteNonQuery("INSERT INTO mods (username, password, power) VALUES ('" & name & "', '" & MD5(pas) & "', '" & powers & "')")
     End Sub
 
     Public Function IsIPBanned(ByVal IP As String) As Boolean
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryString As String = "SELECT ID FROM bans WHERE (IP LIKE '" & IP & "')"
-        Dim queryObject As New SqlCommand(queryString, cnx)
-        cnx.Open()
-        Dim reader As SqlDataReader = queryObject.ExecuteReader
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
         Dim banned As Boolean = False
-        While reader.Read
-            banned = Not (TypeOf reader(0) Is DBNull)
-            'If TypeOf reader(0) Is DBNull Then
-            '    banned = False
-            '    'User is not banned since there is no ID entry for the specified IP address
-            'Else
-            '    banned = True
-            'End If
+        While query.Reader.Read
+            banned = Not (TypeOf query.Reader(0) Is DBNull)
         End While
-        reader.Close()
-        cnx.Close()
+        query.Connection.Close()
         Return banned
     End Function
 
     Private Function GetBanData(ByVal IP As String) As BanData
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryString As String = "SELECT ID, perm, expiry, comment, post FROM bans WHERE (IP LIKE '" & IP & "')"
-        Dim queryObject As New SqlCommand(queryString, cnx)
-        cnx.Open()
-        Dim reader As SqlDataReader = queryObject.ExecuteReader
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
         Dim data As New BanData
-        While reader.Read
-            data.ID = CInt(ConvertNoNull(reader(0)))
-            data.PERM = CBool(ConvertNoNull(reader(1)))
-            data.EXPIRY = CDate(ConvertNoNull(reader(2)))
-            data.COMMENT = CStr(ConvertNoNull(reader(3)))
-            data.POSTNO = CInt(ConvertNoNull(reader(4)))
+        While query.Reader.Read
+            data.ID = CInt(ConvertNoNull(query.Reader(0)))
+            data.PERM = CBool(ConvertNoNull(query.Reader(1)))
+            data.EXPIRY = CDate(ConvertNoNull(query.Reader(2)))
+            data.COMMENT = CStr(ConvertNoNull(query.Reader(3)))
+            data.POSTNO = CInt(ConvertNoNull(query.Reader(4)))
         End While
         data.IP = IP
-        reader.Close()
-        cnx.Close()
+        query.Reader.Close()
+        query.Connection.Close()
         Return data
     End Function
 
@@ -882,10 +1101,17 @@ Public Module GlobalFunctions
             End If
         End If
         If EnableCaptcha And (mode = "thread" Or mode = "reply") Then
-            If Not Session("captcha").ToString = request.Item("usercaptcha") Then
+
+            If Not Session("captcha") Is Nothing Then
+                If Not Session("captcha").ToString = request.Item("usercaptcha") Then
+                    message = FormatHTMLMessage("Error", wrongCaptcha, "", "8888", True)
+                    cont = False
+                End If
+            Else
                 message = FormatHTMLMessage("Error", wrongCaptcha, "", "8888", True)
                 cont = False
             End If
+
         End If
         ''Post processing begin here 
         If cont Then
@@ -911,7 +1137,7 @@ Public Module GlobalFunctions
                                 Dim er As New OPData
                                 er.Comment = ProcessInputs(request.Item("comment"))
                                 er.email = ProcessInputs(request.Item("email"))
-                                If request.Item("postername") = "" Then er.name = AnonName Else er.name = ProcessInputs(request.Item("postername"))
+                                If request.Item("postername") = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(request.Item("postername"))
                                 er.subject = ProcessInputs(request.Item("subject"))
                                 er.time = Date.UtcNow
                                 er.imageName = s
@@ -919,22 +1145,34 @@ Public Module GlobalFunctions
                                 er.IP = request.UserHostAddress
                                 er.UserAgent = request.UserAgent.Replace("<", "").Replace(">", "") ' I replace < and > to prevent spoffing a user agent that contain <script> tags.
                                 If request.Cookies("pass") IsNot Nothing Then request.Cookies("pass").Value = request.Item("password") Else request.Cookies.Add(New HttpCookie("pass", request.Item("password")))
-                                MakeThread(er)
-                                message = FormatHTMLMessage(SuccessfulPostString, SuccessfulPostString, "default.aspx", "1", False)
+                                Dim tid As Integer = MakeThread(er)
+
+                                If Not er.name = "" Then Session("posterName") = er.name
+                                If Not er.email = "" Then Session("posterEmail") = er.email
+
+                                message = FormatHTMLMessage(SuccessfulPostString, SuccessfulPostString, "default.aspx?id=" & tid, "1", False)
                             End If
                         End If
 
                     Case "reply"
+
                         Dim threadid As Integer = CInt(request.Item("threadid"))
 
                         If IsLocked(threadid) Then
-                            message = FormatHTMLMessage("error", lockedMessage, "default.aspx?id=" & threadid, "5", False)
+                            message = FormatHTMLMessage("error", lockedMessage, "default.aspx?id=" & threadid, "5", True)
                             Exit Select
                         End If
 
                         If IsArchived(threadid) Then
-                            message = FormatHTMLMessage("error", arhivedMessage, "archive.aspx?id=" & threadid, "5", False)
+                            message = FormatHTMLMessage("error", arhivedMessage, "archive.aspx?id=" & threadid, "5", True)
                             Exit Select
+                        End If
+
+                        If EnableImpresonationProtection Then
+                            If IsPosterNameAlreadyTaken(request.UserHostAddress, request.Item("postername"), threadid) Then
+                                message = FormatHTMLMessage(errorStr, nameAlreadyUsed.Replace("%", request.Item("postername")), "default.aspx?id=" & threadid, "5", True)
+                                Exit Select
+                            End If
                         End If
 
                         Dim s As String = ""
@@ -965,7 +1203,7 @@ Public Module GlobalFunctions
                                     If countFiles Then er.Comment = pos & "&#47;" & totalFiles
                                 End If
                                 er.email = ProcessInputs(request.Item("email"))
-                                If request.Item("postername") = "" Then er.name = AnonName Else er.name = ProcessInputs(request.Item("postername"))
+                                If request.Item("postername") = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(request.Item("postername"))
                                 er.subject = ProcessInputs(request.Item("subject"))
                                 er.time = Date.UtcNow
                                 er.imageName = singleImage
@@ -974,7 +1212,7 @@ Public Module GlobalFunctions
                                 er.UserAgent = request.UserAgent.Replace("<", "").Replace(">", "")
                                 ReplyTo(threadid, er)
                                 pos += 1
-                            Next                  
+                            Next
                             message = FormatHTMLMessage(SuccessfulPostString, SuccessfulPostString, "default.aspx?id=" & request.Item("threadid"), "1", False)
                         Else
                             'Single file, or multiple files post.
@@ -986,7 +1224,7 @@ Public Module GlobalFunctions
                             Else
                                 er.Comment = ProcessInputs(request.Item("comment"))
                                 er.email = ProcessInputs(request.Item("email"))
-                                If request.Item("postername") = "" Then er.name = AnonName Else er.name = ProcessInputs(request.Item("postername"))
+                                If request.Item("postername") = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(request.Item("postername"))
                                 er.subject = ProcessInputs(request.Item("subject"))
                                 er.time = Date.UtcNow
                                 er.imageName = s
@@ -995,6 +1233,10 @@ Public Module GlobalFunctions
                                 er.UserAgent = request.UserAgent.Replace("<", "").Replace(">", "") ' I replace < and > to prevent spoffing a user agent that contain <script> tags.
                                 If request.Cookies("pass") IsNot Nothing Then request.Cookies("pass").Value = request.Item("password") Else request.Cookies.Add(New HttpCookie("pass", request.Item("password")))
                                 ReplyTo(threadid, er)
+
+                                If Not er.name = "" Then Session("posterName") = er.name
+                                If Not er.email = "" Then Session("posterEmail") = er.email
+
                                 message = FormatHTMLMessage(SuccessfulPostString, SuccessfulPostString, "default.aspx?id=" & request.Item("threadid"), "1", False)
                             End If
                         End If
@@ -1076,6 +1318,7 @@ Public Module GlobalFunctions
     Private Function ProcessComment(ByVal comment As String, ByVal parentPost As Integer, ByVal pageHandlerName As String) As String
         Dim sb As New StringBuilder
         Dim wf As New WordFilter
+        comment = wf.FilterText(comment)
         For Each x In comment.Split(CChar(vbNewLine))
             If Not (x = "") Then
                 'Check if greentext
@@ -1346,7 +1589,7 @@ Public Module GlobalFunctions
     End Function
 
     Function GetOPPostHTML(ByVal po As WPost, ByVal parameters As HTMLParameters) As String
-        Dim postHTML As String = opPostTemplate
+        Dim postHTML As String = OPPostTemplate
         Dim pageHandlerName As String = "default"
         If parameters.isCurrentThread = False Then pageHandlerName = "archive"
         If parameters.replyButton Then
@@ -1413,17 +1656,15 @@ Public Module GlobalFunctions
     End Function
 
     Function GetModPowers(ByVal modname As String) As String
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
-        cnx.Open()
-        Dim q As New SqlCommand("SELECT power FROM mods WHERE (username LIKE '" & modname & "')", cnx)
+        Dim queryString As String = "SELECT power FROM mods WHERE (username LIKE '" & modname & "')"
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
         Dim powstr As String = ""
-        Dim reader As SqlDataReader = q.ExecuteReader
-        While reader.Read
-            powstr = CStr(ConvertNoNull(reader(0)))
+        While query.Reader.Read
+            powstr = CStr(ConvertNoNull(query.Reader(0)))
         End While
-        reader.Close()
-        cnx.Close()
-        Return powstr.Replace("'", "")
+        query.Reader.Close()
+        query.Connection.Close()
+        Return powstr
     End Function
 
     Function GetModeratorHTMLMenu(ByVal id As String, ByVal powers As String) As String
@@ -1448,18 +1689,26 @@ Public Module GlobalFunctions
     End Function
 
     Private Function GetLastXPosts(ByVal threadID As Integer, ByVal x As Integer, ByVal includearhived As Boolean) As Integer()
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
+        Dim queryString As String = ""
         Dim i As Integer = 0
         If includearhived Then i = 1
-        Dim query As New SqlCommand("SELECT TOP " & x & " ID FROM board WHERE(parentT = " & threadID & ") AND (mta = " & i & ") ORDER BY ID DESC", cnx)
-        cnx.Open()
+        Select Case dbType
+            Case "mssql"
+                queryString = "SELECT TOP " & x & " ID FROM board WHERE (parentT = " & threadID & ") AND (mta = " & i & ") ORDER BY ID DESC"
+            Case "mysql"
+                queryString = "SELECT ID FROM board WHERE (parentT = " & threadID & ") AND (mta = " & i & ") ORDER BY ID DESC LIMIT 0, " & CStr(x)
+            Case Else
+                If isInstalled Then
+                    Throw New Exception(dbTypeInvalid)
+                End If
+        End Select
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
         Dim il As New List(Of Integer)
-        Dim reader As SqlDataReader = query.ExecuteReader
-        While reader.Read
-            il.Add(CInt(reader(0)))
+        While query.Reader.Read
+            il.Add(CInt(query.Reader(0)))
         End While
-        reader.Close()
-        cnx.Close()
+        query.Reader.Close()
+        query.Connection.Close()
         Return il.ToArray
     End Function
 
@@ -1473,26 +1722,17 @@ Public Module GlobalFunctions
     End Sub
 
     Private Sub UpdatePostText(ByVal postID As Integer, ByVal newText As String, ByVal allowHTML As Boolean)
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryString As String
         If allowHTML Then
             queryString = "UPDATE board SET comment = N'" & newText & "' WHERE(ID = " & postID & ")"
         Else
             queryString = "UPDATE board SET comment = N'" & ProcessInputs(newText) & "' WHERE(ID = " & postID & ")"
         End If
-        Dim queryObject As New SqlCommand(queryString, cnx)
-        cnx.Open()
-        queryObject.ExecuteNonQuery()
-        cnx.Close()
+        DatabaseEngine.ExecuteNonQuery(queryString)
     End Sub
 
     Private Sub BanPoster(ByVal IP As String, ByVal postID As Integer)
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
-        Dim queryString As String = "INSERT INTO bans (perm, post, IP) VALUES (0, " & postID & ", '" & IP & "')"
-        Dim queryObject As New SqlCommand(queryString, cnx)
-        cnx.Open()
-        queryObject.ExecuteNonQuery()
-        cnx.Close()
+        DatabaseEngine.ExecuteNonQuery("INSERT INTO bans (perm, post, IP) VALUES (0, " & postID & ", '" & IP & "')")
     End Sub
 
     ''' <summary>
@@ -1504,7 +1744,7 @@ Public Module GlobalFunctions
     ''' <returns></returns>
     ''' <remarks></remarks>
     Function GetStreamThreadHTML(ByVal threadID As Integer, ByVal para As HTMLParameters, ByVal trailposts As Integer) As String
-        Dim postHtml As String = threadTemplate
+        Dim postHtml As String = ThreadTemplate
         postHtml = postHtml.Replace("%ID%", CStr(threadID))
 
         Dim OPandChildrenIDS As New List(Of Integer)
@@ -1585,34 +1825,35 @@ Public Module GlobalFunctions
     End Function
 
     Private Function GetTimeString(ByVal d As Date) As String
+        'ISO 8601 date time format
         Return d.Year & "-" & d.Month & "-" & d.Day & " " & d.Hour & ":" & d.Minute & ":" & d.Second
         '   Return d.ToString
     End Function
 
     Private Function GetRepliesCount(ByVal threadID As Integer, ByVal countArchived As Boolean) As ThreadReplies
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim s As String = ""
         If countArchived Then s = " AND ( mta = 1 )" Else s = " AND ( mta = 0 )"
-        Dim textRepliesCount As String = "Select Count(ID) as [Total Records] from board where (parentT=" & threadID & ") AND (imagename LIKE '')" & s
-        Dim imageRepliesCount As String = "Select Count(ID) as [Total Records] from board where (parentT=" & threadID & ")  AND (imagename LIKE '%.%')" & s
-        Dim queryObject As New SqlCommand(textRepliesCount, cnx)
-        cnx.Open()
+        Dim textRepliesCount As String = "Select Count(ID) as T from board where (parentT=" & threadID & ") AND (imagename LIKE '')" & s
+        Dim imageRepliesCount As String = "Select Count(ID) as T from board where (parentT=" & threadID & ")  AND (imagename LIKE '%.%')" & s
+
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(textRepliesCount)
+
         Dim textRC As Integer = 0
         Dim iRC As Integer = 0
-        Dim reader As SqlDataReader = queryObject.ExecuteReader
-        While reader.Read
-            textRC = CInt(reader(0))
+
+        While query.Reader.Read
+            textRC = CInt(query.Reader(0))
         End While
-        reader.Close()
-        queryObject.Dispose()
-        queryObject = New SqlCommand(imageRepliesCount, cnx)
-        reader = queryObject.ExecuteReader
-        While reader.Read
-            iRC = CInt(reader(0))
+
+        query.Reader.Close()
+
+        query = DatabaseEngine.ExecuteQueryReader(imageRepliesCount, query.Connection)
+        While query.Reader.Read
+            iRC = CInt(query.Reader(0))
         End While
-        reader.Close()
-        cnx.Close()
-        queryObject.Dispose()
+        query.Reader.Close()
+        query.Connection.Close()
+
         Dim t As New ThreadReplies
         t.TextReplies = textRC
         t.ImageReplies = iRC
@@ -1698,7 +1939,7 @@ Public Module GlobalFunctions
                 Dim advanced As Boolean = False ' The first one is marked as active, the rest as notactive
                 Dim rotatorTemplat As String = ImageRotatorTemplate
                 For Each ima In po._imageP.Split(CChar(";"))
-                    Dim r As String = imageTemplate
+                    Dim r As String = ImageTemplate
                     Dim wpi As WPostImage = GetWPostImage(ima.Replace(";", ""))
                     r = r.Replace("%ID%", CStr(po.PostID))
                     If Not advanced Then r = r.Replace("%AN%", "active") Else r = r.Replace("%AN%", "notactive")
@@ -1714,6 +1955,7 @@ Public Module GlobalFunctions
                     r = r.Replace("%IMAGE SIZE%", wpi.Dimensions)
                     r = r.Replace("%THUMB_LINK%", GetImageWEBPATHRE(wpi.ChanbName))
                     r = r.Replace("%IMAGE MD5%", wpi.MD5)
+                    r = r.Replace("%IMAGE TEXT DL%", WebRoot & "img.aspx?cn=" & wpi.ChanbName & "&rn=" & wpi.RealName)
                     If transmitRealFileName Then r = r.Replace("%IMAGE DL%", "img.aspx?md5=" & wpi.MD5) Else r = r.Replace("%IMAGE DL%", GetImageWEBPATH(wpi.ChanbName))
                     r = r.Replace("%IMAGE EXT%", wpi.Extension)
                     r = r.Replace("%Search Engine Links%", GetSearchEngineLinks(GetImageWEBPATHRE(wpi.ChanbName)))
@@ -1736,7 +1978,7 @@ Public Module GlobalFunctions
                 sb.Append(rotatorTemplat)
             Else
                 'Single image
-                Dim r As String = imageTemplate
+                Dim r As String = ImageTemplate
                 Dim wpi As WPostImage = GetWPostImage(po._imageP.Replace(";", ""))
                 r = r.Replace("%ID%", CStr(po.PostID))
                 r = r.Replace("%filec%", "file")
@@ -1747,6 +1989,7 @@ Public Module GlobalFunctions
                 Else
                     r = r.Replace("%FILE SNAME%", wpi.RealName)
                 End If
+                r = r.Replace("%IMAGE TEXT DL%", WebRoot & "img.aspx?cn=" & wpi.ChanbName & "&rn=" & wpi.RealName)
                 If transmitRealFileName Then r = r.Replace("%IMAGE DL%", "img.aspx?md5=" & wpi.MD5) Else r = r.Replace("%IMAGE DL%", GetImageWEBPATH(wpi.ChanbName))
                 r = r.Replace("%IMAGE SRC%", GetImageWEBPATH(wpi.ChanbName))
                 r = r.Replace("%FILE SIZE%", FormatSizeString(wpi.Size))
@@ -1772,13 +2015,8 @@ Public Module GlobalFunctions
         Return g.ToString
     End Function
 
-    Sub PermaDeleteAllPosts(ByVal deletefiles As Boolean)
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
-        Dim queryString As String = "TRUNCATE TABLE board"
-        Dim queryObject As New SqlCommand(queryString, cnx)
-        cnx.Open()
-        queryObject.ExecuteNonQuery()
-        cnx.Close()
+    Public Sub PermaDeleteAllPosts(ByVal deletefiles As Boolean)
+        DatabaseEngine.ExecuteNonQuery("TRUNCATE TABLE board")
         If deletefiles Then
             For Each x As IO.FileInfo In FileIO.FileSystem.GetDirectoryInfo(StorageFolder).GetFiles()
                 x.Delete()
@@ -1787,15 +2025,10 @@ Public Module GlobalFunctions
     End Sub
 
     Private Sub ReportPost(ByVal id As Integer, ByVal reporterIP As String, ByVal time As Date)
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
-        Dim queryString As String = "INSERT INTO reports  (postID, reporterIP, time) VALUES (" & id & ", '" & reporterIP & "', " & ConvertTimeToSQLTIME(time) & ")"
-        Dim queryObject As New SqlCommand(queryString, cnx)
-        cnx.Open()
-        queryObject.ExecuteNonQuery()
-        cnx.Close()
+        DatabaseEngine.ExecuteNonQuery("INSERT INTO reports  (postID, reporterIP, time) VALUES (" & id & ", '" & reporterIP & "', " & ConvertTimeToSQLTIME(time) & ")")
     End Sub
 
-    Sub PrunePost(ByVal id As Integer, ByVal dF As Boolean)
+    Public Sub PrunePost(ByVal id As Integer, ByVal dF As Boolean)
         If EnableArchive Then
             Archive(id)
         Else
@@ -1814,7 +2047,7 @@ Public Module GlobalFunctions
         End If
     End Sub
 
-    Sub Archive(ByVal id As Integer)
+    Public Sub Archive(ByVal id As Integer)
         Dim w As WPost = FetchPostData(id)
         If w.type = "0" Then
             ArchiveThread(id)
@@ -1824,36 +2057,19 @@ Public Module GlobalFunctions
     End Sub
 
     Private Sub ArchiveThread(ByVal threadid As Integer)
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
-        cnx.Open()
-        Dim c As New SqlCommand("UPDATE board SET mta = 1 WHERE (parentT = " & threadid & ") OR (ID = " & threadid & ")", cnx)
-        c.ExecuteNonQuery()
-        cnx.Close()
+        DatabaseEngine.ExecuteNonQuery("UPDATE board SET mta = 1 WHERE (parentT = " & threadid & ") OR (ID = " & threadid & ")")
     End Sub
 
     Private Sub ArchivePost(ByVal id As Integer)
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
-        Dim queryObject As New SqlCommand("UPDATE board SET mta = 1 WHERE(id = " & id & ")", cnx)
-        cnx.Open()
-        queryObject.ExecuteNonQuery()
-        cnx.Close()
+        DatabaseEngine.ExecuteNonQuery("UPDATE board SET mta = 1 WHERE(id = " & id & ")")
     End Sub
 
     Private Sub DeleteThread(ByVal threadid As Integer)
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
-        cnx.Open()
-        Dim c As New SqlCommand("DELETE FROM board WHERE (parentT = " & threadid & ") OR (ID = " & threadid & ")", cnx)
-        c.ExecuteNonQuery()
-        cnx.Close()
+        DatabaseEngine.ExecuteNonQuery("DELETE FROM board WHERE (parentT = " & threadid & ") OR (ID = " & threadid & ")")
     End Sub
 
     Private Sub DeletePost(ByVal id As Integer)
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
-        Dim queryString As String = "DELETE FROM board WHERE (id = " & id & ")"
-        Dim queryObject As New SqlCommand(queryString, cnx)
-        cnx.Open()
-        queryObject.ExecuteNonQuery()
-        cnx.Close()
+        DatabaseEngine.ExecuteNonQuery("DELETE FROM board WHERE (id = " & id & ")")
     End Sub
 
     Private Sub DeletePostFiles(ByVal po As WPost)
@@ -1873,7 +2089,7 @@ Public Module GlobalFunctions
         End If
     End Sub
 
-    Function FormatSizeString(ByVal size As Long) As String
+    Public Function FormatSizeString(ByVal size As Long) As String
         Dim B As Long = 1024
         Dim K As Long = 1024 * B
         Dim M As Long = 1024 * K
@@ -1894,104 +2110,79 @@ Public Module GlobalFunctions
         End If
     End Function
 
-    Sub ToggleSticky(ByVal threadID As Integer)
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
+    Public Sub ToggleSticky(ByVal threadID As Integer)
         Dim i As Integer = 0 ' 0 unsticky the thread.
         If Not IsSticky(threadID) Then
             'Need to sticky it.
             i = 1
         End If
-        Dim queryString As String = "UPDATE board SET sticky = " & i & " WHERE (ID = " & threadID & " )"
-        Dim queryObject As New SqlCommand(queryString, cnx)
-        cnx.Open()
-        queryObject.ExecuteNonQuery()
-        cnx.Close()
+        DatabaseEngine.ExecuteNonQuery("UPDATE board SET sticky = " & i & " WHERE (ID = " & threadID & " )")
     End Sub
 
     Private Function IsSticky(ByVal id As Integer) As Boolean
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryString As String = "SELECT sticky FROM board  WHERE (ID = " & id & " )"
-        Dim queryObject As New SqlCommand(queryString, cnx)
-        cnx.Open()
-        Dim reader As SqlDataReader = queryObject.ExecuteReader
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
         Dim p As Boolean = False
-        While reader.Read
-            If TypeOf reader(0) Is DBNull Or CInt(ConvertNoNull(reader(0))) <> 1 Then
+        While query.Reader.Read
+            If TypeOf query.Reader(0) Is DBNull Or CInt(ConvertNoNull(query.Reader(0))) <> 1 Then
                 p = False
             Else
                 p = True
             End If
         End While
-        cnx.Close()
+        query.Connection.Close()
         Return p
     End Function
 
-    Sub ToggleLock(ByVal threadID As Integer)
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
+    Public Sub ToggleLock(ByVal threadID As Integer)
         Dim i As Integer = 0
-        If Not IsLocked(threadID) Then
-            i = 1
-        End If
-        Dim queryString As String = "UPDATE board SET locked = " & i & " WHERE (ID = " & threadID & " )"
-        Dim queryObject As New SqlCommand(queryString, cnx)
-        cnx.Open()
-        queryObject.ExecuteNonQuery()
-        cnx.Close()
+        If Not IsLocked(threadID) Then i = 1
+        DatabaseEngine.ExecuteNonQuery("UPDATE board SET locked = " & i & " WHERE (ID = " & threadID & " )")
     End Sub
 
     Private Function IsLocked(ByVal id As Integer) As Boolean
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryString As String = "SELECT locked FROM board  WHERE (ID = " & id & " )"
-        Dim queryObject As New SqlCommand(queryString, cnx)
-        cnx.Open()
-        Dim reader As SqlDataReader = queryObject.ExecuteReader
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
         Dim p As Boolean = False
-        While reader.Read
-            If TypeOf reader(0) Is DBNull Or CInt(ConvertNoNull(reader(0))) <> 1 Then
+        While query.Reader.Read
+            If TypeOf query.Reader(0) Is DBNull Or CInt(ConvertNoNull(query.Reader(0))) <> 1 Then
                 p = False
             Else
                 p = True
             End If
         End While
-        cnx.Close()
+        query.Connection.Close()
         Return p
     End Function
 
     Private Function IsArchived(ByVal id As Integer) As Boolean
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryString As String = "SELECT mta FROM board  WHERE (ID = " & id & " )"
-        Dim queryObject As New SqlCommand(queryString, cnx)
-        cnx.Open()
-        Dim reader As SqlDataReader = queryObject.ExecuteReader
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
         Dim p As Boolean = False
-        While reader.Read
-            If CInt(ConvertNoNull(reader(0))) = 1 Then
+        While query.Reader.Read
+            If CInt(ConvertNoNull(query.Reader(0))) = 1 Then
                 p = True
             Else
                 p = False
             End If
         End While
-        cnx.Close()
+        query.Connection.Close()
         Return p
     End Function
 
     Public Function GetThreadRepliesAfter(ByVal threadID As Integer, ByVal afterPost As Integer, ByVal includeArchived As Boolean) As Integer()
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
         Dim queryString As String
         If includeArchived Then
             queryString = "SELECT ID FROM board WHERE (parentT = " & threadID & ") AND ( ID > " & afterPost & " ) ORDER BY ID ASC"
         Else
             queryString = "SELECT ID FROM board WHERE (parentT = " & threadID & ") AND ( ID > " & afterPost & " ) AND (mta = 0) ORDER BY ID ASC"
         End If
-        Dim queryObject As New SqlCommand(queryString, cnx)
+        Dim queryObject As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
         Dim il As New List(Of Integer)
-        cnx.Open()
-        Dim reader As SqlDataReader = queryObject.ExecuteReader
-        While reader.Read
-            il.Add(CInt(ConvertNoNull(reader(0))))
+        While queryObject.Reader.Read
+            il.Add(CInt(ConvertNoNull(queryObject.Reader(0))))
         End While
-        reader.Close()
-        cnx.Close()
+        queryObject.Connection.Close()
         Return il.ToArray
     End Function
 
@@ -2030,7 +2221,7 @@ Public Module GlobalFunctions
         If DisplayingThread Then
             pageHTML = pageHTML.Replace("%POST FORM BUTTON%", replyStr)
         Else
-            pageHTML = pageHTML.Replace("%POST FORM BUTTON%", newthreadStr)
+            pageHTML = pageHTML.Replace("%POST FORM BUTTON%", newThreadStr)
         End If
 
         If EnableCaptcha And Not isArchive Then
@@ -2063,6 +2254,16 @@ Public Module GlobalFunctions
             pageHTML = pageHTML.Replace("%RETURN BUTTON DESKTOP%", "")
             pageHTML = pageHTML.Replace("%RETURN BUTTON MOBILE%", "")
         End If
+
+        If Not (session("posterName") Is Nothing Or session("posterEmail") Is Nothing) Then
+            pageHTML = pageHTML.Replace("%COOKIE EMAIL%", session("posterEmail").ToString)
+            pageHTML = pageHTML.Replace("%COOKIE NAME%", session("posterName").ToString)
+        Else
+            pageHTML = pageHTML.Replace("%COOKIE EMAIL%", "")
+            pageHTML = pageHTML.Replace("%COOKIE NAME%", "")
+        End If
+
+        pageHTML = pageHTML.Replace("%META NO CACHE%", "")
 
         '####################################### BODY PROCESSING CODE #######################################
         Dim body As New StringBuilder
@@ -2178,7 +2379,7 @@ Public Module GlobalFunctions
         Return pageHTML
     End Function
 
-    Function GenerateCatalogPage(ByVal Request As HttpRequest, ByVal session As HttpSessionState) As String
+    Public Function GenerateCatalogPage(ByVal Request As HttpRequest, ByVal session As HttpSessionState) As String
         Dim pageHTML As String = GenerateGenericHTML()
 
 
@@ -2186,7 +2387,7 @@ Public Module GlobalFunctions
         pageHTML = pageHTML.Replace("%POSTDIVCLASS%", "")
         pageHTML = pageHTML.Replace("%POST FORM MODE%", "thread")
         pageHTML = pageHTML.Replace("%POST FORM TID%", "")
-        pageHTML = pageHTML.Replace("%POST FORM BUTTON%", newthreadStr)
+        pageHTML = pageHTML.Replace("%POST FORM BUTTON%", newThreadStr)
 
 
         If EnableCaptcha Then
@@ -2203,9 +2404,15 @@ Public Module GlobalFunctions
         pageHTML = pageHTML.Replace("%POSTING RULES%", "")
         pageHTML = pageHTML.Replace("%THREAD COUNT%", "")
 
+        If Not (session("posterName") Is Nothing Or session("posterEmail") Is Nothing) Then
+            pageHTML = pageHTML.Replace("%COOKIE EMAIL%", session("posterEmail").ToString)
+            pageHTML = pageHTML.Replace("%COOKIE NAME%", session("posterName").ToString)
+        Else
+            pageHTML = pageHTML.Replace("%COOKIE EMAIL%", "")
+            pageHTML = pageHTML.Replace("%COOKIE NAME%", "")
+        End If
 
-
-
+        pageHTML = pageHTML.Replace("%META NO CACHE%", "")
         pageHTML = pageHTML.Replace("%RETURN BUTTON DESKTOP%", DesktopReturnButtonHTML.Replace("%P%", "default.aspx"))
         pageHTML = pageHTML.Replace("%RETURN BUTTON MOBILE%", MobileReturnButtonHTML.Replace("%P%", "default.aspx"))
 
@@ -2213,7 +2420,7 @@ Public Module GlobalFunctions
         '####################################### BODY PROCESSING CODE #######################################
         Dim body As New StringBuilder
 
-        body.Append(GenerateCatalogItem(GetThreads(0, GetThreadsCount(False), False, False)))
+        body.Append(GenerateCatalogItems(GetThreads(0, GetThreadsCount(False), False, False)))
 
         pageHTML = pageHTML.Replace("%BODY%", body.ToString)
 
@@ -2223,7 +2430,7 @@ Public Module GlobalFunctions
         Return pageHTML
     End Function
 
-    Private Function GenerateCatalogItem(ByVal ids As Integer()) As String
+    Private Function GenerateCatalogItems(ByVal ids As Integer()) As String
         Dim sb As New StringBuilder
         Dim data As WPost() = GetWpostList(ids)
         sb.Append("<div align='center' id='threads'>")
@@ -2249,22 +2456,22 @@ Public Module GlobalFunctions
         pageHTML = pageHTML.Replace("%BTITLE%", BoardTitle)
         pageHTML = pageHTML.Replace("%BDESC%", BoardDesc)
         pageHTML = pageHTML.Replace("%ROOT%", WebRoot)
-        pageHTML = pageHTML.Replace("%LANG nameString%", NAMEString)
-        pageHTML = pageHTML.Replace("%LANG emailString%", EMAILString)
-        pageHTML = pageHTML.Replace("%LANG subjectString%", SUBJECTString)
-        pageHTML = pageHTML.Replace("%LANG commentString%", COMMENTString)
+        pageHTML = pageHTML.Replace("%LANG nameString%", nameStr)
+        pageHTML = pageHTML.Replace("%LANG emailString%", emailStr)
+        pageHTML = pageHTML.Replace("%LANG subjectString%", subjectStr)
+        pageHTML = pageHTML.Replace("%LANG commentString%", commentStr)
         pageHTML = pageHTML.Replace("%LANG fileStr%", filesStr)
-        pageHTML = pageHTML.Replace("%LANG passwordStr%", PASSWORDString)
-        pageHTML = pageHTML.Replace("%LANG FOR PD%", forPD)
-        pageHTML = pageHTML.Replace("%LANG catalogStr%", catalogstr)
-        pageHTML = pageHTML.Replace("%LANG bottomStr%", bottomstr)
-        pageHTML = pageHTML.Replace("%LANG refreshStr%", refreshStr)
-        pageHTML = pageHTML.Replace("%LANG topStr%", topsrt)
+        pageHTML = pageHTML.Replace("%LANG passwordStr%", passwordStr)
+        pageHTML = pageHTML.Replace("%LANG FOR PD%", forPostDelStr)
+        pageHTML = pageHTML.Replace("%LANG catalogStr%", CatalogStr)
+        pageHTML = pageHTML.Replace("%LANG bottomStr%", BottomStr)
+        pageHTML = pageHTML.Replace("%LANG refreshStr%", RefreshStr)
+        pageHTML = pageHTML.Replace("%LANG topStr%", TopStr)
         pageHTML = pageHTML.Replace("%LANG badCaptha%", wrongCaptcha)
         pageHTML = pageHTML.Replace("%LANG reportStr%", reportStr)
         pageHTML = pageHTML.Replace("%LANG deleteStr%", deleteStr)
-        pageHTML = pageHTML.Replace("%LANG newthreadStr%", newthreadStr)
-        pageHTML = pageHTML.Replace("%LANG archiveStr%", archiveStr)
+        pageHTML = pageHTML.Replace("%LANG newthreadStr%", newThreadStr)
+        pageHTML = pageHTML.Replace("%LANG archiveStr%", ArchiveStr)
         pageHTML = pageHTML.Replace("%FOOTER TEXT%", footerText)
         Return pageHTML
     End Function
@@ -2291,63 +2498,65 @@ Public Module GlobalFunctions
         End If
     End Sub
 
-    Sub LockTID(ByVal tid As Integer)
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
-        cnx.Open()
-        Dim query As New SqlCommand("INSERT INTO lockedT (locked) VALUES (" & tid & ")", cnx)
-        query.ExecuteNonQuery()
-        cnx.Close()
+    Private Sub LockTID(ByVal tid As Integer)
+        DatabaseEngine.ExecuteNonQuery("INSERT INTO lockedT (locked) VALUES (" & tid & ")")
     End Sub
 
-    Sub UnlockTID(ByVal tid As Integer)
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
-        cnx.Open()
-        Dim query As New SqlCommand("DELETE FROM lockedT WHERE (locked = " & tid & ")", cnx)
-        query.ExecuteNonQuery()
-        cnx.Close()
+    Private Sub UnlockTID(ByVal tid As Integer)
+        DatabaseEngine.ExecuteNonQuery("DELETE FROM lockedT WHERE (locked = " & tid & ")")
     End Sub
 
-    Sub QueueReupdate(ByVal tid As Integer)
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
-        cnx.Open()
-        Dim query As New SqlCommand("INSERT INTO ioqueue (tid) VALUES (" & tid & ")", cnx)
-        query.ExecuteNonQuery()
-        cnx.Close()
+    Private Sub QueueReupdate(ByVal tid As Integer)
+        DatabaseEngine.ExecuteNonQuery("INSERT INTO ioqueue (tid) VALUES (" & tid & ")")
     End Sub
 
-    Sub ClearSignaledUpdates(ByVal tid As Integer)
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
-        cnx.Open()
-        Dim query As New SqlCommand("DELETE FROM ioqueue WHERE (tid = " & tid & ")", cnx)
-        query.ExecuteNonQuery()
-        cnx.Close()
+    Private Sub ClearSignaledUpdates(ByVal tid As Integer)
+        DatabaseEngine.ExecuteNonQuery("DELETE FROM ioqueue WHERE (tid = " & tid & ")")
     End Sub
 
-    Function CheckForSingaledUpdates(ByVal tid As Integer) As Boolean
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
-        cnx.Open()
-        Dim query As New SqlCommand("SELECT TOP 1 * FROM ioqueue WHERE (tid = " & tid & ")", cnx)
-        Dim reader As SqlDataReader = query.ExecuteReader()
+    Private Function CheckForSingaledUpdates(ByVal tid As Integer) As Boolean
+        Dim queryStr As String = ""
+        Select Case dbType
+            Case "mssql"
+                queryStr = "SELECT TOP 1 * FROM ioqueue WHERE (tid = " & tid & ")"
+            Case "mysql"
+                queryStr = "SELECT * FROM ioqueue WHERE (tid = " & tid & ") LIMIT 0,1"
+            Case Else
+                If isInstalled Then
+                    Throw New Exception(dbTypeInvalid)
+                Else
+                    Return Nothing
+                End If
+        End Select
+        Dim queryOjb As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryStr)
         Dim b As Boolean = False
-        While reader.Read
-            If TypeOf reader(0) Is DBNull Then b = False Else b = True
+        While queryOjb.Reader.Read
+            If TypeOf queryOjb.Reader(0) Is DBNull Then b = False Else b = True
         End While
-        reader.Close()
-        cnx.Close()
+        queryOjb.Connection.Close()
         Return b
     End Function
 
-    Function IsTIDLOCKED(ByVal tid As Integer) As Boolean
-        Dim cnx As New SqlConnection(dbi.ConnectionString)
-        cnx.Open()
-        Dim query As New SqlCommand("SELECT TOP 1 * FROM lockedT WHERE (locked = " & tid & ")", cnx)
-        Dim reader As SqlDataReader = query.ExecuteReader()
+    Private Function IsTIDLOCKED(ByVal tid As Integer) As Boolean
+        Dim queryStr As String = ""
+        Select Case dbType
+            Case "mssql"
+                queryStr = "SELECT TOP 1 * FROM lockedT WHERE (locked = " & tid & ")"
+            Case "mysql"
+                queryStr = "SELECT * FROM lockedT WHERE (locked = " & tid & ") LIMIT 0,1"
+            Case Else
+                If isInstalled Then
+                    Throw New Exception(dbTypeInvalid)
+                Else
+                    Return Nothing
+                End If
+        End Select
+        Dim queryOjb As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryStr)
         Dim b As Boolean = False
-        While reader.Read
-            If TypeOf reader(0) Is DBNull Then b = False Else b = True
+        While queryOjb.Reader.Read
+            If TypeOf queryOjb.Reader(0) Is DBNull Then b = False Else b = True
         End While
-        reader.Close()
-        cnx.Close()
+        queryOjb.Connection.Close()
         Return b
     End Function
 
@@ -2401,6 +2610,8 @@ Public Module GlobalFunctions
         End If
 
         pageHTML = pageHTML.Replace("%THREAD COUNT%", "")
+
+        pageHTML = pageHTML.Replace("%META NO CACHE%", "<META HTTP-EQUIV='pragma' CONTENT='no-cache'>")
 
         pageHTML = pageHTML.Replace("%RETURN BUTTON DESKTOP%", DesktopReturnButtonHTML.Replace("%P%", WebRoot & pageHandlerLink & ".aspx"))
         pageHTML = pageHTML.Replace("%RETURN BUTTON MOBILE%", MobileReturnButtonHTML.Replace("%P%", WebRoot & pageHandlerLink & ".aspx"))

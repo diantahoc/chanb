@@ -1,6 +1,8 @@
 ﻿<%@ Import Namespace = "chanb.GlobalFunctions" %>
 <%@ Import Namespace = "chanb.GlobalVariables" %>
 <%@ Import Namespace = "chanb.Misc" %>
+<%@ Import Namespace = "chanb.Language" %>
+<%@ Page Language="VB" %>
 
     <%  
         
@@ -8,41 +10,48 @@
    
         If CBool(Session("mod")) = False Then
             Response.StatusCode = 403
-            Response.Write(FormatHTMLMessage("Fobidden", "Moderator privilege is required to access this page.", "", "8888", True))    
+            Response.Write(FormatHTMLMessage(ForbiddenStr, modRequired, "", "8888", True))
         Else
             Dim powers As String() = CStr(Session("modpowers")).Split(CChar("-"))
+            Dim id As Integer = 0
+            Try
+                id = CInt(Request.Item("id"))
+            Catch ex As Exception
+                Response.Write(FormatHTMLMessage(errorStr, invalidIdStr, "", "4444", True))
+                Response.End()
+            End Try
             Select Case Request.Item("action")
                 Case "banpost"
                     If powers(0) = "0" Then
-                        Response.Write(FormatHTMLMessage("Fobidden", "You have no power to do that", "", "8888", True))
+                        Response.Write(FormatHTMLMessage(ForbiddenStr, modNoPower, "", "8888", True))
                     Else
-                        BanPosterByPost(CInt(Request.Item("id")))
-                        Response.Write("Banned the poster of " & Request.Item("id"))
+                        BanPosterByPost(id)
+                        Response.Write(FormatHTMLMessage(sucessStr, modBannedPosterStr.Replace("%", CStr(id)), "", "5555", False))
                     End If
                 Case "delpost"
                     If powers(1) = "0" Then
-                        Response.Write(FormatHTMLMessage("Fobidden", "You have no power to do that", "", "8888", True))
+                        Response.Write(FormatHTMLMessage(ForbiddenStr, modNoPower, "", "8888", True))
                     Else
-                        PrunePost(Request.Item("id"), AutoDeleteFiles)
-                        Response.Write("Deleted post " & Request.Item("id"))
+                        PrunePost(id, AutoDeleteFiles)
+                        Response.Write(FormatHTMLMessage(sucessStr, PostDeletedSuccess.Replace("%", CStr(id)), "", "88888", False))
                     End If
                 Case "tgsticky"
                     If powers(2) = "0" Then
-                        Response.Write(FormatHTMLMessage("Fobidden", "You have no power to do that", "", "8888", True))
+                        Response.Write(FormatHTMLMessage(ForbiddenStr, modNoPower, "", "8888", True))
                     Else
-                        ToggleSticky(CInt(Request.Item("id")))
-                        Response.Write("Request complete")
+                        ToggleSticky(id)
+                        Response.Write(FormatHTMLMessage(sucessStr, modRequetComplete, "", "8888", False))
                     End If
                 Case "tglock"
                     If powers(3) = "0" Then
-                        Response.Write(FormatHTMLMessage("Fobidden", "You have no power to do that", "", "8888", True))
+                        Response.Write(FormatHTMLMessage(ForbiddenStr, modNoPower, "", "8888", True))
                     Else
-                        ToggleLock(CInt(Request.Item("id")))
-                        Response.Write("Request complete")
+                        ToggleLock(id)
+                        Response.Write(FormatHTMLMessage(sucessStr, modRequetComplete, "", "8888", False))
                     End If
                 Case "editpost"
                     If powers(4) = "0" Then
-                        Response.Write(FormatHTMLMessage("Fobidden", "You have no power to do that", "", "8888", True))
+                        Response.Write(FormatHTMLMessage(ForbiddenStr, modNoPower, "", "8888", True))
                     Else
                         'nod
                     End If

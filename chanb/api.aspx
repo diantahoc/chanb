@@ -2,6 +2,7 @@
 <%@ Import Namespace = "chanb.GlobalFunctions" %>
 <%@ Import Namespace = "chanb.GlobalVariables" %>
 <%@ Import Namespace = "chanb.JSONApi" %>
+<%@ Page Language="VB" %>
 
 <%
 

@@ -19,6 +19,7 @@ Current Features
 * Automatic set dumper (with file counting support).
 * Catalog.
 * Code and spoiler tags support.
+* Dual MS SQL and MySQL support.
 * Duplicate image checking support.
 * Integrated archive.
 * Installer.
@@ -31,6 +32,14 @@ Current Features
 * Smart Linking of duplicate images to the same real file, therefore reducing the consumed disk space.
 * Static mode.
 * SVG documents support.
+
+Warning
+========
+
+The following features, as of 13/6/2013, are broken or partially works.
+
+* Dual MS SQL and MySQL support. ( only MS SQL is working properly )
+* Installer. ( Needs adjustments )
 
 Planned features
 =================

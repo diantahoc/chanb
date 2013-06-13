@@ -383,6 +383,32 @@
         End Get
     End Property
 
+    Public ReadOnly Property EnableImpresonationProtection() As Boolean
+        Get
+            If DataDB.KeyExist("EnableImpresonationProtection") = False Then
+                DataDB.AddKey("EnableImpresonationProtection", CStr(True))
+                DataDB.Save()
+                Return True
+            Else
+                Return CBool(DataDB.GetKey("EnableImpresonationProtection"))
+            End If
+        End Get
+    End Property
+
+    Public ReadOnly Property DatabaseType() As String
+        Get
+            If DataDB.KeyExist("dbType") = False Then
+                If isInstalled = True Then
+                    Throw New Exception(dbTypeNotSet)
+                Else
+                    Return ""
+                End If
+            Else
+                Return CStr(DataDB.GetKey("dbType"))
+            End If
+        End Get
+    End Property
+
     Public Sub UpdateSetting(ByVal name As String, ByVal newData As String)
         DataDB.AddKey(name, newData)
         DataDB.Save()

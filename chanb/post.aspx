@@ -1,3 +1,4 @@
 ﻿<%@ Import Namespace = "chanb.GlobalFunctions" %>
-<%@ validateRequest=false %>
-<%  Response.Write(ProcessPost(Request, Session))%>
+<%@  Page Language="VB" validateRequest=false %>
+<%  Session("chanb") = "chanb"
+    Response.Write(ProcessPost(Request, Session))%>

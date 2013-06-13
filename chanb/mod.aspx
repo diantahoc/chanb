@@ -1,5 +1,6 @@
-﻿<%@ Page Language="vb" AutoEventWireup="false" CodeBehind="mod.aspx.vb" Inherits="chanb._mod" %>
+﻿<%@ Page Language="vb" %>
 <%@ Import Namespace = "chanb.GlobalFunctions" %>
+<%@ Import Namespace = "chanb.Misc" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <%  
@@ -7,9 +8,8 @@
         If IsModLoginValid(Request.Item("modname"), Request.Item("modpass")) Then
             Session("mod") = CStr(True)
             Session("modpowers") = GetModPowers(Request.Item("modname"))
-            Session("modmenu") = GetModeratorHTMLMenu("%ID%", Session("modpowers"))
-            Response.Write("Login successful")
-            Response.Redirect("default.aspx")
+            Session("modmenu") = GetModeratorHTMLMenu("%ID%", Session("modpowers"))     
+            Response.Write(FormatHTMLMessage(chanb.Language.modLoginSucess, chanb.Language.modLoginSucess, "default.aspx", "2", False))
         End If
     End If
     

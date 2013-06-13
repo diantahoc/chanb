@@ -2,6 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" >
 <head>
 <title>%BTITLE%</title>
+%META NO CACHE%
 <link rel="Stylesheet" href='%ROOT%yotsubab.css' />
 <link rel="Stylesheet" href="%ROOT%mobile.css" />
 <script src="%ROOT%scripts.js" type="text/javascript" language="javascript"></script>
@@ -25,13 +26,13 @@
 
 <tr>
     <th>%LANG nameString%</th>
-    <td><input class="form-text" type="text" size="30" name="postername" /></td>
+    <td><input class="form-text" type="text" size="30" name="postername" value="%COOKIE NAME%" /></td>
 </tr>
 
 <tr>
 <th>%LANG emailString%</th>
 <td>
-<input class="form-text"  name="email" size="30" type="text"/>
+<input class="form-text"  name="email" size="30" type="text" value="%COOKIE EMAIL%"/>
 </td>
 </tr>
 
@@ -55,7 +56,7 @@
 <th>%LANG fileStr%</th>
 <td>
     <div id="files" >
-    <input type="file" name="ufile" class="file" id="file2" />
+    <input type="file" name="ufile" class="file" multiple-files="true" />
     </div>  
     %ADD NEW FILES PHOLDER%
 </td>   

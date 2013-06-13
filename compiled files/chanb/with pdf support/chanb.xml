@@ -6,7 +6,22 @@ chanb
 </name>
 </assembly>
 <members>
-<member name="M:chanb.ValuesStore.AddKey(System.String,System.String)">
+<member name="F:chanb.test.form1">
+	<summary>
+form1 control.
+</summary>
+	<remarks>
+Auto-generated field.
+To modify move field declaration from designer file to code-behind file.
+</remarks>
+</member><member name="P:chanb.GlobalVariables.WebRoot">
+	<summary>
+ Get application web root.
+ </summary>
+	<value></value>
+	<returns></returns>
+	<remarks>With a trailing slash /</remarks>
+</member><member name="M:chanb.ValuesStore.AddKey(System.String,System.String)">
 	<summary>
  Update an existing key or add a new key.
  </summary>
@@ -110,6 +125,64 @@ form1 control.
 Auto-generated field.
 To modify move field declaration from designer file to code-behind file.
 </remarks>
+</member><member name="M:chanb.DatabaseEngine.ExecuteNonQuery(System.String)">
+	<summary>
+ Execute text query.
+ </summary>
+	<param name="QueryText"></param>
+	<returns>Number of rows affected</returns>
+	<remarks></remarks>
+</member><member name="M:chanb.DatabaseEngine.ExecuteNonQuery(System.Data.Common.DbCommand)">
+	<summary>
+ Execute DbCommand query.
+ </summary>
+	<param name="Query"></param>
+	<returns>Number of rows affected</returns>
+	<remarks></remarks>
+</member><member name="M:chanb.DatabaseEngine.ExecuteNonQuery(System.String,System.Data.Common.DbConnection)">
+	<summary>
+ Execute text query with an existing connection.
+ </summary>
+	<param name="QueryText"></param>
+	<returns>Number of rows affected</returns>
+	<remarks></remarks>
+</member><member name="M:chanb.DatabaseEngine.ExecuteNonQuery(System.Data.Common.DbCommand,System.Data.Common.DbConnection)">
+	<summary>
+ Execute DbCommand query with an existing connection.
+ </summary>
+	<param name="Query"></param>
+	<returns>Number of rows affected</returns>
+	<remarks></remarks>
+</member><member name="M:chanb.DatabaseEngine.ExecuteQueryReader(System.String)">
+	<summary>
+ Execute text query.
+ </summary>
+	<param name="QueryText"></param>
+	<returns>ChanbQuery</returns>
+	<remarks></remarks>
+</member><member name="M:chanb.DatabaseEngine.ExecuteQueryReader(System.Data.Common.DbCommand)">
+	<summary>
+ Execute DbCommand query.
+ </summary>
+	<param name="Query"></param>
+	<returns>ChanbQuery</returns>
+	<remarks></remarks>
+</member><member name="M:chanb.DatabaseEngine.ExecuteQueryReader(System.String,System.Data.Common.DbConnection)">
+	<summary>
+ Execute text query with an existing connection.
+ </summary>
+	<param name="QueryText"></param>
+	<param name="i"></param>
+	<returns>ChanbQuery</returns>
+	<remarks></remarks>
+</member><member name="M:chanb.DatabaseEngine.ExecuteQueryReader(System.Data.Common.DbCommand,System.Data.Common.DbConnection)">
+	<summary>
+ Execute DbCommand query with an existing connection.
+ </summary>
+	<param name="Query"></param>
+	<param name="i"></param>
+	<returns>ChanbQuery</returns>
+	<remarks></remarks>
 </member><member name="F:chanb.installer.form1">
 	<summary>
 form1 control.

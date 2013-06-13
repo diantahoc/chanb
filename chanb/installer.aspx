@@ -1,7 +1,7 @@
 ﻿<%@ Import Namespace = "chanb" %>
 <%@ Import Namespace = "chanb.GlobalFunctions" %>
 <%@ Import Namespace = "chanb.GlobalVariables" %>
-
+<%@ Page Language="VB" %>
 <%  
     If isInstalled Then
         Response.StatusCode = 403
@@ -10,7 +10,7 @@
     Else
         Session("admin") = CStr(True)
     End If
-    
+    'Session("admin") = CStr(True)
     %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -39,13 +39,25 @@
 
 <div class='whitebox'>      
            <h2 style="text-align: center !important;">
-           <span style=" text-align: center !important; ">Configure database connection</span>
+           <span style=" text-align: center !important; ">Configure database</span>
            <br />
+           
            </h2>
            
+           <span>- Enter database server type:</span> 
+           
+           <select id="dbType" name="dbType">
+           
+           <option value="mssql">MS SQL</option>
+           
+           <option value="mysql">MySQL</option>
+           
+           </select>
+           
+           <br />
            <span>- Enter database connection string:</span> 
            
-           <input size="30px" id="dbconnectionstring" type="text" name="dbconnectionstring" onchange="updateAttrb('testdbConnection','href','adminaction.aspx?action=testdbconnection&dbconnectionstring=' + document.getElementById('dbconnectionstring').value )" class="form-text" />
+           <input size="30px" id="dbconnectionstring" type="text" name="dbconnectionstring" onchange="updateAttrb('testdbConnection','href','adminaction.aspx?action=testdbconnection&db='+  document.getElementById('dbType').value  + '&dbconnectionstring=' + document.getElementById('dbconnectionstring').value )" class="form-text" />
            
            <a target="_blank" id='testdbConnection' href="#" >Test the connection</a>
 </div> 

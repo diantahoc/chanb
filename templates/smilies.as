@@ -10,7 +10,7 @@ o.O╝<img src="res/smiles/eek.gif" alt="o.O" />
 *sad*╝<img src="res/smiles/sad.gif" alt=":(" />
 &#58;-&#41;╝<img src="res/smiles/sad.gif" alt=":-(" />
 
-*cry*╝<img src="res/smiles/cry.gif" alt=";(" />
+&#42;cry&#42;╝<img src="res/smiles/cry.gif" alt=";(" />
 ;-&#41;╝<img src="res/smiles/cry.gif" alt=";-(" />
 
 ;-;╝<img src="res/smiles/cry.gif" alt=";-;" />
@@ -45,7 +45,7 @@ o.O╝<img src="res/smiles/eek.gif" alt="o.O" />
 8&#41;╝<img src="res/smiles/cool.gif" alt="8)" />
 8-&#41;╝<img src="res/smiles/cool.gif" alt="8-)" />
 
-
+&#58;3╝<img src="res/smiles/catsmile.png" alt=":3" />
 
 #lulz
  lol╝<img src="res/smiles/lol.gif" alt="lol" />

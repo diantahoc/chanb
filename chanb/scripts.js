@@ -97,8 +97,9 @@ function updatemode(f) {
 
 
 function timer() {
-
+    $(document).ready(function() {
     window.setInterval("fetchnewreplies()", 15000);
+});
   
 }
 

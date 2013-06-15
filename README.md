@@ -36,9 +36,8 @@ Current Features
 Warning
 ========
 
-The following features, as of 13/6/2013, are broken or partially works.
+The following features, as of 2013/6/15, are broken or partially works.
 
-* Dual MS SQL and MySQL support. ( only MS SQL is working properly )
 * Installer. ( Needs adjustments )
 
 Planned features

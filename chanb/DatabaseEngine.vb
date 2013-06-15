@@ -251,13 +251,23 @@ Public Module DatabaseEngine
                 p.Value = value
                 Return p
             Case "mysql"
-                Dim p As New MySqlParameter(name, type)
-                p.Value = value
+                Dim p As New MySqlParameter(name, value)
+                Select Case type
+                    Case Data.DbType.String
+                        p.MySqlDbType = MySqlDbType.Text
+                    Case Data.DbType.DateTime
+                        p.MySqlDbType = MySqlDbType.DateTime
+                    Case Data.DbType.Int32
+                        p.MySqlDbType = MySqlDbType.Int32
+                    Case Data.DbType.AnsiString
+                        p.MySqlDbType = MySqlDbType.Text
+                End Select
                 Return p
             Case Else
                Return Nothing
         End Select
     End Function
+
 
 End Module
 

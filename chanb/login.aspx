@@ -18,11 +18,11 @@
         %>
 
 <html xmlns="http://www.w3.org/1999/xhtml" >
-<head id="Head1" runat="server">
+<head>
     <title>Mod login</title>
 </head>
 <body>
-    <form id="form1" action="mod.aspx">
+    <form id="form1" action="login.aspx">
     <div>
            <span > Name:</span> <input type="text" name="modname" /> 
           <br />

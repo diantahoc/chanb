@@ -7,7 +7,7 @@ Public Module DatabaseEngine
     Dim dbi As New DBInitializer
 
     Sub New()
-        If Not (dbType = "mysql" Or dbType = "mssql") Then Throw New Exception(dbTypeInvalid)
+        If Not (dbType = "mysql" Or dbType = "mssql") And isInstalled Then Throw New Exception(dbTypeInvalid)
     End Sub
 
     ''' <summary>

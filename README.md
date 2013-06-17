@@ -14,12 +14,11 @@ The website gets cleaned each while.
 Current Features
 ========
 
-* 4chan-like interface.
 * Auto updater.
 * Automatic set dumper (with file counting support).
 * Catalog.
 * Code and spoiler tags support.
-* Dual MS SQL and MySQL support.
+* Dual MS SQL or MySQL support. (Each one alone, not together)
 * Duplicate image checking support.
 * Integrated archive.
 * Installer.
@@ -32,13 +31,7 @@ Current Features
 * Smart Linking of duplicate images to the same real file, therefore reducing the consumed disk space.
 * Static mode.
 * SVG documents support.
-
-Warning
-========
-
-The following features, as of 2013/6/15, are broken or partially works.
-
-* Installer. ( Needs adjustments )
+* Video (WEBM) support.
 
 Planned features
 =================

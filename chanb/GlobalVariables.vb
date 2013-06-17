@@ -12,6 +12,7 @@
         If FileIO.FileSystem.DirectoryExists(ThreadStorageFolder) = False Then FileIO.FileSystem.CreateDirectory(ThreadStorageFolder)
         If FileIO.FileSystem.DirectoryExists(ArchivedTStorageFolder) = False Then FileIO.FileSystem.CreateDirectory(ArchivedTStorageFolder)
 
+        If StaticHTML Then ConvertArchivedThreadToHTML = True
     End Sub
 
 #Region "Board configuration"
@@ -33,14 +34,13 @@
     Public ResizeMethode As Integer = DI.ResizeMethod
     Public EnableArchive As Boolean = DI.EnableArchive
     Public DefaultModPowers As String = DI.DefaultModPowers  ' In that order: Ban, Delete, Toggle sticky, Toggle Locked, Edit post.
-    Public transmitRealFileName As Boolean = DI.TransmitRealFileName
     Public EnableSmilies As Boolean = DI.EnableSmilies
     Public CaptchaLevel As Integer = DI.CaptchaLevel
     Public EnableCaptcha As Boolean = DI.EnableCaptcha
     Public RemoveEXIFData As Boolean = DI.RemoveEXIFData
     Public StaticHTML As Boolean = DI.StaticMode
     Public EnableImpresonationProtection As Boolean = DI.EnableImpresonationProtection
-
+    Public ConvertArchivedThreadToHTML As Boolean = True
 
     ''' <summary>
     ''' Get application web root.
@@ -92,10 +92,13 @@
     Public ReadOnly ImageRotatorTemplate As String = DI.ImageRotatorTemplate
     Public ReadOnly FullPageTemplate As String = DI.FullPageTemplate
     Public ReadOnly CatalogItemTemplate As String = DI.CatalogItemTemplate
+    Public ReadOnly VideoItemTemplate As String = DI.VideoItemTemplate
 
     Public ReadOnly UserIDHtmlSPAN As String = "<span class='posteruid id_%UID%'>(ID: <span class='hand' title='%PO%.'>%UID%</span>)</span>".Replace("%PO%", posterIdstr)
     Public ReadOnly replyButtonHTML As String = "&nbsp;<span>[<a href='%POST LINK%' target='_blank' class='replylink'>%RE%</a>]</span>".Replace("%RE%", replyStr)
     Public ReadOnly noscriptItemHTML As String = "<a href='%IMAGE DL%' target='_blank'>%FILE NAME%<br/><img src='%THUMB_LINK%' style='width: 100px; height: 100px' /></a><br/>"
+
+    Public ReadOnly noscriptVideoHTML As String = "<a href='%VIDEO LINK%' target='_blank'>%FILE NAME%</a><br/>"
 
     Public ReadOnly modMenu As String() = {"<option value='banpost'>LANG</option>".Replace("LANG", banuserStr), "<option value='delpost'>LANG</option>".Replace("LANG", deletePostStr), "<option value='tgsticky'>LANG</option>".Replace("LANG", tgstickStr), "<option value='tglock'>LANG</option>".Replace("LANG", tglockStr), "<option value='editpost'>LANG</option>".Replace("LANG", EditpostStr)}
     Public ReadOnly modMenuNoscript As String() = {"<a href='modaction.aspx?action=banpost&id=%ID%'>LANG</a>".Replace("LANG", banuserStr), "<a href='modaction.aspx?action=delpost&id=%ID%'>LANG</a>".Replace("LANG", deletePostStr), "<a href='modaction.aspx?action=tgsticky&id=%ID%'>LANG</a>".Replace("LANG", tgstickStr), "<a href='modaction.aspx?action=tglock&id=%ID%'>LANG</a>".Replace("LANG", tglockStr), "<a href='modaction.aspx?action=editpost&id=%ID%'>LANG</a>".Replace("LANG", EditpostStr)}

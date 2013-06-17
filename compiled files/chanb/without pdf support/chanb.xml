@@ -6,15 +6,7 @@ chanb
 </name>
 </assembly>
 <members>
-<member name="F:chanb.test.form1">
-	<summary>
-form1 control.
-</summary>
-	<remarks>
-Auto-generated field.
-To modify move field declaration from designer file to code-behind file.
-</remarks>
-</member><member name="P:chanb.GlobalVariables.WebRoot">
+<member name="P:chanb.GlobalVariables.WebRoot">
 	<summary>
  Get application web root.
  </summary>
@@ -109,14 +101,6 @@ To modify move field declaration from designer file to code-behind file.
 	<summary>
   A strongly-typed resource class, for looking up localized strings, etc.
 </summary>
-</member><member name="F:chanb.oneth.form1">
-	<summary>
-form1 control.
-</summary>
-	<remarks>
-Auto-generated field.
-To modify move field declaration from designer file to code-behind file.
-</remarks>
 </member><member name="F:chanb._default.form1">
 	<summary>
 form1 control.
@@ -191,20 +175,6 @@ form1 control.
 Auto-generated field.
 To modify move field declaration from designer file to code-behind file.
 </remarks>
-</member><member name="M:chanb.GlobalFunctions.ReplyTo(System.Int32,chanb.OPData)">
-	<summary>
- Append a post to thread
- </summary>
-	<param name="id">id of the thread</param>
-	<param name="data">Poster data</param>
-	<remarks></remarks>
-</member><member name="M:chanb.GlobalFunctions.GetWpostList(System.Int32[])">
-	<summary>
- Retrive all ids over a single sql connection.
- </summary>
-	<param name="id"></param>
-	<returns></returns>
-	<remarks></remarks>
 </member><member name="M:chanb.GlobalFunctions.saveFile(System.Web.HttpPostedFile,System.Boolean)">
 	<summary>
  Save single file.
@@ -234,14 +204,6 @@ To modify move field declaration from designer file to code-behind file.
 	<param name="name"></param>
 	<returns></returns>
 	<remarks></remarks>
-</member><member name="M:chanb.GlobalFunctions.MatchBBCode(System.String,System.String)">
-	<summary>
- Get a list of all matches for a given bb code.
- </summary>
-	<param name="text"></param>
-	<param name="bbcode"></param>
-	<returns></returns>
-	<remarks></remarks>
 </member><member name="M:chanb.GlobalFunctions.GetStreamThreadHTML(System.Int32,chanb.HTMLParameters,System.Int32)">
 	<summary>
  Return a string for thread displayed in the main page.
@@ -257,6 +219,28 @@ To modify move field declaration from designer file to code-behind file.
  </summary>
 	<param name="threadID"></param>
 	<param name="p"></param>
+	<returns></returns>
+	<remarks></remarks>
+</member><member name="M:chanb.GlobalFunctions.ReplyTo(System.Int32,chanb.OPData)">
+	<summary>
+ Append a post to thread
+ </summary>
+	<param name="id">id of the thread</param>
+	<param name="data">Poster data</param>
+	<remarks></remarks>
+</member><member name="M:chanb.GlobalFunctions.GetWpostList(System.Int32[])">
+	<summary>
+ Retrive all ids over a single sql connection.
+ </summary>
+	<param name="id"></param>
+	<returns></returns>
+	<remarks></remarks>
+</member><member name="M:chanb.GlobalFunctions.MatchBBCode(System.String,System.String)">
+	<summary>
+ Get a list of all matches for a given bb code.
+ </summary>
+	<param name="text"></param>
+	<param name="bbcode"></param>
 	<returns></returns>
 	<remarks></remarks>
 </member><member name="F:chanb.modaction.form1">
@@ -275,14 +259,6 @@ form1 control.
 Auto-generated field.
 To modify move field declaration from designer file to code-behind file.
 </remarks>
-</member><member name="F:chanb._mod.Head1">
-	<summary>
-Head1 control.
-</summary>
-	<remarks>
-Auto-generated field.
-To modify move field declaration from designer file to code-behind file.
-</remarks>
 </member><member name="F:chanb.api.form1">
 	<summary>
 form1 control.
@@ -294,6 +270,14 @@ To modify move field declaration from designer file to code-behind file.
 </member><member name="F:chanb.arhive.form1">
 	<summary>
 form1 control.
+</summary>
+	<remarks>
+Auto-generated field.
+To modify move field declaration from designer file to code-behind file.
+</remarks>
+</member><member name="F:chanb._mod.Head1">
+	<summary>
+Head1 control.
 </summary>
 	<remarks>
 Auto-generated field.

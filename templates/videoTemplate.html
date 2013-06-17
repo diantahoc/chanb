@@ -1,0 +1,29 @@
+﻿<div class="%filec% focusitem %AN% %ID%" id="f%ID%">
+
+<div class="fileInfo">
+
+<span data-filename="%FILE NAME%" class="fileText" id="fT%ID%">
+
+<span onmouseover="showFullName('%ID%%IMAGE MD5%');" onmouseout="showShortName('%ID%%IMAGE MD5%');">
+<a id="file_full_name_%ID%%IMAGE MD5%" class="hide" href="%IMAGE TEXT DL%">%FILE NAME%</a>
+<a id="file_short_name_%ID%%IMAGE MD5%" class="hide" href="%IMAGE TEXT DL%">%FILE SNAME%</a>
+</span>
+
+<script type="text/javascript">showShortName('%ID%%IMAGE MD5%');</script>
+
+<noscript><a href="%IMAGE TEXT DL%">%FILE NAME%</a></noscript>
+
+<span style="color: rgb(0,0,0);"> - (%FILE SIZE%)</span>
+
+</span>
+
+</div>
+<div class="fileThumb">
+<video width="320" height="240" controls='' preload='auto'>
+  <source src="%VIDEO LINK%" type="video/%EXT%">
+  <span>%NO VIDEO SUPPORT%</span>
+</video>
+</div>
+<div class="mFileInfo mobile">%FILE SIZE% <br/>%IMAGE EXT%</div>
+
+</div>

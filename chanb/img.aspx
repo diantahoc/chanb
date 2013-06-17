@@ -42,6 +42,8 @@
                         Response.ContentType = "image/svg+xml"
                     Case "PDF"
                         Response.ContentType = "application/acrobat"
+                    Case "WEBM"
+                        Response.ContentType = "video/webm"
                     Case Else
                         Response.ContentType = "application/octet-stream"
                 End Select
@@ -94,6 +96,8 @@
                         Response.ContentType = "image/svg+xml"
                     Case "PDF"
                         Response.ContentType = "application/acrobat"
+                    Case "WEBM"
+                        Response.ContentType = "video/webm"
                     Case Else
                         Response.ContentType = "application/octet-stream"
                 End Select

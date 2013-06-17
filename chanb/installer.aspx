@@ -10,7 +10,7 @@
     Else
         Session("admin") = CStr(True)
     End If
-    'Session("admin") = CStr(True)
+    
     %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -20,6 +20,8 @@
     <title>Chanb Installer</title>
     <link rel="Stylesheet" href='yotsubab.css' />
     <script src="scripts.js" type="text/javascript" language="javascript"></script>
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/jquery-ui.min.js"></script>
 </head>
 <body>
 <form action="adminaction.aspx" method="post" enctype="multipart/form-data">
@@ -46,7 +48,7 @@
            
            <span>- Enter database server type:</span> 
            
-           <select id="dbType" name="dbType">
+           <select id="dbType" name="db" onchange="if (document.getElementById('dbType').value == 'mssql') { $('#mssqlExample').removeClass('hide'); $('#mysqlExample').addClass('hide'); } else {$('#mssqlExample').addClass('hide'); $('#mysqlExample').removeClass('hide'); };updateAttrb('testdbConnection','href','adminaction.aspx?action=testdbconnection&db='+  document.getElementById('dbType').value  + '&dbconnectionstring=' + document.getElementById('dbconnectionstring').value )">
            
            <option value="mssql">MS SQL</option>
            
@@ -60,6 +62,32 @@
            <input size="30px" id="dbconnectionstring" type="text" name="dbconnectionstring" onchange="updateAttrb('testdbConnection','href','adminaction.aspx?action=testdbconnection&db='+  document.getElementById('dbType').value  + '&dbconnectionstring=' + document.getElementById('dbconnectionstring').value )" class="form-text" />
            
            <a target="_blank" id='testdbConnection' href="#" >Test the connection</a>
+           
+           <br />
+           
+           <div id='mssqlExample'>
+           <span>- An MSSQL connection string should look like</span> 
+           <br />
+           <blockquote style="background: #EEEEEE; max-width: 600px;">
+           Server=myServerAddress;Database=myDataBase;User Id=myUsername;Password=myPassword;
+           </blockquote>
+           <span>Or</span>
+           <blockquote style="background: #EEEEEE; max-width: 600px;">
+           Data Source=Server IP Adresse,Server Port;Network Library=DBMSSOCN;Initial Catalog=myDataBase;User ID=myUsername;Password=myPassword;
+           </blockquote>
+           <a href='http://www.connectionstrings.com/sql-server-2008' target='_blank'>More info here</a>
+           </div>
+           
+           <div id='mysqlExample'>
+           <span>- A MySQL connection string should look like</span> 
+           <br />
+           <blockquote style="background: #EEEEEE; max-width: 600px;">
+           Server=myServerAddress;Port=3306;Database=myDataBase;Uid=myUsername;Pwd=myPassword;
+           </blockquote>
+           <a href='http://www.connectionstrings.com/mysql' target='_blank'>More info here</a>
+           </div>
+                  
+           <script>$('#mssqlExample').removeClass('hide'); $('#mysqlExample').addClass('hide');</script>
 </div> 
 <br />
 <br />
@@ -177,13 +205,6 @@
            <option>False</option>
            </select> 
            <br /><br />
-           
-           <span>- Transmit the real file name:</span>
-           <select name="transmitRealFileName">
-           <option>False</option>
-           <option>True</option>
-           </select> 
-           <br /><br />           
            
            <span>- Enable Captcha:</span>
            <select name="EnableCaptcha">

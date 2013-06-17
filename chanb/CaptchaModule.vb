@@ -287,7 +287,16 @@ Public Module CaptchaModule
 
                 Dim filelist As IO.FileInfo() = FileIO.FileSystem.GetDirectoryInfo(StorageFolder).GetFiles("*.jpg")
 
-                bgimage = Drawing.Image.FromFile(filelist.ElementAt(r.Next(0, filelist.Length - 1)).FullName)
+                If filelist.Length > 1 Then
+                    bgimage = Drawing.Image.FromFile(filelist.ElementAt(r.Next(0, filelist.Length - 1)).FullName)
+                Else
+                    bgimage = New Bitmap(150, 150)
+                    Dim gb As Graphics = Graphics.FromImage(bgimage)
+                    gb.Clear(Color.FromArgb(r.Next(0, 255), r.Next(0, 255), r.Next(0, 255)))
+                    gb.Dispose()
+                End If
+
+
 
 
                 Dim g As Graphics = Graphics.FromImage(bi)

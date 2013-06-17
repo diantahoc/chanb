@@ -53,6 +53,13 @@
         End Get
     End Property
 
+    Public ReadOnly Property VideoItemTemplate() As String
+        Get
+            Return IO.File.ReadAllText(chanbDLLROOT & "templates\videoTemplate.html")
+        End Get
+    End Property
+
+
     Public ReadOnly Property BoardTitle() As String
         Get
             If DataDB.KeyExist("boardtitle") = False Then
@@ -311,18 +318,6 @@
         End Get
     End Property
 
-    Public ReadOnly Property TransmitRealFileName() As Boolean
-        Get
-            If DataDB.KeyExist("TransmitRealFileName") = False Then
-                DataDB.AddKey("TransmitRealFileName", CStr(False))
-                DataDB.Save()
-                Return False
-            Else
-                Return CBool(DataDB.GetKey("TransmitRealFileName"))
-            End If
-        End Get
-    End Property
-
     Public ReadOnly Property EnableSmilies() As Boolean
         Get
             If DataDB.KeyExist("EnableSmilies") = False Then
@@ -409,10 +404,33 @@
         End Get
     End Property
 
+    Public ReadOnly Property ConvertArchivedThreadToHTML() As Boolean
+        Get
+            If DataDB.KeyExist("ConvertArchivedThreadToHTML") = False Then
+                DataDB.AddKey("ConvertArchivedThreadToHTML", CStr(True))
+                DataDB.Save()
+                Return True
+            Else
+                Return CBool(DataDB.GetKey("ConvertArchivedThreadToHTML"))
+            End If
+        End Get
+    End Property
+
     Public Sub UpdateSetting(ByVal name As String, ByVal newData As String)
         DataDB.AddKey(name, newData)
         DataDB.Save()
     End Sub
+
+    Public Sub UpdateSetting(ByVal name As String, ByVal newData As Integer)
+        DataDB.AddKey(name, CStr(newData))
+        DataDB.Save()
+    End Sub
+
+    Public Sub UpdateSetting(ByVal name As String, ByVal newData As Boolean)
+        DataDB.AddKey(name, CStr(newData))
+        DataDB.Save()
+    End Sub
+
 
 End Class
 

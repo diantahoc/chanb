@@ -16,26 +16,21 @@
 </div>
 %POSTING MODE%
 <div id="postdiv" align="center" class="%POSTDIVCLASS%">
-
 <form enctype="multipart/form-data" action="%ROOT%post.aspx" method="post" title="%LANG newthreadStr%">
 <input type="hidden" name="mode" value="%POST FORM MODE%" />
 <input type="hidden" name="threadid" value="%POST FORM TID%" />
-
 <table>
 <tbody>
-
 <tr>
     <th>%LANG nameString%</th>
     <td><input class="form-text" type="text" size="30" name="postername" value="%COOKIE NAME%" /></td>
 </tr>
-
 <tr>
 <th>%LANG emailString%</th>
 <td>
 <input class="form-text"  name="email" size="30" type="text" value="%COOKIE EMAIL%"/>
 </td>
 </tr>
-
 <tr>
 <th>%LANG subjectString%</th>
 <td><input class="form-text" style="float:left;" name="subject" size="30" type="text"/>
@@ -46,7 +41,6 @@
 </noscript>
 </td>
 </tr>
-
 <tr>
 <th>%LANG commentString%</th>
 <td><textarea class="form-textarea" name="comment" id="commentfield" rows="5" cols="35"></textarea></td>
@@ -61,9 +55,7 @@
     %ADD NEW FILES PHOLDER%
 </td>   
 </tr>
-
 <tr>
-
 <th>%LANG passwordStr%</th>
 <td><input class="form-text" name="password" id='formps' size="12" autocomplete="off" type="password" value="%SESSION PASSWORD%"  onfocus="showPassword('formps')" onunload="hidePassword('formps')" />
 <span>(%LANG FOR PD%)</span>
@@ -73,7 +65,6 @@
 </table>
 </form>
 </div>
-
 <div id="rulesdiv" align="center">
 <ul class="rules">
 <li><span>Maximum file size is %MAXIMUM FILE SIZE%.</span></li>
@@ -83,14 +74,12 @@
 <li><span>This website is for demonstrating a live preview of ChanB imageboard. Expect your post to be gone at any time.</span></li>
 </ul>
 </div>
-
 <div class="navLinks navLinksBot desktop">
 %RETURN BUTTON DESKTOP%
 [<a href="%ROOT%catalog.aspx">%LANG catalogStr%</a>] 
 [<a href="#bottom">%LANG bottomStr%</a>] 
 [<a href="archive.aspx">%LANG archiveStr%</a>]
 </div>
-
 <div class="navLinks mobile" style="margin-top: 10px;">
 %RETURN BUTTON MOBILE%
 <span class="mobileib button"><a href="#bottom">%LANG bottomStr%</a></span>
@@ -100,24 +89,17 @@
 </div>
 <hr />
 <div id="top"></div>
-
 <form id="delfrm" name="deletation" action="%ROOT%post.aspx" enctype="application/x-www-form-urlencoded" method="get">
-
 <div class="board">
-
 %BODY%
-
 </div>
-
 <div style="float: right;">
 <div class="deleteform desktop">
 <input type="password" class="form-text" name="deletePass" id='formdelP' value="%SESSION PASSWORD%" onfocus="showPassword('formdelP')" onunload="hidePassword('formdelP')"  />
 <input type="hidden" value="" id="ROD" name="mode" />
-
 <script type="text/javascript">
     document.write("<a id='scriptbutton1' class=\"form-button\" onclick=\"updatemode('%LANG deleteStr%');$(this).closest('form').submit();\">%LANG deleteStr%</a>\n<a id='scriptbutton2' class=\"form-button\" onclick=\"updatemode('%LANG reportStr%');$(this).closest('form').submit();\">%LANG reportStr%</a>");
 </script>
-
 <noscript>
 <input type="submit" name="mode" value="%LANG deleteStr%" />
 <input type="submit" name="mode" value="%LANG reportStr%" />
@@ -125,24 +107,19 @@
 </div>
 </div>
 </form>
-
-
 <div class="navLinks mobile" style="margin-top: 10px;">
-
 %RETURN BUTTON MOBILE%
 <span class="mobileib button"><a href="#top">%LANG topStr%</a></span>
 <span class="mobileib button"><a href="%ROOT%catalog.aspx">%LANG catalogStr%</a></span>
 <span class="mobileib button"><a href="javascript:document.location.reload();" id="refresh_bottom">%LANG refreshStr%</a></span>
 <span class="mobileib button"><a href="archive.aspx">%LANG archiveStr%</a></span>
 </div>
-
 <div class="navLinks navLinksBot desktop">
 %RETURN BUTTON DESKTOP%
 [<a href="%ROOT%catalog.aspx">%LANG catalogStr%</a>] 
 [<a href="#top">%LANG topStr%</a>] 
 [<a href="archive.aspx">%LANG archiveStr%</a>]
 </div>
-
 <br />
 %PAGES LIST%
 <div id="bottom"></div>

@@ -336,8 +336,6 @@ Public Module InstallActions
 
                 di.UpdateSetting("EnableArchive", CBool(Request.Item("EnableArchive")))
 
-                di.UpdateSetting("TransmitRealFileName", CBool(Request.Item("transmitRealFileName")))
-
                 di.UpdateSetting("EnableCaptcha", CBool(Request.Item("EnableCaptcha")))
 
                 di.UpdateSetting("CaptchaLevel", CInt(Request.Item("CaptchaLevel")))

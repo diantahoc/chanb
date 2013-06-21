@@ -51,6 +51,7 @@ Public Module DatabaseEngine
                 Query.Connection = i
                 Dim d As Integer = Query.ExecuteNonQuery
                 i.Close()
+                Query.Dispose()
                 Return d
             Case "mysql"
                 Dim i As New MySqlConnection(dbi.ConnectionString)
@@ -59,6 +60,7 @@ Public Module DatabaseEngine
                 Query.Prepare()
                 Dim d As Integer = Query.ExecuteNonQuery
                 i.Close()
+                Query.Dispose()
                 Return d
             Case Else
                 Return Nothing
@@ -76,10 +78,12 @@ Public Module DatabaseEngine
             Case "mssql"
                 Dim command As New SqlCommand(QueryText, CType(i, SqlConnection))
                 Dim d As Integer = command.ExecuteNonQuery
+                command.Dispose()
                 Return d
             Case "mysql"
                 Dim command As New MySqlCommand(QueryText, CType(i, MySqlConnection))
                 Dim d As Integer = command.ExecuteNonQuery
+                command.Dispose()
                 Return d
             Case Else
                 Return Nothing

@@ -1,35 +1,24 @@
 ﻿<div class="%filec% focusitem %AN% %ID%" id="f%ID%">
-
 <div class="fileInfo">
-
 <span data-filename="%FILE NAME%" class="fileText" id="fT%ID%">
-
 <span onmouseover="showFullName('%ID%%IMAGE MD5%');" onmouseout="showShortName('%ID%%IMAGE MD5%');">
 <a id="file_full_name_%ID%%IMAGE MD5%" class="hide" href="%IMAGE TEXT DL%">%FILE NAME%</a>
 <a id="file_short_name_%ID%%IMAGE MD5%" class="hide" href="%IMAGE TEXT DL%">%FILE SNAME%</a>
 </span>
 <script type="text/javascript">showShortName('%ID%%IMAGE MD5%');</script>
 <noscript><a href="%IMAGE TEXT DL%">%FILE NAME%</a></noscript>
-
 <span style="color: rgb(0,0,0);"> - (%FILE SIZE%, %IMAGE SIZE%) </span>
-
 </span>
 %Search Engine Links%
 </div>
-
 <a class="fileThumb" href="%IMAGE DL%" target="_blank">
-
 <!--onclick="showFull('%ID%%IMAGE MD5%','%IMAGE DL%')"--> 
 <img id="thumb%ID%%IMAGE MD5%" class="cimage" src="%THUMB_LINK%" alt="%IMAGE SIZE%" data-md5="%IMAGE MD5%" style="max-height: 250px; max-width: 250px;"/>
-
 <!--<img onclick="showThumb('%ID%%IMAGE MD5%')" id="full%ID%%IMAGE MD5%" />-->
-
 </a>
 <div class="mFileInfo mobile">%IMAGE SIZE% %FILE SIZE% <br/>%IMAGE EXT%</div>
-
 <!--<script type="text/javascript">
     $(".fileThumb").removeAttr("target");
     $(".fileThumb").removeAttr("href");
 </script>-->
-
 </div>

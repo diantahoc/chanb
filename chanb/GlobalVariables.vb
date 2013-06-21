@@ -85,17 +85,19 @@
 #Region "HTML Templates"
 
 
-    Public ReadOnly ReplyPostTemplate As String = DI.ReplyPostTemplate
-    Public ReadOnly ImageTemplate As String = DI.ImageTemplate
-    Public ReadOnly OPPostTemplate As String = DI.OPPostTemplate
-    Public ReadOnly ThreadTemplate As String = DI.ThreadTemplate
-    Public ReadOnly ImageRotatorTemplate As String = DI.ImageRotatorTemplate
-    Public ReadOnly FullPageTemplate As String = DI.FullPageTemplate
-    Public ReadOnly CatalogItemTemplate As String = DI.CatalogItemTemplate
-    Public ReadOnly VideoItemTemplate As String = DI.VideoItemTemplate
+    Public ReadOnly ReplyPostTemplate As String = DI.ReplyPostTemplate.Replace(vbNewLine, String.Empty)
+    Public ReadOnly ImageTemplate As String = DI.ImageTemplate.Replace(vbNewLine, String.Empty)
+    Public ReadOnly OPPostTemplate As String = DI.OPPostTemplate.Replace(vbNewLine, String.Empty)
+    Public ReadOnly ThreadTemplate As String = DI.ThreadTemplate.Replace(vbNewLine, String.Empty)
+    Public ReadOnly FilesRotatorTemplate As String = DI.FilesRotatorTemplate.Replace(vbNewLine, String.Empty)
+    Public ReadOnly FullPageTemplate As String = DI.FullPageTemplate.Replace(vbNewLine, String.Empty)
+    Public ReadOnly CatalogItemTemplate As String = DI.CatalogItemTemplate.Replace(vbNewLine, String.Empty)
+    Public ReadOnly VideoItemTemplate As String = DI.VideoItemTemplate.Replace(vbNewLine, String.Empty)
 
-    Public ReadOnly UserIDHtmlSPAN As String = "<span class='posteruid id_%UID%'>(ID: <span class='hand' title='%PO%.'>%UID%</span>)</span>".Replace("%PO%", posterIdstr)
+    Public ReadOnly UserIDHtmlSPAN As String = "<span class='posteruid id_%UID%'>(ID: <span class='hand' onclick=""higlightID('%UID%')"" title='%PO%.'>%UID%</span>)</span>".Replace("%PO%", higlightPostByThisIDStr)
+
     Public ReadOnly replyButtonHTML As String = "&nbsp;<span>[<a href='%POST LINK%' target='_blank' class='replylink'>%RE%</a>]</span>".Replace("%RE%", replyStr)
+
     Public ReadOnly noscriptItemHTML As String = "<a href='%IMAGE DL%' target='_blank'>%FILE NAME%<br/><img src='%THUMB_LINK%' style='width: 100px; height: 100px' /></a><br/>"
 
     Public ReadOnly noscriptVideoHTML As String = "<a href='%VIDEO LINK%' target='_blank'>%FILE NAME%</a><br/>"
@@ -103,7 +105,7 @@
     Public ReadOnly modMenu As String() = {"<option value='banpost'>LANG</option>".Replace("LANG", banuserStr), "<option value='delpost'>LANG</option>".Replace("LANG", deletePostStr), "<option value='tgsticky'>LANG</option>".Replace("LANG", tgstickStr), "<option value='tglock'>LANG</option>".Replace("LANG", tglockStr), "<option value='editpost'>LANG</option>".Replace("LANG", EditpostStr)}
     Public ReadOnly modMenuNoscript As String() = {"<a href='modaction.aspx?action=banpost&id=%ID%'>LANG</a>".Replace("LANG", banuserStr), "<a href='modaction.aspx?action=delpost&id=%ID%'>LANG</a>".Replace("LANG", deletePostStr), "<a href='modaction.aspx?action=tgsticky&id=%ID%'>LANG</a>".Replace("LANG", tgstickStr), "<a href='modaction.aspx?action=tglock&id=%ID%'>LANG</a>".Replace("LANG", tglockStr), "<a href='modaction.aspx?action=editpost&id=%ID%'>LANG</a>".Replace("LANG", EditpostStr)}
 
-    Public ReadOnly bannedMessageHTML As String = "<br><strong style=''color: red;''>%MES%</strong>".Replace("%MES%", banMsgStr)
+    Public ReadOnly bannedMessageHTML As String = "<br><strong style='color: red;'>%MES%</strong>".Replace("%MES%", banMsgStr)
 
     Public ReadOnly GenericMessageTemplate As String = "<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='en'><head><title>%MSG TITLE%</title><link rel='Stylesheet' href='yotsubab.css' /><meta HTTP-EQUIV='REFRESH' content='%REDIRECT DELAY%; url=%REDIRECT URL%'></head><body><div align='center'><span style='color: #%C%; font-size: xx-large'>%MESSAGE TEXT%</span></div></body></html>"
 

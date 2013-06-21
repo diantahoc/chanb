@@ -35,7 +35,7 @@
         End Get
     End Property
 
-    Public ReadOnly Property ImageRotatorTemplate() As String
+    Public ReadOnly Property FilesRotatorTemplate() As String
         Get
             Return IO.File.ReadAllText(chanbDLLROOT & "templates\rotatortemplate.html")
         End Get

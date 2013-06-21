@@ -9,7 +9,7 @@ Public Module JSONApi
             ' sb.Append("{")
             For Each x In GetWpostList(ids)
                 ' sb.Append("""post" & CStr(x.PostID) & """: """)
-                sb.Append(GetSingleReplyHTML(x, p))
+                sb.Append(GetPostHTML(x, p))
                 ' sb.Append(""",")
             Next
             'Dim st As String = sb.ToString

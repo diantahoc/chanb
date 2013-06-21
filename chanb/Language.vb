@@ -34,7 +34,7 @@
     Public ReadOnly tgstickStr As String = "Toggle sticky"
     Public ReadOnly tglockStr As String = "Toggle Lock"
     Public ReadOnly EditpostStr As String = "Edit post"
-    Public ReadOnly PosterIdStr As String = "Poster ID"
+    Public ReadOnly higlightPostByThisIDStr As String = "Higlight posts by this ID"
     Public ReadOnly TopStr As String = "Top"
     Public ReadOnly CatalogStr As String = "Catalog"
     Public ReadOnly RefreshStr As String = "Refresh"

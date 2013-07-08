@@ -171,6 +171,14 @@ To modify move field declaration from designer file to code-behind file.
 	<param name="i"></param>
 	<returns>ChanbQuery</returns>
 	<remarks></remarks>
+</member><member name="F:chanb.deletepost.form1">
+	<summary>
+form1 control.
+</summary>
+	<remarks>
+Auto-generated field.
+To modify move field declaration from designer file to code-behind file.
+</remarks>
 </member><member name="F:chanb.installer.form1">
 	<summary>
 form1 control.
@@ -210,7 +218,7 @@ To modify move field declaration from designer file to code-behind file.
 	<remarks></remarks>
 </member><member name="M:chanb.GlobalFunctions.GetStreamThreadHTML(System.Int32,chanb.HTMLParameters,System.Int32)">
 	<summary>
- Return a string for thread displayed in the main page.
+ Return a string for threads displayed in the main page.
  </summary>
 	<param name="threadID"></param>
 	<param name="para"></param>
@@ -221,10 +229,6 @@ To modify move field declaration from designer file to code-behind file.
 	<summary>
  Get the complete thread html, over a single SQL query.
  </summary>
-	<param name="threadID"></param>
-	<param name="p"></param>
-	<returns></returns>
-	<remarks></remarks>
 </member><member name="M:chanb.GlobalFunctions.ReplyTo(System.Int32,chanb.OPData)">
 	<summary>
  Append a post to thread
@@ -282,6 +286,14 @@ To modify move field declaration from designer file to code-behind file.
 </member><member name="F:chanb._mod.Head1">
 	<summary>
 Head1 control.
+</summary>
+	<remarks>
+Auto-generated field.
+To modify move field declaration from designer file to code-behind file.
+</remarks>
+</member><member name="F:chanb.report.form1">
+	<summary>
+form1 control.
 </summary>
 	<remarks>
 Auto-generated field.

@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+<title>%BTITLE%</title>
+
+<link rel="Stylesheet" href="%ROOT%yotsubab.css" />
+<link rel="Stylesheet" href="%ROOT%mobile.css" />
+<script src="%ROOT%scripts.js" type="text/javascript" language="javascript"></script>
+<script type="text/javascript" src="%ROOT%js/jquery.min.js"></script>
+<script type="text/javascript" src="%ROOT%js/jquery-ui.min.js"></script>
+</head>
+<body>
+<div class="boardBanner"> 
+<div class="boardTitle">%BTITLE%</div>
+<div class="boardSubtitle">%BDESC%</div>
+</div>
+<hr />
+<form action="%ROOT%post.aspx" method="post" enctype="application/x-www-form-urlencoded" >
+<input type="hidden" name="mode" value="delete" />
+<input type="hidden" name="id" value="%ID%" />
+
+
+<span style="color:red" class="%badp%">%LANG wrongPasswordStr%</span>
+<br />
+<span>%LANG enterPassword%</span>
+
+<input class="form-text" type="text" name="deletepass" />
+
+<div class="%CP%">
+<br />
+<span style="color:red" class="%badc%">%LANG wrongCaptchaStr%</span>
+<br />
+<img id="captchaImage" src="%ROOT%captcha.aspx" alt="%LANG verificationStr%" />
+<a onclick="refreshcaptcha();"><img alt="refresh" style="cursor:pointer; min-height:30px; min-width:30px;" src="/res/refresh.png" id="refreshcaptchabutton" onmousemove="focusRCB();" onmouseout="unfocusRCB();"></a><br />
+<span>%LANG verificationStr%</span>
+<input type="text" class="form-text" name="usercaptcha" />
+</div>
+
+<br />
+<div>
+<a href="#" onclick="$(this).closest('form').submit();" class="hide form-button" id="q">%LANG deleteStr%</a>
+<script>$("#q").removeClass("hide");</script>
+
+<noscript><input type="sumbit" value="%LANG deleteStr%" /></noscript>
+</div>
+
+</form>
+<hr />
+<div id="absbot" class="absBotText"><span>%FOOTER TEXT%</span></div>
+</body>
+</html>

@@ -31,7 +31,7 @@ Current Features
 * Smart Linking of duplicate images to the same real file, therefore reducing the consumed disk space.
 * Static mode.
 * SVG documents support.
-* Video (WEBM) support.
+* Video (WEBM) and audio (MP3, AAC) support.
 
 Planned features
 =================
@@ -42,7 +42,6 @@ Planned features
 * Online language adder and editor.
 * Multilanguage support.
 * Read and write JSON API.
-* Video (FLV, WEBM, MP4) and audio (MP3, FLAC) support.
 
 How to install
 ==============

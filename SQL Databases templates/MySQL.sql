@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 04, 2013 at 10:51 PM
+-- Generation Time: Jul 08, 2013 at 07:52 AM
 -- Server version: 5.1.51
 -- PHP Version: 5.3.3
 
@@ -16,7 +16,7 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 /*!40101 SET NAMES utf8 */;
 
 --
--- Database: `channelboard`
+-- Database: `chanbtest`
 --
 
 -- --------------------------------------------------------
@@ -128,11 +128,13 @@ CREATE TABLE IF NOT EXISTS `mods` (
 --
 
 CREATE TABLE IF NOT EXISTS `reports` (
-  `ID` int(11) NOT NULL,
-  `postID` int(11) NOT NULL,
-  `reporterIP` text NOT NULL,
-  `time` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `postID` int(11) DEFAULT NULL,
+  `reporterIP` text,
+  `time` datetime DEFAULT NULL,
+  `comment` text,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 --
 -- Dumping data for table `reports`

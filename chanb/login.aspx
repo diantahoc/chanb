@@ -12,18 +12,20 @@
             Response.Write(FormatHTMLMessage(chanb.Language.modLoginSucess, chanb.Language.modLoginSucess, "default.aspx", "2", False))
         End If
     End If
-    
-  
-    
-        %>
+%>
 
 <html xmlns="http://www.w3.org/1999/xhtml" >
 <head>
-    <title>Mod login</title>
+    <title>Channel Board login</title>
+    <link rel="Stylesheet" href="sysadmin.css" />
 </head>
 <body>
-    <form id="form1" action="login.aspx">
-    <div>
+    <form action="login.aspx">
+    <div class="whitebox">
+    <table>
+    <tr></tr>
+    <tr></tr>
+    </table>
            <span > Name:</span> <input type="text" name="modname" /> 
           <br />
            <span > Password:</span> <input type="text" name="modpass" /> 

@@ -153,27 +153,13 @@ function getAttrb(id, name) {
 }
 
 function showFullName(id) {
-    $("#file_short_name_" + id).addClass("hide");
-    $("#file_full_name_" + id).removeClass("hide");
+    $("#fsn" + id).addClass("hide");
+    $("#ffn" + id).removeClass("hide");
 }
 
-function showShortName(id, f) {
-    $("#file_full_name_" + id).addClass("hide");
-    $("#file_short_name_" + id).removeClass("hide");
-}
-
-function showFull(md5, src) {
-
-    document.getElementById("full" + md5).setAttribute("src", src);
-    $("#thumb" + md5).addClass("hide");
-    $("#full" + md5).removeClass("hide");
-}
-
-
-function showThumb(md5) {
-
-    $("#thumb" + md5).removeClass("hide");
-    $("#full" + md5).addClass("hide");
+function showShortName(id) {
+    $("#ffn" + id).addClass("hide");
+    $("#fsn" + id).removeClass("hide");
 }
 
 function showPassword(id) {
@@ -181,7 +167,7 @@ function showPassword(id) {
     document.getElementById(id).setAttribute("type", "text");
 }
 
-function hidePassword(id) { 
+function hidePassword(id) {
     document.getElementById(id).setAttribute("type", "password");
 }
 
@@ -227,4 +213,259 @@ function higlightID(id) {
 
         selectedId = id;
     }
+}
+
+function checkforNSFWImages() {
+
+    var items = $(".cimage");
+
+    for (i = 0; i < items.length; i++) {
+
+        var id = items[i].getAttribute('id').toString()
+
+        var nude = new getNudeObject();
+
+        nude.load(id);
+
+        nude.scan();
+
+    }
+
+}
+
+function getNudeObject() {
+
+
+    var nude = new (function() {
+        // private var definition
+        var imageID;
+        var canvasId = Math.random().toString(10);
+        var canvas = null,
+            ctx = null,
+            resultFn = null,
+        // private functions
+            initCanvas = function() {
+                canvas = document.createElement("canvas");
+                // the canvas should not be visible
+                canvas.style.display = "none";
+                canvas.setAttribute("id", canvasId);
+                var b = document.getElementsByTagName("body")[0];
+                b.appendChild(canvas);
+                ctx = document.getElementById(canvasId).getContext("2d");
+            },
+            loadImageById = function(id) {
+                // get the image
+                imageID = id;
+                var img = document.getElementById(id);
+                // apply the width and height to the canvas element
+                document.getElementById(canvasId).width = img.width;
+                document.getElementById(canvasId).height = img.height;
+                // reset the result function
+                resultFn = null;
+                // draw the image into the canvas element
+                ctx.drawImage(img, 0, 0);
+
+            },
+            loadImageByElement = function(element) {
+                // apply width and height to the canvas element
+                // make sure you set width and height at the element
+                canvas.width = element.width;
+                canvas.height = element.height;
+                // reset result function
+                resultFn = null;
+                // draw the image/video element into the canvas
+                ctx.drawImage(element, 0, 0);
+            },
+            scanImage = function() {
+                // get the image data
+                var image = ctx.getImageData(0, 0, canvas.width, canvas.height),
+                    imageData = image.data;
+
+                var myWorker = new Worker('js/worker.nude.js'),
+                    message = [imageData, document.getElementById(canvasId).width, document.getElementById(canvasId).height];
+                myWorker.postMessage(message);
+                myWorker.onmessage = function(event) {
+                    resultHandler(event.data);
+                }
+            },
+            cleanup = function() {
+                // destroy the image canvas
+                var b = document.getElementsByTagName("body")[0];
+                b.removeChild(document.getElementById(canvasId));
+                canvas = null;
+            },
+        // the result handler will be executed when the analysing process is done
+        // the result contains true (it is nude) or false (it is not nude)
+        // if the user passed an result function to the scan function, the result function will be executed
+            resultHandler = function(result) {
+
+                if (resultFn) {
+                    resultFn(result);
+                } else {
+                    if (result) {
+                        //  Pixastic.process(image, "blurfast", { amount: 1.0 });
+                        $("#" + imageID).addClass("blur");
+                    }
+                }
+                cleanup();
+            }
+        // public interface
+        return {
+            init: function() {
+                initCanvas();
+                // if web worker are not supported, append the noworker script
+                if (!!!window.Worker) {
+                    document.write(unescape("%3Cscript src='js/noworker.nude.js' type='text/javascript'%3E%3C/script%3E"));
+                }
+
+            },
+            load: function(param) {
+                if (typeof (param) == "string") {
+                    loadImageById(param);
+                } else {
+                    loadImageByElement(param);
+                }
+            },
+            scan: function(fn) {
+                if (arguments.length > 0 && typeof (arguments[0]) == "function") {
+                    resultFn = fn;
+                }
+                scanImage();
+            }
+        };
+    })();
+    nude.init();
+    return nude;
+}
+
+
+function backlink() {
+    var i, j, ii, jj, tid, bl, qb, t, form, backlinks, linklist, replies;
+
+    form = document.getElementById("delfrm");
+
+    if (!(replies = form.getElementsByClassName('reply'))) {
+        return;
+    }
+
+    for (i = 0, j = replies.length; i < j; ++i) {
+        if (!(backlinks = replies[i].getElementsByClassName('backlink'))) {
+            continue;
+        }
+        linklist = {};
+        for (ii = 0, jj = backlinks.length; ii < jj; ++ii) {
+            tid = backlinks[ii].getAttribute('href').split(/#/);
+            if (!(t = document.getElementById(tid[1]))) {
+                continue;
+            }
+            //			if (t.tagName == 'DIV') {
+            //				backlinks[ii].textContent = '>>OP';
+            //			}
+            if (linklist[tid[1]]) {
+                continue;
+            }
+            bl = document.createElement('a');
+            bl.className = 'backlink';
+            bl.href = '#' + replies[i].id;
+            bl.textContent = '>>' + replies[i].id.slice(1);
+            if (!(qb = t.getElementsByClassName('quoted-by')[0])) {
+                linklist[tid[1]] = true;
+                qb = document.createElement('div');
+                qb.className = 'quoted-by';
+                qb.textContent = '';
+                qb.appendChild(bl);
+                t.insertBefore(qb, t.getElementsByTagName('blockquote')[0]);
+            }
+            else {
+                linklist[tid[1]] = true;
+                qb.appendChild(document.createTextNode(' '));
+                qb.appendChild(bl);
+            }
+        }
+    }
+}
+
+function beautifiesName(id) {
+
+    var shortnameAnchor = document.createElement("a");
+    var fullnameAnchor = $("#" + id);
+    var realId = id.toString().substr(3)
+    //hide the full name 
+    fullnameAnchor.addClass("hide");
+    //get the span parent
+    var parent = fullnameAnchor.parent();
+    //setup the short name anchor
+    shortnameAnchor.setAttribute("href", fullnameAnchor.attr("href").toString() );
+    shortnameAnchor.setAttribute("id", "fsn" + realId);
+    if (fullnameAnchor.text().length > 20) {shortnameAnchor.text = fullnameAnchor.text().substr(0, 17) + "..."; } else {shortnameAnchor.text = fullnameAnchor.text();}
+    //add it
+    parent.append(shortnameAnchor);
+
+    $(parent).mouseover(function() { showFullName(realId); });
+    $(parent).mouseout(function() { showShortName(realId); });
+
+   
+}
+
+function beautifiesNames() {
+    var items = $(".fn");
+    for (i = 0; i < items.length; i++) {
+        beautifiesName(items[i].getAttribute("id"))
+    }
+}
+
+function snas() {
+    $("#pname").attr("value", getCookie("postername"));
+    $("#pemail").attr("value", getCookie("posteremail"));
+    if (getCookie("posterpass") == "") { setCookie("posterpass", $("#formps").attr("value"), 3); } else { $("#formps").attr("value", getCookie("posterpass")); $("#formdelP").attr("value", getCookie("posterpass")); }
+
+    var WDLitems = $(".wdlink");
+    for (i = 0; i < WDLitems.length; i++) {
+        wdLink($(WDLitems[i]));
+     }
+}
+
+function getCookie(name) {
+    with (document.cookie) {
+        var regexp = new RegExp("(^|;\\s+)" + name + "=(.*?)(;|$)");
+        var hit = regexp.exec(document.cookie);
+        if (hit && hit.length > 2) return decodeURIComponent(hit[2]);
+        else return '';
+    }
+}
+
+function setCookie(c_name, value, exdays) {
+    var exdate = new Date();
+    exdate.setDate(exdate.getDate() + exdays);
+    var c_value = escape(value) + ((exdays == null) ? "" : "; expires=" + exdate.toUTCString());
+    document.cookie = c_name + "=" + c_value;
+}
+
+function beforePost() {
+    setCookie("postername", $("#pname").val(), 3);
+    setCookie("posterpass", $("#formps").val(), 3);
+    setCookie("posteremail", $("#pemail").val(), 3);
+}
+
+
+function wdLink(anchor) {
+    var link = anchor.attr("href").toString();
+    var newlink = "javascript:openWindow('" + link + "','" + anchor.text() + "')";
+
+    
+    anchor.attr("href", newlink);
+    anchor.removeAttr("target");
+    
+}
+
+function openWindow(link,title) { 
+    var width  = 750;
+	var height = 250;
+	var left   = (screen.width  - width)/2;
+	var top    = (screen.height - height)/2;
+	var params = 'width='+width+', height='+height+', top='+top+', left='+left+', directories=no, location=no, menubar=no, resizable=no, scrollbars=no, status=yes, toolbar=no';
+	newwin=window.open(link,title, params);
+	if (window.focus) {
+		newwin.focus()
+	}
 }

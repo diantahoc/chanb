@@ -3,11 +3,13 @@
 <head>
 <title>%BTITLE%</title>
 %META NO CACHE%
-<link rel="Stylesheet" href='%ROOT%yotsubab.css' />
+<link rel="Stylesheet" href="%ROOT%yotsubab.css" />
 <link rel="Stylesheet" href="%ROOT%mobile.css" />
-<script src="%ROOT%scripts.js" type="text/javascript" language="javascript"></script>
+<script src="%ROOT%scripts.js" type="text/javascript"></script>
 <script type="text/javascript" src="%ROOT%js/jquery.min.js"></script>
 <script type="text/javascript" src="%ROOT%js/jquery-ui.min.js"></script>
+<script type="text/javascript" src="%ROOT%js/worker.nude.js"></script>
+<script>    $(document).ready(function() { backlink(); snas(); beautifiesNames(); checkforNSFWImages(); });</script>
 </head> 
 <body>
 <div class="boardBanner"> 
@@ -16,26 +18,26 @@
 </div>
 %POSTING MODE%
 <div id="postdiv" align="center" class="%POSTDIVCLASS%">
-<form enctype="multipart/form-data" action="%ROOT%post.aspx" method="post" title="%LANG newthreadStr%">
+<form enctype="multipart/form-data" action="%ROOT%post.aspx" method="post" title="%POST FORM BUTTON%">
 <input type="hidden" name="mode" value="%POST FORM MODE%" />
 <input type="hidden" name="threadid" value="%POST FORM TID%" />
 <table>
 <tbody>
 <tr>
     <th>%LANG nameString%</th>
-    <td><input class="form-text" type="text" size="30" name="postername" value="%COOKIE NAME%" /></td>
+    <td><input class="form-text" type="text" size="30" name="postername" id="pname" /></td>
 </tr>
 <tr>
 <th>%LANG emailString%</th>
 <td>
-<input class="form-text"  name="email" size="30" type="text" value="%COOKIE EMAIL%"/>
+<input class="form-text" name="email" size="30" type="text" id="pemail"/>
 </td>
 </tr>
 <tr>
 <th>%LANG subjectString%</th>
 <td><input class="form-text" style="float:left;" name="subject" size="30" type="text"/>
-<a id='submitFormjs' class="form-button hide" onclick="$(this).closest('form').submit();">%POST FORM BUTTON%</a>
-<script type="text/javascript"> $("#submitFormjs").removeClass("hide");</script>
+<a id='submitFormjs' class="form-button hide" onclick="beforePost();$(this).closest('form').submit();">%POST FORM BUTTON%</a>
+<script type="text/javascript">$("#submitFormjs").removeClass("hide");</script>
 <noscript>
 <input style="margin-left:2px;" name="post" value="%POST FORM BUTTON%" type="submit"/>
 </noscript>
@@ -47,13 +49,15 @@
 </tr>
 %CAPTCHA PHOLDER%
 <tr>
-<th>%LANG fileStr%</th>
+<th>
+%LANG fileStr%
+</th>
 <td>
     <div id="files" >
-    <input type="file" name="ufile" class="file" multiple-files="true" />
+    <input type="file" name="ufile"/>
     </div>  
     %ADD NEW FILES PHOLDER%
-</td>   
+    </td>   
 </tr>
 <tr>
 <th>%LANG passwordStr%</th>
@@ -68,7 +72,7 @@
 <div id="rulesdiv" align="center">
 <ul class="rules">
 <li><span>Maximum file size is %MAXIMUM FILE SIZE%.</span></li>
-<li><span>Supported file types are : JPG, JPEG, BMP, PNG, SVG, and PDF.</span></li>
+<li><span>Supported file types are : JPG, JPEG, BMP, PNG, PDF, WEBM, MP3, OGG and SVG.</span></li>
 %THREAD COUNT%
 %POSTING RULES%
 <li><span>This website is for demonstrating a live preview of ChanB imageboard. Expect your post to be gone at any time.</span></li>
@@ -89,22 +93,11 @@
 </div>
 <hr />
 <div id="top"></div>
-<form id="delfrm" name="deletation" action="%ROOT%post.aspx" enctype="application/x-www-form-urlencoded" method="get">
+<form id="delfrm" name="deletation" action="%ROOT%post.aspx" enctype="application/x-www-form-urlencoded" method="post">
 <div class="board">
 %BODY%
 </div>
 <div style="float: right;">
-<div class="deleteform desktop">
-<input type="password" class="form-text" name="deletePass" id='formdelP' value="%SESSION PASSWORD%" onfocus="showPassword('formdelP')" onunload="hidePassword('formdelP')"  />
-<input type="hidden" value="" id="ROD" name="mode" />
-<script type="text/javascript">
-    document.write("<a id='scriptbutton1' class=\"form-button\" onclick=\"updatemode('%LANG deleteStr%');$(this).closest('form').submit();\">%LANG deleteStr%</a>\n<a id='scriptbutton2' class=\"form-button\" onclick=\"updatemode('%LANG reportStr%');$(this).closest('form').submit();\">%LANG reportStr%</a>");
-</script>
-<noscript>
-<input type="submit" name="mode" value="%LANG deleteStr%" />
-<input type="submit" name="mode" value="%LANG reportStr%" />
-</noscript>
-</div>
 </div>
 </form>
 <div class="navLinks mobile" style="margin-top: 10px;">

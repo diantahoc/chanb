@@ -59,6 +59,23 @@
         End Get
     End Property
 
+    Public ReadOnly Property AudioItemTemplate() As String
+        Get
+            Return IO.File.ReadAllText(chanbDLLROOT & "templates\audiofileTemplate.html")
+        End Get
+    End Property
+
+    Public ReadOnly Property ReportPageTemplate() As String
+        Get
+            Return IO.File.ReadAllText(chanbDLLROOT & "templates\reportPage.html")
+        End Get
+    End Property
+
+    Public ReadOnly Property DeletePostPageTemplate() As String
+        Get
+            Return IO.File.ReadAllText(chanbDLLROOT & "templates\deletepostPage.html")
+        End Get
+    End Property
 
     Public ReadOnly Property BoardTitle() As String
         Get

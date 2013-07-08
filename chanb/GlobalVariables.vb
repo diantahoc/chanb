@@ -1,4 +1,6 @@
-﻿Public Module GlobalVariables
+﻿#Const TripCodeSupport = False
+
+Public Module GlobalVariables
 
     Dim DI As New DataInitializer
 
@@ -93,6 +95,10 @@
     Public ReadOnly FullPageTemplate As String = DI.FullPageTemplate.Replace(vbNewLine, String.Empty)
     Public ReadOnly CatalogItemTemplate As String = DI.CatalogItemTemplate.Replace(vbNewLine, String.Empty)
     Public ReadOnly VideoItemTemplate As String = DI.VideoItemTemplate.Replace(vbNewLine, String.Empty)
+    Public ReadOnly AudioItemTemplate As String = DI.AudioItemTemplate.Replace(vbNewLine, String.Empty)
+    Public ReadOnly ReportPageTemplate As String = DI.ReportPageTemplate.Replace(vbNewLine, String.Empty)
+    Public ReadOnly DeletePostPageTemplate As String = DI.DeletePostPageTemplate.Replace(vbNewLine, String.Empty)
+
 
     Public ReadOnly UserIDHtmlSPAN As String = "<span class='posteruid id_%UID%'>(ID: <span class='hand' onclick=""higlightID('%UID%')"" title='%PO%.'>%UID%</span>)</span>".Replace("%PO%", higlightPostByThisIDStr)
 
@@ -100,20 +106,24 @@
 
     Public ReadOnly noscriptItemHTML As String = "<a href='%IMAGE DL%' target='_blank'>%FILE NAME%<br/><img src='%THUMB_LINK%' style='width: 100px; height: 100px' /></a><br/>"
 
-    Public ReadOnly noscriptVideoHTML As String = "<a href='%VIDEO LINK%' target='_blank'>%FILE NAME%</a><br/>"
+    Public ReadOnly noscriptVideoHTML As String = "<a href='%VIDEO LINK%' target='_blank'>%FILE NAME%</a>"
+    Public ReadOnly noscriptAudioHTML As String = "<a href='%LINK%' target='_blank'>%FILE NAME%</a>"
 
-    Public ReadOnly modMenu As String() = {"<option value='banpost'>LANG</option>".Replace("LANG", banuserStr), "<option value='delpost'>LANG</option>".Replace("LANG", deletePostStr), "<option value='tgsticky'>LANG</option>".Replace("LANG", tgstickStr), "<option value='tglock'>LANG</option>".Replace("LANG", tglockStr), "<option value='editpost'>LANG</option>".Replace("LANG", EditpostStr)}
-    Public ReadOnly modMenuNoscript As String() = {"<a href='modaction.aspx?action=banpost&id=%ID%'>LANG</a>".Replace("LANG", banuserStr), "<a href='modaction.aspx?action=delpost&id=%ID%'>LANG</a>".Replace("LANG", deletePostStr), "<a href='modaction.aspx?action=tgsticky&id=%ID%'>LANG</a>".Replace("LANG", tgstickStr), "<a href='modaction.aspx?action=tglock&id=%ID%'>LANG</a>".Replace("LANG", tglockStr), "<a href='modaction.aspx?action=editpost&id=%ID%'>LANG</a>".Replace("LANG", EditpostStr)}
+    Public modMenuItems As String() = {"<li><a href=""%WEBROOT%modaction.aspx?action=banpost&id=%ID%"" target=""_blank"">$</a></li>".Replace("$", banuserStr), _
+                            "<li><a href=""%WEBROOT%modaction.aspx?action=delpost&id=%ID%"" target=""_blank"">$</a></li>".Replace("$", deletePostStr), _
+                            "<li><a href=""%WEBROOT%modaction.aspx?action=tgsticky&id=%ID%"" target=""_blank"">$</a></li>".Replace("$", tgstickStr), _
+                            "<li><a href=""%WEBROOT%modaction.aspx?action=tglock&id=%ID%"" target=""_blank"">$</a></li>".Replace("$", tglockStr), _
+                            "<li><a href=""%WEBROOT%modaction.aspx?action=editpost&id=%ID%"" target=""_blank"">$</a></li>".Replace("$", EditpostStr)}
 
-    Public ReadOnly bannedMessageHTML As String = "<br><strong style='color: red;'>%MES%</strong>".Replace("%MES%", banMsgStr)
+    Public ReadOnly bannedMessageHTML As String = "<strong style=""color: red;"">%MES%</strong>".Replace("%MES%", banMsgStr)
 
-    Public ReadOnly GenericMessageTemplate As String = "<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='en'><head><title>%MSG TITLE%</title><link rel='Stylesheet' href='yotsubab.css' /><meta HTTP-EQUIV='REFRESH' content='%REDIRECT DELAY%; url=%REDIRECT URL%'></head><body><div align='center'><span style='color: #%C%; font-size: xx-large'>%MESSAGE TEXT%</span></div></body></html>"
+    Public ReadOnly GenericMessageTemplate As String = "<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='en'><head><title>%MSG TITLE%</title><link rel=""Stylesheet"" href=""yotsubab.css"" /><meta HTTP-EQUIV=""REFRESH"" content=""%REDIRECT DELAY%; url=%REDIRECT URL%""></head><body><div align=""center""><span style=""color: #%C%; font-size: xx-large"">%MESSAGE TEXT%</span></div></body></html>"
 
-    Public ReadOnly postingModeReplyHtml As String = "<div class='postingMode desktop'><span>" & postingModstr & "</span></div>"
-    Public ReadOnly archiveNotice As String = "<div class='postingMode'><span>" & archiveNoticeStr & "</span></div>"
+    Public ReadOnly postingModeReplyHtml As String = "<div class=""postingMode desktop""><span>" & postingModstr & "</span></div>"
+    Public ReadOnly archiveNotice As String = "<div class=""postingMode""><span>" & archiveNoticeStr & "</span></div>"
 
     Public ReadOnly captchaTableEntryHtml As String = "<tr><th>" & verificationStr & "</th><td><img alt='" & CaptchaChallengeStr & "' id='captchaImage' src='" & WebRoot & "captcha.aspx' /><a onclick='refreshcaptcha();'><img alt='refresh' style='cursor:pointer; min-height:30px; min-width:30px;' src='" & WebRoot & "res/refresh.png' id='refreshcaptchabutton' onmousemove='focusRCB();' onmouseout='unfocusRCB();' /></a><br /><input id='usercaptcha' autocomplete='off' class='form-text' type='text' size ='30' name='usercaptcha' /></td></tr>"
-    Public ReadOnly addNewFileButtonHTML As String = "<input type='checkbox' name='finp' value='yes'>" & addEachFileInNewPostStr & "</input><br/><input type='checkbox' name='countf' value='yes'>" & countFilesStr & "</input><br/><a class='form-button' onclick='createUf();' >" & addAnotherFStr & "</a>"
+    Public ReadOnly addNewFileButtonHTML As String = "<input type=""checkbox"" name='finp' value=""yes"">" & addEachFileInNewPostStr & "</input><br/><input type=""checkbox"" name=""countf"" value=""yes"">" & countFilesStr & "</input><br/><a class=""form-button"" onclick=""createUf();"" >" & addAnotherFStr & "</a>"
 
     Public ReadOnly postingRulesHTML As String = "<li><span>Blank posts are not allowed.</span></li><li><span>Spoilers are suported under the [spoiler][/spoiler] tags.</span></li><li><span>You may highlight your code by using the [code][/code] tags. The [lang][/lang] tags are required in order to properly highlight your code. See a <a href='faq.aspx#codetags'>list</a> of supported languages.</span></li>"
     Public ReadOnly threadCountHTMLli As String = "<li><span>Currently there are % thread(s).</span></li>"
@@ -123,7 +133,10 @@
 
     Public ReadOnly searchEngineLinkList As String() = {"<a href='http://iqdb.org/?url=%THUMB_LINK%' target='_blank'>iqdb</a>", "<a href='http://www.google.com/searchbyimage?image_url=%THUMB_LINK%' target='_blank'>google</a>", "<a href='http://saucenao.com/search.php?db=999&url=%THUMB_LINK%' target='_blank'>saucenao</a>"}
 
+    Public ReadOnly reportReasons As String() = {"rulev$Rule violation", "illm$Illegal material", "spam$SPAM/Abuse", "nsfw$Nudity on SFW board"}
 
+    Public modPostName As String = "<strong style=""color: blue"">Moderator</strong>"
+    Public adminPostName As String = "<strong style=""color: red"">Administrator</strong>"
 
 #End Region
 

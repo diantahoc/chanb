@@ -11,13 +11,13 @@ Public Module GlobalFunctions
 #Region "Board Functions"
 
     Function GetSessionPassword(ByVal cookies As Web.HttpCookieCollection, ByVal session As Web.SessionState.HttpSessionState) As String
-        If cookies("pass") Is Nothing Then
-            Dim c As New HttpCookie("pass", New String(CType(session.SessionID, Char()), 0, 15))
+        If cookies("posterpass") Is Nothing Then
+            Dim c As New HttpCookie("posterpass", New String(CType(session.SessionID, Char()), 0, 15))
             c.Expires = (Now + New TimeSpan(0, 60, 0))
             cookies.Add(c)
-            Return cookies("pass").Value
+            Return cookies("posterpass").Value
         Else
-            Return cookies("pass").Value
+            Return cookies("posterpass").Value
         End If
     End Function
 
@@ -289,7 +289,7 @@ Public Module GlobalFunctions
                     Dim dd As String = CStr(Date.UtcNow.ToFileTime)
                     Dim p As String = StorageFolder & "\" & dd & "." & fileextension
                     'Thumb path
-                    Dim thumb As String = StorageFolderThumbs & "\th" & dd & ".jpg"
+                    ' Dim thumb As String = StorageFolderThumbs & "\th" & dd & ".jpg"
                     f.SaveAs(p)
 
                     Dim fs As New IO.FileStream(p, IO.FileMode.Open)
@@ -301,7 +301,7 @@ Public Module GlobalFunctions
                     If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
                         If SmartLinkDuplicateImages = False Then
                             FileIO.FileSystem.DeleteFile(p)
-                            FileIO.FileSystem.DeleteFile(thumb)
+                            ' FileIO.FileSystem.DeleteFile(thumb)
                             Throw New ArgumentException(duplicateFile)
                         Else
                             Dim wpi As WPostImage = GetImageDataByMD5(md5string)
@@ -312,11 +312,29 @@ Public Module GlobalFunctions
 
 
                         sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & "video" & ":" & RemoveSpecialChars(f.FileName) & ":" & md5string
-
-
                     End If
                     Return sp
-
+                Case "MP3", "OGG"
+                    Dim dd As String = CStr(Date.UtcNow.ToFileTime)
+                    Dim p As String = StorageFolder & "\" & dd & "." & fileextension
+                    f.SaveAs(p)
+                    Dim fs As New IO.FileStream(p, IO.FileMode.Open)
+                    Dim md5string As String = MD5(fs)
+                    fs.Close()
+                    Dim sp As String = ""
+                    If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
+                        If SmartLinkDuplicateImages = False Then
+                            FileIO.FileSystem.DeleteFile(p)
+                            Throw New ArgumentException(duplicateFile)
+                        Else
+                            Dim wpi As WPostImage = GetImageDataByMD5(md5string)
+                            FileIO.FileSystem.DeleteFile(p)
+                            sp = wpi.ChanbName & ":" & CStr(wpi.Size) & ":" & wpi.Dimensions & ":" & wpi.RealName & ":" & wpi.MD5
+                        End If
+                    Else
+                        sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & "audio" & ":" & RemoveSpecialChars(f.FileName) & ":" & md5string
+                    End If
+                    Return sp
                 Case "" ' A case of "" may occure when no file is uploaded. Simply return nothing.
                     Return ""
                 Case Else
@@ -354,18 +372,14 @@ Public Module GlobalFunctions
         Dim s As New StringBuilder
         Dim list As New List(Of String)
         For Each a As String In li.Keys
-
             Dim f As HttpPostedFile = li.Item(a)
-
             If (f.ContentLength > 0) Then
                 list.Add(saveFile(f, True))
                 list.Add(";")
-
             Else
                 'Maybe an empty file field.
             End If
         Next
-
         'Remove the last ';'
         If list.Count > 1 Then list.RemoveAt(list.Count - 1)
         For Each x In list
@@ -488,19 +502,23 @@ Public Module GlobalFunctions
         postHTML = postHTML.Replace("%NAME%", po.name)
         postHTML = postHTML.Replace("%DATE UTC UNIX%", CStr(po.time.ToFileTime))
         postHTML = postHTML.Replace("%DATE UTC TEXT%", GetTimeString(po.time))
+        postHTML = postHTML.Replace("%LANG reportStr%", reportStr)
+        postHTML = postHTML.Replace("%LANG deleteStr%", deleteStr)
 
+        Dim parentPoID As Integer = po.PostID
+        If po.type = WPost.PostType.Reply Then parentPoID = po.parent
 
         If StaticHTML Then
-            postHTML = postHTML.Replace("%POST LINK%", ThreadHTMLWebPath & po.PostID & ".html#p" & po.PostID)
+            postHTML = postHTML.Replace("%POST LINK%", ThreadHTMLWebPath & parentPoID & ".html#p" & po.PostID)
         Else
             If po.archived Then
                 If ConvertArchivedThreadToHTML Then
-                    postHTML = postHTML.Replace("%POST LINK%", ArchivedTHTMLWebPath & po.PostID & ".html#p" & po.PostID)
+                    postHTML = postHTML.Replace("%POST LINK%", ArchivedTHTMLWebPath & parentPoID & ".html#p" & po.PostID)
                 Else
-                    postHTML = postHTML.Replace("%POST LINK%", pageHandlerName & ".aspx?id=" & po.PostID & "#p" & po.PostID)
+                    postHTML = postHTML.Replace("%POST LINK%", pageHandlerName & ".aspx?id=" & parentPoID & "#p" & po.PostID)
                 End If
             Else
-                postHTML = postHTML.Replace("%POST LINK%", pageHandlerName & ".aspx?id=" & po.PostID & "#p" & po.PostID)
+                postHTML = postHTML.Replace("%POST LINK%", pageHandlerName & ".aspx?id=" & parentPoID & "#p" & po.PostID)
             End If
         End If
 
@@ -508,10 +526,15 @@ Public Module GlobalFunctions
 
         If pa.IsModerator Then postHTML = postHTML.Replace("%MODPANEL%", pa.modMenu.Replace("%ID%", CStr(po.PostID))) Else postHTML = postHTML.Replace("%MODPANEL%", "")
         ''Post text  
+        Dim commentShortened As Boolean = False
+        If pa.isTrailPost And po.comment.Length > 1500 Then
+            po.comment = po.comment.Remove(1500)
+            commentShortened = True
+        End If
+
         Dim cm As String = ProcessComment(po, pageHandlerName, pa)
         If pa.isTrailPost Then
-            If cm.Length > 1500 Then
-                cm = cm.Remove(1500)
+            If commentShortened Then
                 If StaticHTML Then
                     cm = cm & commentToolong.Replace("%POSTLINK%", ThreadHTMLWebPath & po.PostID & ".html#p" & po.PostID)
                 Else
@@ -528,8 +551,7 @@ Public Module GlobalFunctions
         Return postHTML
     End Function
 
-    Public Function ProcessPost(ByVal request As HttpRequest, ByVal Session As Web.SessionState.HttpSessionState) As String
-        ' Dim sb As New StringBuilder
+    Public Function ProcessPost(ByVal request As HttpRequest, ByVal Session As HttpSessionState) As String
         Dim message As String = ""
         Dim mode As String = request.Item("mode")
         Dim cont As Boolean = True
@@ -590,18 +612,22 @@ Public Module GlobalFunctions
                                 Dim er As New OPData
                                 er.Comment = ProcessInputs(request.Item("comment"))
                                 er.email = ProcessInputs(request.Item("email"))
+
                                 If request.Item("postername") = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(request.Item("postername"))
+
+                                If CBool(Session("admin")) Then er.name = adminPostName
+                                If CBool(Session("mod")) Then er.name = modPostName
+
                                 er.subject = ProcessInputs(request.Item("subject"))
                                 er.time = Date.UtcNow
                                 er.imageName = s
                                 er.password = ProcessInputs(request.Item("password"))
                                 er.IP = request.UserHostAddress
-                                er.UserAgent = request.UserAgent.Replace("<", "").Replace(">", "") ' I replace < and > to prevent spoffing a user agent that contain <script> tags.
+
+                                er.UserAgent = request.UserAgent.Replace("<", "").Replace(">", "")
+
                                 If request.Cookies("pass") IsNot Nothing Then request.Cookies("pass").Value = request.Item("password") Else request.Cookies.Add(New HttpCookie("pass", request.Item("password")))
                                 Dim tid As Integer = MakeThread(er)
-
-                                If Not er.name = "" Then Session("posterName") = er.name
-                                If Not er.email = "" Then Session("posterEmail") = er.email
 
                                 message = FormatHTMLMessage(SuccessfulPostString, SuccessfulPostString, "default.aspx?id=" & tid, "1", False)
                             End If
@@ -651,14 +677,19 @@ Public Module GlobalFunctions
 
                                 If Not advanced Then
                                     er.Comment = ProcessInputs(request.Item("comment"))
-                                    If countFiles Then er.Comment = er.Comment & CStr(vbNewLine & pos & "&#47;" & totalFiles)
+                                    If countFiles Then er.Comment = er.Comment & CStr(vbNewLine & pos & "/" & totalFiles)
                                     advanced = True
                                 Else
-                                    If countFiles Then er.Comment = pos & "&#47;" & totalFiles Else er.Comment = String.Empty
+                                    If countFiles Then er.Comment = pos & "/" & totalFiles Else er.Comment = String.Empty
                                 End If
 
                                 er.email = ProcessInputs(request.Item("email"))
+
                                 If request.Item("postername") = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(request.Item("postername"))
+
+                                If CBool(Session("admin")) Then er.name = adminPostName
+                                If CBool(Session("mod")) Then er.name = modPostName
+
                                 er.subject = ProcessInputs(request.Item("subject"))
                                 er.time = Date.UtcNow
                                 er.imageName = singleImage
@@ -680,6 +711,10 @@ Public Module GlobalFunctions
                                 er.Comment = ProcessInputs(request.Item("comment"))
                                 er.email = ProcessInputs(request.Item("email"))
                                 If request.Item("postername") = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(request.Item("postername"))
+
+                                If CBool(Session("admin")) Then er.name = adminPostName
+                                If CBool(Session("mod")) Then er.name = modPostName
+
                                 er.subject = ProcessInputs(request.Item("subject"))
                                 er.time = Date.UtcNow
                                 er.imageName = s
@@ -689,9 +724,6 @@ Public Module GlobalFunctions
                                 If request.Cookies("pass") IsNot Nothing Then request.Cookies("pass").Value = request.Item("password") Else request.Cookies.Add(New HttpCookie("pass", request.Item("password")))
                                 ReplyTo(threadid, er)
 
-                                If Not er.name = "" Then Session("posterName") = er.name
-                                If Not er.email = "" Then Session("posterEmail") = er.email
-
                                 message = FormatHTMLMessage(SuccessfulPostString, SuccessfulPostString, "default.aspx?id=" & request.Item("threadid"), "1", False)
                             End If
                         End If
@@ -700,49 +732,92 @@ Public Module GlobalFunctions
 
                         If StaticHTML Then UpdateThreadHtml(threadid)
 
-                    Case reportStr
+                    Case "report"
 
-                        Dim il As New List(Of Integer)
-                        For Each x As String In request.QueryString
-                            If x.StartsWith("proc") Then
-                                il.Add(CInt(x.Replace("proc", "")))
-                            End If
-                        Next
-                        If il.Count = 0 Then
+                        Dim id As Integer
+                        Try
+                            id = CInt(request.Item("id"))
+                        Catch ex As Exception
                             message = FormatHTMLMessage("error", NoPostWasSelected, "default.aspx", "60", True)
-                        Else
-                            Dim t As New StringBuilder
-                            For Each x In il
-                                ReportPost(x, request.UserHostAddress, Date.UtcNow)
-                                t.Append(ReportedSucess.Replace("%", CStr(x)))
-                                t.Append("<br>")
-                            Next
-                            message = FormatHTMLMessage("Ok", t.ToString, "", "7777", False)
+                            Exit Select
+                        End Try
 
+
+                        If id = 0 Then
+                            message = FormatHTMLMessage("error", NoPostWasSelected, "default.aspx", "60", True)
+                            Exit Select
                         End If
 
-                    Case deleteStr
-                        Dim li As New List(Of Integer)
-                        Dim deletPass As String = request.Item("deletePass")
-                        For Each x As String In request.QueryString
-                            If x.StartsWith("proc") Then
-                                li.Add(CInt(x.Replace("proc", "")))
-                            End If
-                        Next
-                        If li.Count = 0 Then
-                            message = FormatHTMLMessage("Error", NoPostWasSelected, "", "8888", True)
+                        If request("reportreason") = "" Then
+                            message = FormatHTMLMessage("Ok", "", WebRoot & "report.aspx?id=" & CStr(id) & "&badcap=no", "0", False)
                         Else
-                            Dim t As New StringBuilder
-                            For Each p As WPost In GetWpostList(li.ToArray)
-                                If p.password = deletPass Then
-                                    PrunePost(CInt(p.PostID), AutoDeleteFiles)
-                                    t.Append(PostDeletedSuccess.Replace("%", CStr(p.PostID)))
+                            If EnableCaptcha Then
+                                'Check captcha
+                                If request("usercaptcha") = Session("captcha").ToString Then
+                                    ' OK PROCEED TO REPORT POST
+                                    ReportPost(id, request.UserHostAddress, Date.UtcNow, request.Item("reportreason"))
+                                    message = FormatHTMLMessage("Ok", ReportedSucess.Replace("%", CStr(id)), "", "7777", False)
                                 Else
-                                    t.Append(CannotDeletePostBadPassword.Replace("%", CStr(p.PostID)))
+                                    'REDIRECT TO REPORT PAGE WITH ERROR CAPTCHA NOTICE
+                                    message = FormatHTMLMessage("Ok", "", WebRoot & "report.aspx?id=" & CStr(id) & "&badcap=yes", "0", False)
                                 End If
-                                t.Append("<br/>")
-                            Next
-                            message = FormatHTMLMessage("Ok", t.ToString, "", "7777", False)
+
+                            Else
+                                'REPORT POST
+                                ReportPost(id, request.UserHostAddress, Date.UtcNow, request.Item("reportreason"))
+                                message = FormatHTMLMessage("Ok", ReportedSucess.Replace("%", CStr(id)), "", "7777", False)
+                            End If
+                        End If
+
+                    Case "delete"
+
+                        'GenerateDeletePostPage
+
+                        Dim id As Integer
+                        Try
+                            id = CInt(request.Item("id"))
+                        Catch ex As Exception
+                            message = FormatHTMLMessage("error", NoPostWasSelected, "default.aspx", "60", True)
+                            Exit Select
+                        End Try
+
+                        If id = 0 Then
+                            message = FormatHTMLMessage("error", NoPostWasSelected, "default.aspx", "60", True)
+                            Exit Select
+                        End If
+
+                        If request("deletepass") = "" Then
+                            message = FormatHTMLMessage("Ok", "", WebRoot & "deletepost.aspx?id=" & CStr(id), "0", False)
+                        Else
+                            Dim po As WPost = FetchPostData(id)
+                            If EnableCaptcha Then
+                                'Check captcha
+                                If request("usercaptcha") = Session("captcha").ToString Then
+                                    ' OK. CHECK PASSWORD
+                                    If po.password = request.Item("deletepass").ToString Then
+                                        'PRUNE IT
+                                        PrunePost(id, AutoDeleteFiles)
+                                        message = FormatHTMLMessage("Ok", PostDeletedSuccess.Replace("%", CStr(id)), "", "7777", False)
+                                    Else
+                                        'TELL THE USR THE PASSWORD IS WRONG
+                                        message = FormatHTMLMessage("Ok", "", WebRoot & "deletepost.aspx?id=" & CStr(id) & "&badpas=yes", "0", False)
+                                    End If
+                                Else
+                                    'REDIRECT TO DELETE POST PAGE WITH ERROR CAPTCHA NOTICE
+                                    message = FormatHTMLMessage("Ok", "", WebRoot & "deletepost.aspx?id=" & CStr(id) & "&badcap=yes", "0", False)
+                                End If
+
+                            Else
+                                'CHECK PASSWORD
+                                If po.password = request.Item("deletepass") Then
+                                    'PRUNE IT
+                                    PrunePost(id, AutoDeleteFiles)
+                                    message = FormatHTMLMessage("Ok", PostDeletedSuccess.Replace("%", CStr(id)), "", "7777", False)
+                                Else
+                                    'TELL THE USER THE PASSWORD IS WRONG
+                                    message = FormatHTMLMessage("Ok", "", WebRoot & "deletepost.aspx?id=" & CStr(id) & "&badpas=yes", "0", False)
+                                End If
+                            End If
                         End If
                     Case Else
                         message = FormatHTMLMessage("Error", invalidPostmodestr, "default.aspx", "2", True)
@@ -752,55 +827,45 @@ Public Module GlobalFunctions
         Return message
     End Function
 
+    Dim wf As New WordFilter
     Private Function ProcessComment(ByVal po As WPost, ByVal pageHandlerName As String, ByVal para As HTMLParameters) As String
         Dim sb As New StringBuilder
-        Dim wf As New WordFilter
-        Dim comment As String = po.comment
+        po.comment = wf.FilterText(po.comment)
 
-        comment = wf.FilterText(comment)
-        For Each x In comment.Split(CChar(vbNewLine))
+        For Each line In po.comment.Split(CChar(vbNewLine))
+            Dim x As String = line.Replace(vbNewLine, String.Empty)
             If Not (x = "") Then
+
                 'Check if greentext
                 If x.StartsWith("&gt;") And Not x.StartsWith("&gt;&gt;") Then
-                    sb.Append("<span class='quote'>" & x & "</span>")
-                    'Some times, X start with a line terminator that is not vbnewline, so i remove it
+                    sb.Append("<span class=""quote"">" & x & "</span>")
 
+                    ' Some times, X start with a line terminator that is not vbnewline, so i remove it
                 ElseIf (x.Remove(0, 1).StartsWith("&gt;") And Not x.Remove(0, 1).StartsWith("&gt;&gt;")) Then
-                    sb.Append("<span class='quote'>" & x.Remove(0, 1) & "</span>")
+                    sb.Append("<span class=""quote"">" & x.Remove(0, 1) & "</span>")
 
-                ElseIf IsXvalidQuote(x) Then
+                ElseIf IsXvalidQuote(x) Or IsXvalidQuote(x.Remove(0, 1)) Then
+                    Dim quotet As String = x
+                    If IsXvalidQuote(x.Remove(0, 1)) Then quotet = x.Remove(0, 1)
+
                     If po.archived Then
                         If ConvertArchivedThreadToHTML Then
-                            sb.Append("<a href='" & ArchivedTHTMLWebPath & CStr(po.parent) & ".html#p" & x.Replace("&gt;&gt;", "") & "'>" & x & "</a>")
+                            sb.Append(formatBacklink(ArchivedTHTMLWebPath & CStr(po.parent) & ".html#p" & quotet.Replace("&gt;&gt;", ""), x))
                         Else
-                            sb.Append("<a href='" & pageHandlerName & ".aspx?id=" & CStr(po.parent) & "#p" & x.Replace("&gt;&gt;", "") & "'>" & x & "</a>")
+                            sb.Append(formatBacklink(pageHandlerName & ".aspx?id=" & CStr(po.parent) & "#p" & quotet.Replace("&gt;&gt;", ""), x))
                         End If
                     Else
                         If StaticHTML Then
-                            sb.Append("<a href='" & ThreadHTMLWebPath & CStr(po.parent) & ".html#p" & x.Replace("&gt;&gt;", "") & "'>" & x & "</a>")
+                            sb.Append(formatBacklink(ThreadHTMLWebPath & CStr(po.parent) & ".html#p" & quotet.Replace("&gt;&gt;", ""), x))
                         Else
-                            sb.Append("<a href='" & pageHandlerName & ".aspx?id=" & CStr(po.parent) & "#p" & x.Replace("&gt;&gt;", "") & "'>" & x & "</a>")
+                            sb.Append(formatBacklink(pageHandlerName & ".aspx?id=" & CStr(po.parent) & "#p" & quotet.Replace("&gt;&gt;", ""), x))
                         End If
                     End If
-                    'Some times, X start with a line terminator that is not vbnewline, so i remove it
-                ElseIf IsXvalidQuote(x.Remove(0, 1)) Then
-                    If po.archived Then
-                        If ConvertArchivedThreadToHTML Then
-                            sb.Append("<a href='" & ArchivedTHTMLWebPath & CStr(po.parent) & ".html#p" & x.Remove(0, 1).Replace("&gt;&gt;", "") & "'>" & x.Remove(0, 1) & "</a>")
-                        Else
-                            sb.Append("<a href='" & pageHandlerName & ".aspx?id=" & CStr(po.parent) & "#p" & x.Remove(0, 1).Replace("&gt;&gt;", "") & "'>" & x.Remove(0, 1) & "</a>")
-                        End If
-                    Else
-                        If StaticHTML Then
-                            sb.Append("<a href='" & ThreadHTMLWebPath & CStr(po.parent) & ".html#p" & x.Remove(0, 1).Replace("&gt;&gt;", "") & "'>" & x.Remove(0, 1) & "</a>")
-                        Else
-                            sb.Append("<a href='" & pageHandlerName & ".aspx?id=" & CStr(po.parent) & "#p" & x.Remove(0, 1).Replace("&gt;&gt;", "") & "'>" & x.Remove(0, 1) & "</a>")
-                        End If
-                    End If
+
                 Else
                     sb.Append(x)
                 End If
-                sb.Append("<br>")
+                sb.Append("<br/>")
             End If
         Next
 
@@ -810,27 +875,15 @@ Public Module GlobalFunctions
         sr = MatchAndProcessBBCodes("spoiler", sr)
         sr = MatchAndProcessBBCodes("code", sr)
         sr = MatchAndProcessBBCodes("md", sr)
-
-
-
-        'If sr.Length > 1500 Then
-        '    finalcomment.Append(sr.Remove(1500))
-        'Else
-        '    finalcomment.Append(sr)
-        'End If
-
-
-
-        'If sr.Contains("<pre>") Then finalcomment.Append("</pre>")
-        'If sr.Contains("<s>") Then finalcomment.Append("</s>")
-
-        'If sr.Contains("<div>") Then finalcomment.Append("</pre>")
-
         Return sr
     End Function
 
+    Private Function formatBacklink(ByVal link As String, ByVal text As String) As String
+        Return "<a class=""backlink"" href=""" & link & """> " & text & " </a>"
+    End Function
+
     ''' <summary>
-    ''' Return a string for thread displayed in the main page.
+    ''' Return a string for threads displayed in the main page.
     ''' </summary>
     ''' <param name="threadID"></param>
     ''' <param name="para"></param>
@@ -852,7 +905,7 @@ Public Module GlobalFunctions
         postHtml = postHtml.Replace("%POST HTML%", GetPostHTML(wpolist(0), para))
 
         Dim trailswithimages As Integer = 0
-        If trailposts > 0 And (wpolist.Length - 1 > 0) Then
+        If trailposts > 0 And (wpolist.Length > 1) Then
             Dim sb As New StringBuilder
             For i As Integer = 1 To wpolist.Length - 1 Step 1
                 sb.Append(GetPostHTML(wpolist(i), para))
@@ -866,32 +919,34 @@ Public Module GlobalFunctions
         End If
 
         Dim repC As ThreadReplies = GetRepliesCount(threadID, Not para.isCurrentThread)
+
         If repC.TotalReplies - trailposts <= 0 Then
             postHtml = postHtml.Replace("%AN%", "hide")
         Else
+
             postHtml = postHtml.Replace("%AN%", "")
 
             Dim tOm As Integer = repC.TextReplies - (trailposts - trailswithimages)
             Dim tIm As Integer = repC.ImageReplies - trailswithimages
 
-            If tOm <= 0 Then
-                postHtml = postHtml.Replace("%TCOUNT%", "")
-            Else
-                postHtml = postHtml.Replace("%TCOUNT%", p1str.Replace("%", CStr(tOm)))
+            If tOm >= 1 And tIm >= 1 Then
+                Dim summary As String = summaryPandIStr.Replace("%P%", CStr(tOm)).Replace("%I%", CStr(tIm))
+                postHtml = postHtml.Replace("%SUMMARY%", summary & summaryClickToViewStr)
+                postHtml = postHtml.Replace("%MOBILESUMMARY%", summary)
             End If
 
-            If tIm > 0 And tOm > 0 Then
-                postHtml = postHtml.Replace("%AND%", andStr)
-            Else
-                postHtml = postHtml.Replace("%AND%", "")
+            If tOm >= 1 And tIm <= 0 Then
+                Dim summary As String = summaryPonlyStr.Replace("%P%", CStr(tOm))
+                postHtml = postHtml.Replace("%SUMMARY%", summary & summaryClickToViewStr)
+                postHtml = postHtml.Replace("%MOBILESUMMARY%", summary)
             End If
 
-            If tIm <= 0 Then
-                postHtml = postHtml.Replace("%ICOUNT%", "")
-            Else
-                postHtml = postHtml.Replace("%ICOUNT%", p2str.Replace("%", CStr(tIm)))
+            If tOm <= 0 And tIm >= 1 Then
+                Dim summary As String = summaryIonlyStr.Replace("%I%", CStr(tIm))
+                postHtml = postHtml.Replace("%SUMMARY%", summary & summaryClickToViewStr)
+                postHtml = postHtml.Replace("%MOBILESUMMARY%", summary)
             End If
-            postHtml = postHtml.Replace("%omitStr%", omittedStr)
+          
         End If
         If para.isCurrentThread Then
             If StaticHTML Then postHtml = postHtml.Replace("%POSTLINK%", ThreadHTMLWebPath & threadID & ".html") Else postHtml = postHtml.Replace("%POSTLINK%", "default.aspx?id=" & threadID)
@@ -904,15 +959,10 @@ Public Module GlobalFunctions
     ''' <summary>
     ''' Get the complete thread html, over a single SQL query.
     ''' </summary>
-    ''' <param name="threadID"></param>
-    ''' <param name="p"></param>
-    ''' <returns></returns>
-    ''' <remarks></remarks>
     Function GetThreadHTML(ByVal threadID As Integer, ByVal p As HTMLParameters) As String
         Dim sb As New StringBuilder
         Dim data As WPost() = GetThreadData(threadID, Not p.isCurrentThread)
         sb.Append(GetPostHTML(data(0), p))
-
         For i = 1 To data.Length - 1 Step 1
             sb.Append(GetPostHTML(data(i), p))
         Next
@@ -920,19 +970,16 @@ Public Module GlobalFunctions
     End Function
 
     Function GetModeratorHTMLMenu(ByVal id As String, ByVal powers As String) As String
-        Dim power As String() = powers.Split(CChar("-"))
-        Dim sb As New StringBuilder
-        Dim noscriptitem As New StringBuilder
-        sb.Append("<script>document.write('")
-        sb.Append("<div id=\'moda%ID%\'><select id=\'selc%ID%\' onchange=""updatemodlink(\'%ID%\')"">".Replace("%ID%", CStr(id)))
-        For i As Integer = 0 To power.Length - 1 Step 1
-            If power(i) = "1" Then
-                sb.Append(modMenu(i).Replace("'", "\'"))
-                noscriptitem.Append(modMenuNoscript(i))
-            End If
-        Next
-        sb.Append("</select><a href=\'#\' id=\'modhref%ID%\' class=\'form-button\' target=\'_blank\' >OK</a></div>');</script><noscript>%NOSCRIPTMENU%</noscript>".Replace("%ID%", CStr(id)).Replace("%NOSCRIPTMENU%", noscriptitem.ToString))
-        Return sb.ToString
+        If powers = "admin" Then
+            Return ""
+        Else
+            Dim power As String() = powers.Split(CChar("-"))
+            Dim sb As New StringBuilder
+            For i As Integer = 0 To power.Length - 1 Step 1
+                If power(i) = "1" Then sb.Append(modMenuItems(i).Replace("%WEBROOT%", WebRoot))
+            Next
+            Return sb.ToString
+        End If
     End Function
 
     Sub BanPosterByPost(ByVal postID As Integer)
@@ -985,14 +1032,22 @@ Public Module GlobalFunctions
                         Select Case wpi.Extension
                             Case "WEBM"
                                 Dim scriptItem As String = GetVideoFileHTML(wpi, po.PostID, "webm")
-
                                 If Not advanced Then scriptItem = scriptItem.Replace("%AN%", "active") Else scriptItem = scriptItem.Replace("%AN%", "notactive")
-
                                 scriptItem = scriptItem.Replace("%filec%", "")
-
                                 items.Append(scriptItem)
                                 noscriptItems.Append(GetVideoFileHTMLNoScript(wpi))
-
+                            Case "MP3"
+                                Dim scriptItem As String = GetAudioFileHTML(wpi, po.PostID, "mpeg")
+                                If Not advanced Then scriptItem = scriptItem.Replace("%AN%", "active") Else scriptItem = scriptItem.Replace("%AN%", "notactive")
+                                scriptItem = scriptItem.Replace("%filec%", "")
+                                items.Append(scriptItem)
+                                noscriptItems.Append(GetAudioFileHTMLNoScript(wpi))
+                            Case "OGG"
+                                Dim scriptItem As String = GetAudioFileHTML(wpi, po.PostID, "ogg")
+                                If Not advanced Then scriptItem = scriptItem.Replace("%AN%", "active") Else scriptItem = scriptItem.Replace("%AN%", "notactive")
+                                scriptItem = scriptItem.Replace("%filec%", "")
+                                items.Append(scriptItem)
+                                noscriptItems.Append(GetAudioFileHTMLNoScript(wpi))
                         End Select
 
                     End If
@@ -1019,10 +1074,18 @@ Public Module GlobalFunctions
                     Select Case wpi.Extension
                         Case "WEBM"
                             Dim item As String = GetVideoFileHTML(wpi, po.PostID, "webm")
-
                             item = item.Replace("%filec%", "file")
                             item = item.Replace("%AN%", "")
-
+                            sb.Append(item)
+                        Case "MP3"
+                            Dim item As String = GetAudioFileHTML(wpi, po.PostID, "mpeg")
+                            item = item.Replace("%filec%", "file")
+                            item = item.Replace("%AN%", "")
+                            sb.Append(item)
+                        Case "OGG"
+                            Dim item As String = GetAudioFileHTML(wpi, po.PostID, "ogg")
+                            item = item.Replace("%filec%", "file")
+                            item = item.Replace("%AN%", "")
                             sb.Append(item)
                     End Select
 
@@ -1036,11 +1099,6 @@ Public Module GlobalFunctions
         Dim r As String = ImageTemplate
         r = r.Replace("%ID%", CStr(postId))
         r = r.Replace("%FILE NAME%", wpi.RealName)
-        If wpi.RealName.Length > 18 Then
-            r = r.Replace("%FILE SNAME%", New String(CType(wpi.RealName, Char()), 0, 15) & "...")
-        Else
-            r = r.Replace("%FILE SNAME%", wpi.RealName)
-        End If
         r = r.Replace("%IMAGE TEXT DL%", WebRoot & "img.aspx?cn=" & wpi.ChanbName & "&rn=" & wpi.RealName)
         r = r.Replace("%IMAGE DL%", GetImageWEBPATH(wpi.ChanbName))
         r = r.Replace("%IMAGE SRC%", GetImageWEBPATH(wpi.ChanbName))
@@ -1066,11 +1124,6 @@ Public Module GlobalFunctions
         Dim r As String = VideoItemTemplate
         r = r.Replace("%ID%", CStr(postId))
         r = r.Replace("%FILE NAME%", wpi.RealName)
-        If wpi.RealName.Length > 18 Then
-            r = r.Replace("%FILE SNAME%", New String(CType(wpi.RealName, Char()), 0, 15) & "...")
-        Else
-            r = r.Replace("%FILE SNAME%", wpi.RealName)
-        End If
         r = r.Replace("%FILE SIZE%", FormatSizeString(wpi.Size))
         r = r.Replace("%IMAGE TEXT DL%", WebRoot & "img.aspx?cn=" & wpi.ChanbName & "&rn=" & wpi.RealName)
         r = r.Replace("%VIDEO LINK%", GetImageWEBPATH(wpi.ChanbName))
@@ -1084,6 +1137,27 @@ Public Module GlobalFunctions
     Private Function GetVideoFileHTMLNoScript(ByVal wpi As WPostImage) As String
         Dim nr As String = noscriptVideoHTML
         nr = nr.Replace("%VIDEO LINK%", GetImageWEBPATH(wpi.ChanbName))
+        nr = nr.Replace("%FILE NAME%", wpi.RealName)
+        Return nr
+    End Function
+
+    Private Function GetAudioFileHTML(ByVal wpi As WPostImage, ByVal postId As Integer, ByVal ext As String) As String
+        Dim r As String = AudioItemTemplate
+        r = r.Replace("%ID%", CStr(postId))
+        r = r.Replace("%FILE NAME%", wpi.RealName)
+        r = r.Replace("%FILE SIZE%", FormatSizeString(wpi.Size))
+        r = r.Replace("%IMAGE TEXT DL%", WebRoot & "img.aspx?cn=" & wpi.ChanbName & "&rn=" & wpi.RealName)
+        r = r.Replace("%LINK%", GetImageWEBPATH(wpi.ChanbName))
+        r = r.Replace("%IMAGE MD5%", wpi.MD5)
+        r = r.Replace("%IMAGE EXT%", wpi.Extension)
+        r = r.Replace("%NO AUDIO SUPPORT%", noVideoSupportStr)
+        r = r.Replace("%EXT%", ext)
+        Return r
+    End Function
+
+    Private Function GetAudioFileHTMLNoScript(ByVal wpi As WPostImage) As String
+        Dim nr As String = noscriptAudioHTML
+        nr = nr.Replace("%LINK%", GetImageWEBPATH(wpi.ChanbName))
         nr = nr.Replace("%FILE NAME%", wpi.RealName)
         Return nr
     End Function
@@ -1240,14 +1314,6 @@ Public Module GlobalFunctions
             pageHTML = pageHTML.Replace("%RETURN BUTTON MOBILE%", "")
         End If
 
-        If Not (session("posterName") Is Nothing Or session("posterEmail") Is Nothing) Then
-            pageHTML = pageHTML.Replace("%COOKIE EMAIL%", session("posterEmail").ToString)
-            pageHTML = pageHTML.Replace("%COOKIE NAME%", session("posterName").ToString)
-        Else
-            pageHTML = pageHTML.Replace("%COOKIE EMAIL%", "")
-            pageHTML = pageHTML.Replace("%COOKIE NAME%", "")
-        End If
-
         pageHTML = pageHTML.Replace("%META NO CACHE%", "")
 
         '####################################### BODY PROCESSING CODE #######################################
@@ -1389,14 +1455,6 @@ Public Module GlobalFunctions
         pageHTML = pageHTML.Replace("%POSTING RULES%", "")
         pageHTML = pageHTML.Replace("%THREAD COUNT%", "")
 
-        If Not (session("posterName") Is Nothing Or session("posterEmail") Is Nothing) Then
-            pageHTML = pageHTML.Replace("%COOKIE EMAIL%", session("posterEmail").ToString)
-            pageHTML = pageHTML.Replace("%COOKIE NAME%", session("posterName").ToString)
-        Else
-            pageHTML = pageHTML.Replace("%COOKIE EMAIL%", "")
-            pageHTML = pageHTML.Replace("%COOKIE NAME%", "")
-        End If
-
         pageHTML = pageHTML.Replace("%META NO CACHE%", "")
         pageHTML = pageHTML.Replace("%RETURN BUTTON DESKTOP%", DesktopReturnButtonHTML.Replace("%P%", "default.aspx"))
         pageHTML = pageHTML.Replace("%RETURN BUTTON MOBILE%", MobileReturnButtonHTML.Replace("%P%", "default.aspx"))
@@ -1411,6 +1469,105 @@ Public Module GlobalFunctions
 
         pageHTML = pageHTML.Replace("%PAGES LIST%", "")
 
+        Return pageHTML
+    End Function
+
+    Function GenerateReportPage(ByVal context As HttpContext) As String
+        Dim pageHTML As String = ReportPageTemplate
+
+        pageHTML = pageHTML.Replace("%BTITLE%", BoardTitle).Replace("%BDESC%", BoardDesc).Replace("%ROOT%", WebRoot).Replace("%FOOTER TEXT%", footerText)
+
+        Dim id As Integer = -1
+        Try
+            id = Math.Abs(CInt(context.Request.Item("id")))
+        Catch ex As Exception
+            Return FormatHTMLMessage("error", NoPostWasSelected, "", "8888", True)
+            Exit Function
+        End Try
+
+        If id = 0 Then
+            Return FormatHTMLMessage("error", NoPostWasSelected, "", "8888", True)
+            Exit Function
+        End If
+
+        pageHTML = pageHTML.Replace("%ID%", CStr(id))
+
+        If EnableCaptcha Then
+            pageHTML = pageHTML.Replace("%CP%", "")
+            pageHTML = pageHTML.Replace("%LANG verificationStr%", verificationStr)
+        Else
+            pageHTML = pageHTML.Replace("%CP%", "hide")
+        End If
+
+        If context.Request("badcap") = "yes" Then
+            pageHTML = pageHTML.Replace("%badc%", "")
+        Else
+            pageHTML = pageHTML.Replace("%badc%", "hide")
+        End If
+
+
+        pageHTML = pageHTML.Replace("%LANG reportStr%", reportStr)
+        pageHTML = pageHTML.Replace("%LANG reportReasonStr%", reportReasonStr)
+        pageHTML = pageHTML.Replace("%LANG wrongCaptchaStr%", wrongCaptcha)
+
+        Dim reasons As New StringBuilder
+
+        For Each x In reportReasons
+            Dim reason As String() = x.Split(CChar("$"))
+            reasons.Append("<option name=""" & reason(0) & """>" & reason(1) & "</option>")
+        Next
+
+
+        pageHTML = pageHTML.Replace("%REASONS%", reasons.ToString)
+
+        Return pageHTML
+    End Function
+
+    Function GenerateDeletePostPage(ByVal context As HttpContext) As String
+        Dim pageHTML As String = DeletePostPageTemplate
+
+        pageHTML = pageHTML.Replace("%BTITLE%", BoardTitle).Replace("%BDESC%", BoardDesc).Replace("%ROOT%", WebRoot).Replace("%FOOTER TEXT%", footerText)
+
+        Dim id As Integer = -1
+        Try
+            id = Math.Abs(CInt(context.Request.Item("id")))
+        Catch ex As Exception
+            Return FormatHTMLMessage("error", NoPostWasSelected, "", "8888", True)
+            Exit Function
+        End Try
+
+        If id = 0 Then
+            Return FormatHTMLMessage("error", NoPostWasSelected, "", "8888", True)
+            Exit Function
+        End If
+
+        pageHTML = pageHTML.Replace("%ID%", CStr(id))
+
+        If EnableCaptcha Then
+            pageHTML = pageHTML.Replace("%CP%", "")
+            pageHTML = pageHTML.Replace("%LANG verificationStr%", verificationStr)
+        Else
+            pageHTML = pageHTML.Replace("%CP%", "hide")
+        End If
+
+        If context.Request("badpas") = "yes" Then
+            pageHTML = pageHTML.Replace("%badp%", "")
+        Else
+            pageHTML = pageHTML.Replace("%badp%", "hide")
+        End If
+
+        If context.Request("badcap") = "yes" Then
+            pageHTML = pageHTML.Replace("%badc%", "")
+        Else
+            pageHTML = pageHTML.Replace("%badc%", "hide")
+        End If
+
+        pageHTML = pageHTML.Replace("%LANG deleteStr%", deleteStr)
+        pageHTML = pageHTML.Replace("%LANG enterPassword%", passwordStr)
+
+        pageHTML = pageHTML.Replace("%LANG wrongCaptchaStr%", wrongCaptcha)
+
+        pageHTML = pageHTML.Replace("%LANG wrongPasswordStr%", CannotDeletePostBadPassword.Replace("%", CStr(id)))
 
         Return pageHTML
     End Function
@@ -1418,7 +1575,7 @@ Public Module GlobalFunctions
     Private Function GenerateCatalogItems(ByVal ids As Integer()) As String
         Dim sb As New StringBuilder
         Dim data As WPost() = GetWpostList(ids)
-        sb.Append("<div align='center' id='threads'>")
+        sb.Append("<div align=""center"" id=""threads"">")
         For Each x In data
             Dim t As String = CatalogItemTemplate
             Dim i As WPostImage = GetWPostImage(x._imageP)
@@ -1772,7 +1929,7 @@ Public Module GlobalFunctions
             Dim query As ChanbQuery
 
             If Not ignoreStickies Then
-                Dim stickiesQueryStr As String = "SELECT ID FROM board  WHERE (type = 0) AND (sticky = 1) AND (mta = 0) ORDER BY ID"
+                Dim stickiesQueryStr As String = "SELECT ID FROM board  WHERE (type = 0) AND (sticky = 1) AND (mta = 0) ORDER BY ID DESC"
                 query = DatabaseEngine.ExecuteQueryReader(stickiesQueryStr)
 
                 While query.Reader.Read
@@ -2103,12 +2260,13 @@ Public Module GlobalFunctions
         Return il.ToArray
     End Function
 
-    Private Sub ReportPost(ByVal id As Integer, ByVal reporterIP As String, ByVal time As Date)
+    Private Sub ReportPost(ByVal id As Integer, ByVal reporterIP As String, ByVal time As Date, ByVal reason As String)
         Dim command As DbCommand = DatabaseEngine.GenerateDbCommand
-        command.CommandText = "INSERT INTO reports (postID, reporterIP, time) VALUES (@id, @reporterIP, @time)"
+        command.CommandText = "INSERT INTO reports (postID, reporterIP, time, comment) VALUES (@id, @reporterIP, @time, @comment)"
         command.Parameters.Add(DatabaseEngine.MakeParameter("@id", id, Data.DbType.Int32))
         command.Parameters.Add(DatabaseEngine.MakeParameter("@reporterIP", reporterIP, Data.DbType.String))
         command.Parameters.Add(DatabaseEngine.MakeParameter("@time", time, Data.DbType.DateTime))
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@comment", reason, Data.DbType.String))
         DatabaseEngine.ExecuteNonQuery(command)
     End Sub
 
@@ -2120,7 +2278,7 @@ Public Module GlobalFunctions
         If TypeOf x Is DBNull Then Return Nothing Else Return x
     End Function
 
-    'Private Function EscapeChar(ByVal x As String) As String
+    'Private Function EscapeChar(ByVal x As Char) As Char
     '    'HTML ISO 8879 Numerical Character References 
     '    'http://sunsite.berkeley.edu/amher/iso_8879.html
     '    Select Case x
@@ -2264,8 +2422,7 @@ Public Module GlobalFunctions
 #Region "Image processing"
 
     Private Function DownSizeWithAspectRatio(ByVal targetMax As Integer, ByVal isi As Drawing.Size) As Drawing.Size
-        Dim ratioP As Double = isi.Width / targetMax
-        Return New Drawing.Size(CInt(Fix(isi.Width / ratioP)), CInt(Fix(isi.Height / ratioP)))
+        Return New Drawing.Size(targetMax, CInt(Fix(isi.Height / (isi.Width / targetMax))))
     End Function
 
     Private Function ResizeImage(ByVal i As Drawing.Image, ByVal targetS As Integer) As Drawing.Image
@@ -2286,7 +2443,6 @@ Public Module GlobalFunctions
                 Return bi
                 bi.Dispose()
                 g.Dispose()
-
             Case 2 'Fastest Methode
                 Dim sizef As Drawing.Size = DownSizeWithAspectRatio(targetS, i.Size)
                 Dim bi As New Drawing.Bitmap(sizef.Width, sizef.Height)
@@ -2327,7 +2483,7 @@ Public Module GlobalFunctions
                         Dim colorizer As New ColorCode.CodeColorizer()
                         For Each x In MatchBBCode(data, "code")
                             Dim codeStr As String = HttpUtility.HtmlDecode(x)
-                            codeStr = codeStr.Replace("<br>", String.Empty)
+                            codeStr = codeStr.Replace("<br/>", String.Empty)
 
                             Dim codeLang As String = GetCodeLang(codeStr)
                             If Not (codeLang = "") Then
@@ -2347,7 +2503,7 @@ Public Module GlobalFunctions
                     Dim md As New MarkdownSharp.Markdown
                     For Each x In MatchBBCode(data, "md")
                         Dim mdt As String = x
-                        mdt = mdt.Replace("<br>", String.Empty)
+                        mdt = mdt.Replace("<br/>", String.Empty)
                         data = data.Replace("[md]" & x & "[/md]", md.Transform(mdt))
                     Next
                     Return data

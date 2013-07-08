@@ -26,6 +26,9 @@
                     allowedfiles.Add(x)
                 Next
                 Response.Write(GetFileList(tid, allowedfiles.ToArray, CBool(Request.Item("ar"))))
+            Case "getthreadpagenumber" 'tid = thread id
+                Dim i As Integer = CInt(Request.Item("tid"))
+                Response.Write(GetThreadPageNumber(i))
             Case Else
                 Response.Write("Invalid mode")
         End Select

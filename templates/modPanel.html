@@ -1,0 +1,31 @@
+﻿<script>
+
+    function hideall() {
+        var items = $(".selectoritem");      
+        for (i = 0; i < items.length; i++) {
+            var g = $("#" + items[i].getAttribute("id"));
+            g.addClass("hide");
+        } 
+     }
+
+    function switchto(item) {
+        hideall();
+        $("#" + item).removeClass("hide");  
+    }
+
+
+</script>
+
+<form action="modaction.aspx">
+
+<div id='selector'>
+
+<a class='form-button' onclick="switchto('reports')">View reports</a>
+<a class='form-button' onclick="switchto('misc')">Misc</a>
+
+</div>
+
+<div id='reports' class='selectoritem'>reports</div>
+<div id='misc' class='selectoritem'>misc</div>
+
+</form>

@@ -3,7 +3,7 @@ Public Module JSONApi
 
     Public Function WpostsToJsonList(ByVal ids As Integer(), ByVal p As HTMLParameters) As String
         If ids.Length = 0 Then
-            Return ""
+            Return "<span class='hide'></span>"
         Else
             Dim sb As New StringBuilder
             ' sb.Append("{")
@@ -36,5 +36,26 @@ Public Module JSONApi
             End If
         Next
         Return sb.ToString
+    End Function
+
+    Public Function GetThreadPageNumber(ByVal tid As Integer) As Integer
+
+        Dim currentThread As Integer() = GetThreads(0, (MaximumPages * ThreadPerPage) - 1, True, False)
+
+        Dim pageNt As Integer = -1
+
+        For Page As Integer = 1 To MaximumPages Step 1
+
+            For threadN As Integer = 1 To ThreadPerPage Step 1
+
+                If currentThread(threadN) = tid Then pageNt = Page + 1
+
+
+            Next
+
+            Page = pageNt
+        Next
+
+        Return pageNt
     End Function
 End Module

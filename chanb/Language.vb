@@ -24,10 +24,11 @@
     Public ReadOnly addAnotherFStr As String = "Add another file"
     Public ReadOnly countFilesStr As String = "Count files"
 
-    Public ReadOnly p1str As String = " % post(s) "
-    Public ReadOnly andStr As String = " and "
-    Public ReadOnly p2str As String = " % image reply(ies) "
-    Public ReadOnly omittedStr As String = " omitted. Click <a href='%POSTLINK%' target='_blank' class='replylink'>here</a> to view."
+    Public summaryPandIStr As String = "%P% post(s) and %I% image reply(ies) omitted."
+    Public summaryPonlyStr As String = "%P% post(s) omitted."
+    Public summaryIonlyStr As String = "%I% image reply(ies) omitted."
+
+    Public summaryClickToViewStr As String = " Click <a href=""%POSTLINK%"">here</a> to view."
 
     Public ReadOnly banuserStr As String = "Ban user"
     Public ReadOnly deletePostStr As String = "Delete post"
@@ -43,7 +44,7 @@
     Public ReadOnly ArchiveStr As String = "Archive"
     Public ReadOnly ForbiddenStr As String = "Fobidden"
     Public ReadOnly sucessStr As String = "Success"
-
+    Public ReadOnly reportReasonStr As String = "Report reason:"
     Public invalidIdStr As String = "Invalid ID"
 
     Public errorStr As String = "Error"

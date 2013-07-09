@@ -81,12 +81,6 @@ function golast(id) {
     $last.addClass('active');
 }
 
-function updatemode(f) {
-
-    document.getElementById("ROD").value = f;
-}
-
-
 function timer() {
 
     $(document).ready(function() {
@@ -116,12 +110,6 @@ function fetchnewreplies() {
 
 }
 
-function updatemodlink(id) {
-    var $newaction = $("#selc" + id);
-    var $actionlink = $("#modhref" + id);
-    $actionlink.attr('href', 'modaction.aspx?action=' + $newaction.attr("value") + '&id=' + id);
-}
-
 function refreshcaptcha(level) {
 
     if (level == null) {
@@ -130,19 +118,17 @@ function refreshcaptcha(level) {
     } else {
         var cap = document.getElementById("captchaImage");
         cap.setAttribute("src", "/captcha.aspx?l=" + level + "&y=" + Math.random().toString(10));
-
     }
-
     document.getElementById("usercaptcha").value = "";
 }
 
-function focusRCB() {
-    document.getElementById('refreshcaptchabutton').setAttribute('src', '/res/refresh-high.png');
-}
+//function focusRCB() {
+//    document.getElementById('refreshcaptchabutton').setAttribute('src', '/res/refresh-high.png');
+//}
 
-function unfocusRCB() {
-    document.getElementById('refreshcaptchabutton').setAttribute('src', '/res/refresh.png');
-}
+//function unfocusRCB() {
+//    document.getElementById('refreshcaptchabutton').setAttribute('src', '/res/refresh.png');
+//}
 
 function updateAttrb(id, name, value) {
     document.getElementById(id).setAttribute(name, value);
@@ -163,7 +149,6 @@ function showShortName(id) {
 }
 
 function showPassword(id) {
-
     document.getElementById(id).setAttribute("type", "text");
 }
 
@@ -385,24 +370,33 @@ function backlink() {
     }
 }
 
-function beautifiesName(id) {
+function beautifiesName(anch) {
+    
+    var fullnameAnchor = $(anch);
 
-    var shortnameAnchor = document.createElement("a");
-    var fullnameAnchor = $("#" + id);
-    var realId = id.toString().substr(3)
-    //hide the full name 
-    fullnameAnchor.addClass("hide");
-    //get the span parent
-    var parent = fullnameAnchor.parent();
-    //setup the short name anchor
-    shortnameAnchor.setAttribute("href", fullnameAnchor.attr("href").toString() );
-    shortnameAnchor.setAttribute("id", "fsn" + realId);
-    if (fullnameAnchor.text().length > 20) {shortnameAnchor.text = fullnameAnchor.text().substr(0, 17) + "..."; } else {shortnameAnchor.text = fullnameAnchor.text();}
-    //add it
-    parent.append(shortnameAnchor);
+    if (fullnameAnchor.text().length > 20) {
+    
+        var shortnameAnchor = document.createElement("a");
 
-    $(parent).mouseover(function() { showFullName(realId); });
-    $(parent).mouseout(function() { showShortName(realId); });
+        var realId = fullnameAnchor.attr("id").toString().substr(3).toString();
+        
+        //setup the short name anchor
+        shortnameAnchor.setAttribute("href", fullnameAnchor.attr("href").toString());
+        shortnameAnchor.setAttribute("id", "fsn" + realId);
+        shortnameAnchor.setAttribute("class", "fn");
+        shortnameAnchor.text = fullnameAnchor.text().substr(0, 17) + "...";
+        
+        //hide the full name 
+        fullnameAnchor.addClass("hide");
+        
+        //get the span parent
+        var parent = fullnameAnchor.parent();
+        //add the shortNameAnchor       
+        parent.append(shortnameAnchor);
+        //add mouse handlers
+        $(parent).mouseover(function() { showFullName(realId); });
+        $(parent).mouseout(function() { showShortName(realId); });
+    }
 
    
 }
@@ -410,7 +404,7 @@ function beautifiesName(id) {
 function beautifiesNames() {
     var items = $(".fn");
     for (i = 0; i < items.length; i++) {
-        beautifiesName(items[i].getAttribute("id"))
+        beautifiesName(items[i])
     }
 }
 

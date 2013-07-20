@@ -248,6 +248,40 @@ Public Module DatabaseEngine
         End Select
     End Function
 
+    Public Function GenerateDbCommand(ByVal commandText As String) As DbCommand
+        Select Case dbType
+            Case "mssql"
+                Dim dbConnection As New SqlConnection(dbi.ConnectionString)
+                Dim dbC As New SqlCommand(commandText)
+                dbConnection.Open()
+                dbC.Connection = dbConnection
+                Return dbC
+            Case "mysql"
+                Dim dbConnection As New MySqlConnection(dbi.ConnectionString)
+                Dim dbC As New MySqlCommand(commandText)
+                dbConnection.Open()
+                dbC.Connection = dbConnection
+                Return dbC
+            Case Else
+                Return Nothing
+        End Select
+    End Function
+
+    Public Function GenerateDbCommand(ByVal connection As DbConnection) As DbCommand
+        Select Case dbType
+            Case "mssql"
+                Dim dbC As New SqlCommand()
+                dbC.Connection = CType(connection, SqlConnection)
+                Return dbC
+            Case "mysql"
+                Dim dbC As New MySqlCommand()
+                dbC.Connection = CType(connection, MySqlConnection)
+                Return dbC
+            Case Else
+                Return Nothing
+        End Select
+    End Function
+
     Public Function MakeParameter(ByVal name As String, ByVal value As Object, ByVal type As DbType) As DbParameter
         Select Case dbType
             Case "mssql"
@@ -265,6 +299,10 @@ Public Module DatabaseEngine
                         p.MySqlDbType = MySqlDbType.Int32
                     Case Data.DbType.AnsiString
                         p.MySqlDbType = MySqlDbType.Text
+                    Case Data.DbType.Boolean
+                        p.MySqlDbType = MySqlDbType.Bit
+                    Case Data.DbType.Int64
+                        p.MySqlDbType = MySqlDbType.Int64
                 End Select
                 Return p
             Case Else
@@ -272,6 +310,16 @@ Public Module DatabaseEngine
         End Select
     End Function
 
+    Public Function GetDBConnection() As DbConnection
+        Select Case dbType
+            Case "mssql"
+                Return New SqlConnection(dbi.ConnectionString)
+            Case "mysql"
+                Return New MySqlConnection(dbi.ConnectionString)
+            Case Else
+                Return Nothing
+        End Select
+    End Function
 
 End Module
 

@@ -296,12 +296,9 @@ Public Module InstallActions
 
                 'Now that we have checked that the database is ok, along with the connection string is stored, lets update the board settings.
                 'But first, we check if there is admin creds.
-
                 If Request.Item("adminname") = "" Or Request.Item("adminpass") = "" Then
                     Response.Write(FormatHTMLMessage(errorStr, "Invalid admin credentials", "", "8888", True))
                     Response.End()
-                Else
-                    NewMod(Request.Item("adminname"), Request.Item("adminpass"), "admin")
                 End If
 
                 Dim di As New DataInitializer
@@ -350,11 +347,14 @@ Public Module InstallActions
                     di.UpdateSetting("smartlinkdups", CBool(Request.Item("SmartLinkDuplicateImages")))
                 End If
 
+                'Make the admin
+                NewMod(Request.Item("adminname"), Request.Item("adminpass"), "admin")
+
                 'Finally, mark the board as installed.
 
                 di.UpdateSetting("isinstalled", True)
 
-                Response.Write(FormatHTMLMessage(sucessStr, "Installation was sucessful. Click <a href='default.aspx'>here</a> to open your new board.", "default.aspx", "15", False))
+                Response.Write(FormatHTMLMessage(sucessStr, "Installation was sucessful. Click <a href='%O%default.aspx'>here</a> to open your new board.", "%O%default.aspx", "5", False).Replace("%O%", WebRoot))
 
 
             Case Else

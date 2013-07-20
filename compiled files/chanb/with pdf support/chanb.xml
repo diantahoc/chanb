@@ -113,6 +113,85 @@ form1 control.
 Auto-generated field.
 To modify move field declaration from designer file to code-behind file.
 </remarks>
+</member><member name="M:chanb.UnixCrypt.IntToFourBytes(System.UInt32,System.Byte[],System.UInt32)">
+	<summary>
+ Converts an uint into 4 seperate bytes.
+ </summary>
+	<param name="inputInt">The uint to convert.</param>
+	<param name="outputBytes">The byte buffer into which to store the result.</param>
+	<param name="offset">The offset to start storing at in the outputBytes buffer.</param>
+</member><member name="M:chanb.UnixCrypt.PermOperation(System.UInt32,System.UInt32,System.UInt32,System.UInt32,System.UInt32[])">
+	<summary>
+ Performs some operation on 4 uints. It's labeled PERM_OP in the original source.
+ </summary>
+	<param name="firstInt">The first uint to use.</param>
+	<param name="secondInt">The second uint to use.</param>
+	<param name="thirdInt">The third uint to use.</param>
+	<param name="fourthInt">The fourth uint to use.</param>
+	<param name="operationResults">An array of 2 uints that are the result of this operation.</param>
+</member><member name="M:chanb.UnixCrypt.HPermOperation(System.UInt32,System.Int32,System.UInt32)">
+	<summary>
+ Performs some operation on 3 uints. It's labeled HPERM_OP in the original source.
+ </summary>
+	<param name="firstInt">The first uint to use.</param>
+	<param name="secondInt">The second int to use.</param>
+	<param name="thirdInt">The third uint to use.</param>
+	<returns>An int that is the result of this operation.</returns>
+</member><member name="M:chanb.UnixCrypt.SetDESKey(System.Byte[])">
+	<summary>
+ This method does some very complex bit manipulations.
+ </summary>
+	<param name="encryptionKey">The input data to use for the bit manipulations.</param>
+	<returns>m_desIterations * 2 number of uints that are the result of the manipulations.</returns>
+</member><member name="M:chanb.UnixCrypt.DEncrypt(System.UInt32,System.UInt32,System.UInt32,System.UInt32,System.UInt32,System.UInt32[])">
+	<summary>
+ This method does some bit manipulations.
+ </summary>
+	<param name="left">An input that is manipulated and then used for output.</param>
+	<param name="right">This is used for the bit manipulation.</param>
+	<param name="scheduleIndex">The index of an uint to use from the schedule array.</param>
+	<param name="firstSaltTranslator">The translated salt for the first salt character.</param>
+	<param name="secondSaltTranslator">The translated salt for the second salt character.</param>
+	<param name="schedule">The schedule arrray calculated before.</param>
+	<returns>The result of these manipulations.</returns>
+</member><member name="M:chanb.UnixCrypt.Body(System.UInt32[],System.UInt32,System.UInt32)">
+	<summary>
+ Calculates two uints that are used to encrypt the password.
+ </summary>
+	<param name="schedule">The schedule table calculated earlier.</param>
+	<param name="firstSaltTranslator">The first translated salt character.</param>
+	<param name="secondSaltTranslator">The second translated salt character.</param>
+	<returns>2 uints in an array.</returns>
+</member><member name="M:chanb.UnixCrypt.Crypt(System.String)">
+	<summary>
+ Automatically generate the encryption salt (2 random printable characters for use in the encryption) and call the Crypt() method.
+ </summary>
+	<param name="textToEncrypt">The text that must be encrypted.</param>
+	<returns>The encrypted text.</returns>
+</member><member name="M:chanb.UnixCrypt.Crypt(System.String,System.String)">
+	<summary>
+ Encrypts the specified string using the Unix crypt algorithm.
+ </summary>
+	<param name="encryptionSalt">2 random printable characters that are used to randomize the encryption.</param>
+	<param name="textToEncrypt">The text that must be encrypted.</param>
+	<returns>The encrypted text.</returns>
+</member><member name="T:chanb.UnixCrypt">
+	<summary>
+ Provides the Unix crypt() encryption algorithm.
+ </summary>
+	<remarks>
+ This class is a port from Java source. I do not understand the underlying algorithms, I just converted it to C# and it works.
+ Because I do not understand the underlying algorithms I cannot give most of the variables useful names. I have no clue what their
+ significance is. I tried to give the variable names as much meaning as possible, but the original source just called them a, b, c , etc...
+ 
+ A very important thing to note is that all ints in this code are UNSIGNED ints! Do not change this, ever!!! It will seriously fuckup the working
+ of this class. It uses major bitshifting and while Java gives you the &gt;&gt;&gt; operator to signify a right bitshift WITHOUT setting the MSB for
+ a signed int, C# does not have this operator and will just set the new MSB for you if it happened to be set the moment you bitshifted it.
+ This is undesirable for most bitshifts and in the cases it did matter, I casted the variable back to an int. This was only required where
+ a variable was on the right-side of a bitshift operator.
+ 
+ Reconverted to VB using Instant VB
+ </remarks>
 </member><member name="M:chanb.DatabaseEngine.ExecuteNonQuery(System.String)">
 	<summary>
  Execute text query.
@@ -187,21 +266,6 @@ form1 control.
 Auto-generated field.
 To modify move field declaration from designer file to code-behind file.
 </remarks>
-</member><member name="M:chanb.GlobalFunctions.saveFile(System.Web.HttpPostedFile,System.Boolean)">
-	<summary>
- Save single file.
- </summary>
-	<param name="f"></param>
-	<param name="reply"></param>
-	<returns>File Name.</returns>
-	<remarks></remarks>
-</member><member name="M:chanb.GlobalFunctions.saveMFile(System.Web.HttpFileCollection)">
-	<summary>
- Save multiple files.
- </summary>
-	<param name="li"></param>
-	<returns></returns>
-	<remarks></remarks>
 </member><member name="M:chanb.GlobalFunctions.GetImageWEBPATH(System.String)">
 	<summary>
  For full image

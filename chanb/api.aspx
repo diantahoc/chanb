@@ -29,6 +29,13 @@
             Case "getthreadpagenumber" 'tid = thread id
                 Dim i As Integer = CInt(Request.Item("tid"))
                 Response.Write(GetThreadPageNumber(i))
+            Case "replytothread"
+                'tid = thread id
+                'name = name
+                'email = email
+                'pass = pass
+                'subject = subject
+                'captcha
             Case Else
                 Response.Write("Invalid mode")
         End Select

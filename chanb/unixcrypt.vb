@@ -1,5 +1,4 @@
-﻿#If TripCodeSupport Then
-Option Strict Off
+﻿Option Strict Off
 Imports Microsoft.VisualBasic
 Imports System
 Imports System.Linq
@@ -387,4 +386,3 @@ Friend NotInheritable Class UnixCrypt
         Return encryptionBuffer.ToString()
     End Function
 End Class
-#End If

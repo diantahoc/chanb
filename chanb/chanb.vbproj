@@ -64,6 +64,7 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Web.Services" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -157,6 +158,13 @@
       <SubType>ASPXCodebehind</SubType>
     </Compile>
     <Compile Include="BanData.vb" />
+    <Compile Include="banned.aspx.designer.vb">
+      <DependentUpon>banned.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="banned.aspx.vb">
+      <DependentUpon>banned.aspx</DependentUpon>
+      <SubType>ASPXCodebehind</SubType>
+    </Compile>
     <Compile Include="captcha.aspx.designer.vb">
       <DependentUpon>captcha.aspx</DependentUpon>
     </Compile>
@@ -196,6 +204,9 @@
       <DependentUpon>faq.aspx</DependentUpon>
       <SubType>ASPXCodebehind</SubType>
     </Compile>
+    <Compile Include="fileHandler.ashx.vb">
+      <DependentUpon>fileHandler.ashx</DependentUpon>
+    </Compile>
     <Compile Include="GlobalFunctions.vb" />
     <Compile Include="GlobalVariables.vb" />
     <Compile Include="HTMLParameters.vb" />
@@ -218,6 +229,7 @@
     <Compile Include="JSONAPI.vb" />
     <Compile Include="LangEngine.vb" />
     <Compile Include="Language.vb" />
+    <Compile Include="LoginInfo.vb" />
     <Compile Include="MakeAllStatic.aspx.designer.vb">
       <DependentUpon>MakeAllStatic.aspx</DependentUpon>
     </Compile>
@@ -238,6 +250,13 @@
     </Compile>
     <Compile Include="modaction.aspx.vb">
       <DependentUpon>modaction.aspx</DependentUpon>
+      <SubType>ASPXCodebehind</SubType>
+    </Compile>
+    <Compile Include="modSelectBanReason.aspx.designer.vb">
+      <DependentUpon>modSelectBanReason.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="modSelectBanReason.aspx.vb">
+      <DependentUpon>modSelectBanReason.aspx</DependentUpon>
       <SubType>ASPXCodebehind</SubType>
     </Compile>
     <Compile Include="My Project\AssemblyInfo.vb" />
@@ -299,6 +318,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="fileHandler.ashx" />
     <None Include="My Project\Application.myapp">
       <Generator>MyApplicationCodeGenerator</Generator>
       <LastGenOutput>Application.Designer.vb</LastGenOutput>
@@ -309,13 +329,16 @@
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
     <Content Include="audiofileTemplate.html" />
+    <Content Include="banned.aspx" />
+    <Content Include="bannedPageTemplate.html" />
     <Content Include="deletepost.aspx" />
     <Content Include="deletepostPage.html" />
     <Content Include="js\extension.js" />
     <Content Include="js\noworker.nude.min.js" />
     <Content Include="js\pixastic.custom.js" />
     <Content Include="js\worker.nude.js" />
-    <Content Include="modPanel.html" />
+    <Content Include="modSBR.html" />
+    <Content Include="modSelectBanReason.aspx" />
     <Content Include="panel.aspx" />
     <Content Include="panelTemplate.html" />
     <Content Include="report.aspx" />

@@ -12,7 +12,7 @@
             Response.StatusCode = 403
             Response.Write(FormatHTMLMessage(ForbiddenStr, modRequired, "", "8888", True))
         Else
-            Dim powers As String() = CStr(Session("modpowers")).Split(CChar("-"))
+            Dim powers As String() = CStr(Session("credpower")).Split(CChar("-"))
             Dim id As Integer = 0
             Try
                 id = CInt(Request.Item("id"))
@@ -25,7 +25,13 @@
                     If powers(0) = "0" Then
                         Response.Write(FormatHTMLMessage(ForbiddenStr, modNoPower, "", "8888", True))
                     Else
-                        BanPosterByPost(id)
+                        Dim silentBan As Boolean = False
+                        Try
+                            silentBan = CBool(Request.Item("sib"))
+                        Catch ex As Exception
+                            silentBan = False
+                        End Try
+                        BanPosterByPost(id, silentBan, Session("modname"), Request.Item("reason"))
                         Response.Write(FormatHTMLMessage(sucessStr, modBannedPosterStr.Replace("%", CStr(id)), "", "5555", False))
                     End If
                 Case "delpost"
@@ -56,7 +62,7 @@
                         'nod
                     End If
                 Case Else
-                    Response.Write("invalid action")
+                    Response.Write(forbiddenPage)
             End Select
         End If
     %>

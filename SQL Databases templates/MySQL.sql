@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 08, 2013 at 07:52 AM
+-- Generation Time: Jul 20, 2013 at 08:32 AM
 -- Server version: 5.1.51
 -- PHP Version: 5.3.3
 
@@ -16,7 +16,7 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 /*!40101 SET NAMES utf8 */;
 
 --
--- Database: `chanbtest`
+-- Database: `channelboard`
 --
 
 -- --------------------------------------------------------
@@ -27,11 +27,15 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 
 CREATE TABLE IF NOT EXISTS `bans` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
-  `perm` int(11) DEFAULT NULL,
-  `expiry` datetime DEFAULT NULL,
-  `comment` text,
-  `post` int(11) DEFAULT NULL,
-  `IP` tinytext,
+  `perm` tinyint(1) NOT NULL,
+  `expiry` datetime NOT NULL,
+  `comment` text NOT NULL,
+  `post` int(11) NOT NULL,
+  `IP` tinytext NOT NULL,
+  `canview` tinyint(1) NOT NULL,
+  `modname` text NOT NULL,
+  `bannedon` datetime NOT NULL,
+  `effective` tinyint(1) NOT NULL,
   PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
@@ -47,28 +51,53 @@ CREATE TABLE IF NOT EXISTS `bans` (
 --
 
 CREATE TABLE IF NOT EXISTS `board` (
-  `ID` int(11) NOT NULL AUTO_INCREMENT,
-  `type` int(11) DEFAULT NULL,
-  `parentT` int(11) DEFAULT NULL,
+  `ID` int(4) NOT NULL AUTO_INCREMENT,
+  `type` int(4) NOT NULL,
+  `parentT` int(4) DEFAULT NULL,
   `time` datetime DEFAULT NULL,
   `postername` text,
-  `comment` mediumtext,
+  `comment` text,
   `email` text,
   `subject` text,
   `password` text,
-  `imagename` mediumtext,
-  `IP` tinytext,
+  `IP` text NOT NULL,
   `bumplevel` datetime DEFAULT NULL,
-  `sticky` int(11) DEFAULT NULL,
+  `sticky` tinyint(1) NOT NULL,
   `ua` text,
-  `posterID` tinytext,
-  `locked` int(11) DEFAULT NULL,
-  `mta` int(11) DEFAULT NULL,
+  `posterID` text,
+  `locked` tinyint(1) NOT NULL,
+  `mta` tinyint(1) NOT NULL,
+  `hasFile` tinyint(1) NOT NULL,
   PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 --
 -- Dumping data for table `board`
+--
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `files`
+--
+
+CREATE TABLE IF NOT EXISTS `files` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `postID` int(11) NOT NULL,
+  `chanbname` text NOT NULL,
+  `realname` text NOT NULL,
+  `size` bigint(20) NOT NULL,
+  `dimension` text NOT NULL,
+  `md5` text NOT NULL,
+  `extension` text NOT NULL,
+  `mimetype` text NOT NULL,
+  `sfw` tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `files`
 --
 
 
@@ -112,7 +141,7 @@ CREATE TABLE IF NOT EXISTS `mods` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `username` text NOT NULL,
   `password` text NOT NULL,
-  `power` text NOT NULL,
+  `power` text,
   PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 

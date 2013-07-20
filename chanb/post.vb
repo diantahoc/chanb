@@ -1,5 +1,8 @@
 ﻿Public Class WPost
-    Public _imageP As String = ""
+    'Public _imageP As String = ""
+    Public FileCount As Integer = 0
+    Public files As WPostImage() = {}
+    Public HasFile As Boolean = False
     Public comment As String = ""
     Public ip As String = ""
     Public subject As String = ""

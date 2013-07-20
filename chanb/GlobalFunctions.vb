@@ -36,14 +36,326 @@ Public Module GlobalFunctions
         Next
     End Sub
 
-    ''' <summary>
-    ''' Save single file.
-    ''' </summary>
-    ''' <param name="f"></param>
-    ''' <param name="reply"></param>
-    ''' <returns>File Name.</returns>
-    ''' <remarks></remarks>
-    Private Function saveFile(ByVal f As HttpPostedFile, ByVal reply As Boolean) As String
+    '    ''' <summary>
+    '    ''' Save single file.
+    '    ''' </summary>
+    '    ''' <param name="f"></param>
+    '    ''' <param name="reply"></param>
+    '    ''' <returns>File Name.</returns>
+    '    ''' <remarks></remarks>
+    '    Private Function saveFile(ByVal f As HttpPostedFile, ByVal reply As Boolean, ByVal postID As Integer) As String
+    '        ' If f.ContentLength > MaximumFileSize Then Throw New Exception(FileToBig)
+    '        If FileIsImage(f) Then
+
+    '            Dim w As Drawing.Image
+
+    '            Try
+    '                'Check if the file is a valid image
+    '                w = Drawing.Image.FromStream(f.InputStream)
+    '                'If RemoveEXIFData Then
+    '                '    w = RemoveEXIF(w)
+    '                'End If
+    '            Catch ex As Exception
+    '                'No image is required when replying
+    '                If f.ContentLength = 0 And reply = True Then
+    '                    Return ""
+    '                    Exit Function
+    '                Else
+    '                    Throw New ArgumentException(BadOrNoImage)
+    '                End If
+    '            End Try
+
+
+    '            Dim fileextension As String = f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1).ToLower
+
+    '            Dim dd As String = CStr(Date.UtcNow.ToFileTime)
+    '            'Full image path
+    '            Dim p As String = StorageFolder & "\" & dd & "." & fileextension
+
+    '            ''Thumb path
+    '            Dim thumb As String
+    '            If fileextension = "png" Then
+    '                thumb = StorageFolderThumbs & "\th" & dd & ".png"
+    '            Else
+    '                thumb = StorageFolderThumbs & "\th" & dd & ".jpg"
+    '            End If
+
+    '            'Check if resize is needed.
+    '            If (w.Width * w.Height) < 62500 Then
+    '                If fileextension = "png" Then
+    '                    w.Save(thumb, Drawing.Imaging.ImageFormat.Png)
+    '                Else
+    '                    w.Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
+    '                End If
+    '            Else
+    '                If fileextension = "png" Then
+    '                    ResizeImage(w, 250).Save(thumb, Drawing.Imaging.ImageFormat.Png)
+    '                Else
+    '                    ResizeImage(w, 250).Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
+    '                End If
+    '            End If
+
+    '            'SaveThumbnail(dd, w, fileextension)
+
+    '            'Save the image.
+    '            f.SaveAs(p)
+
+    '            'Calculate the file hash. I save the file then calulate the hash because f.InputStream always return a null stream. 
+    '            Dim fs As New IO.FileStream(p, IO.FileMode.Open)
+    '            Dim md5string As String = MD5(fs)
+    '            fs.Close()
+
+    '            Dim sp As String = ""
+
+    '            If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
+    '                'If image already exist, we fetch the matching image data from the database, and delete the saved files.
+    '                If SmartLinkDuplicateImages = False Then
+    '                    FileIO.FileSystem.DeleteFile(p)
+    '                    FileIO.FileSystem.DeleteFile(thumb)
+    '                    Throw New ArgumentException(duplicateFile)
+    '                Else
+    '                    Dim wpi As WPostImage = GetImageDataByMD5(md5string)
+    '                    'Delete previously saved files.
+    '                    FileIO.FileSystem.DeleteFile(p)
+    '                    FileIO.FileSystem.DeleteFile(thumb)
+    '                    sp = wpi.ChanbName & ":" & CStr(wpi.Size) & ":" & wpi.Dimensions & ":" & wpi.RealName & ":" & wpi.MD5
+    '                End If
+    '            Else
+    '                'chanb name : size in bytes : dimensions : realname : md5
+    '                sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & w.Size.Width & "x" & w.Size.Height & ":" & RemoveSpecialChars(f.FileName) & ":" & md5string
+    '                w.Dispose()
+    '            End If
+    '            Return sp
+
+    '        Else 'Maybe a PDF or SVG file or no file
+    '            Dim fileextension As String = f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1)
+
+    '            Select Case fileextension.ToUpper()
+    '                Case "SVG"
+    '                    Dim dd As String = CStr(Date.UtcNow.ToFileTime)
+    '                    Dim p As String = StorageFolder & "\" & dd & "." & fileextension
+    '                    'Thumb path
+    '                    Dim thumb As String = StorageFolderThumbs & "\th" & dd & ".png"
+    '                    f.SaveAs(p)
+
+    '                    Dim fs As New IO.FileStream(p, IO.FileMode.Open)
+    '                    Dim md5string As String = MD5(fs)
+    '                    fs.Close()
+
+    '                    Dim sp As String = ""
+
+    '                    If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
+
+    '                        If SmartLinkDuplicateImages = False Then
+    '                            FileIO.FileSystem.DeleteFile(p)
+    '                            FileIO.FileSystem.DeleteFile(thumb)
+    '                            Throw New ArgumentException(duplicateFile)
+    '                        Else
+    '                            Dim wpi As WPostImage = GetImageDataByMD5(md5string)
+    '                            FileIO.FileSystem.DeleteFile(p)
+    '                            sp = wpi.ChanbName & ":" & CStr(wpi.Size) & ":" & wpi.Dimensions & ":" & wpi.RealName & ":" & wpi.MD5
+    '                        End If
+    '                    Else
+
+    '                        Dim svgBi As Drawing.Bitmap
+
+    '                        Try
+    '                            Dim svgDoc As Svg.SvgDocument = Svg.SvgDocument.Open(p)
+    '                            svgBi = svgDoc.Draw()
+    '                        Catch ex As Exception
+    '                            svgBi = New Drawing.Bitmap(150, 30)
+    '                            Dim g As Drawing.Graphics = Drawing.Graphics.FromImage(svgBi)
+    '                            g.Clear(Drawing.Color.White)
+    '                            g.DrawString("SVG File", New Drawing.Font(Drawing.FontFamily.GenericMonospace, 20, Drawing.FontStyle.Regular, Drawing.GraphicsUnit.Pixel), Drawing.Brushes.Black, 0, 0)
+    '                            g.Dispose()
+    '                        End Try
+
+
+    '                        'If IO.File.ReadAllText(p).Contains("<script>") Then
+
+    '                        'End If
+
+    '                        If (svgBi.Width * svgBi.Height) < 62500 Then
+    '                            svgBi.Save(thumb)
+    '                        Else
+    '                            ResizeImage(svgBi, 250).Save(thumb)
+    '                        End If
+    '                        sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & svgBi.Size.Width & "x" & svgBi.Size.Height & ":" & RemoveSpecialChars(f.FileName) & ":" & md5string
+    '                        svgBi.Dispose()
+    '                    End If
+
+    '                    Return sp
+    '                Case "PDF"
+    '#If EnablePDF Then
+    '                    Dim dd As String = CStr(Date.UtcNow.ToFileTime)
+    '                    Dim p As String = StorageFolder & "\" & dd & "." & fileextension
+    '                    'Thumb path
+    '                    Dim thumb As String = StorageFolderThumbs & "\th" & dd & ".jpg"
+    '                    f.SaveAs(p)
+
+    '                    Dim fs As New IO.FileStream(p, IO.FileMode.Open)
+    '                    Dim md5string As String = MD5(fs)
+    '                    fs.Close()
+
+    '                    Dim sp As String = ""
+
+    '                    If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
+    '                        If SmartLinkDuplicateImages = False Then
+    '                            FileIO.FileSystem.DeleteFile(p)
+    '                            FileIO.FileSystem.DeleteFile(thumb)
+    '                            Throw New ArgumentException(duplicateFile)
+    '                        Else
+    '                            Dim wpi As WPostImage = GetImageDataByMD5(md5string)
+    '                            FileIO.FileSystem.DeleteFile(p)
+    '                            sp = wpi.ChanbName & ":" & CStr(wpi.Size) & ":" & wpi.Dimensions & ":" & wpi.RealName & ":" & wpi.MD5
+    '                        End If
+    '                    Else
+
+    '                        Dim fileS As New IO.FileStream(p, IO.FileMode.Open)
+
+    '                        Dim pd As New TallComponents.PDF.Rasterizer.Document(fileS)
+    '                        Dim page As TallComponents.PDF.Rasterizer.Page = pd.Pages(0)
+
+    '                        Dim scale As Double = 150 / 72
+
+    '                        Dim pdfBi As Drawing.Bitmap = New Drawing.Bitmap(CInt(scale * page.Width), CInt(scale * page.Height))
+
+    '                        Dim graph As Drawing.Graphics = Drawing.Graphics.FromImage(pdfBi)
+    '                        graph.SmoothingMode = Drawing.Drawing2D.SmoothingMode.AntiAlias
+    '                        graph.ScaleTransform(CSng(scale), CSng(scale))
+    '                        graph.Clear(Drawing.Color.White)
+    '                        page.Draw(graph)
+
+    '                        graph.Dispose()
+    '                        fileS.Close()
+
+    '                        If (pdfBi.Width * pdfBi.Height) < 62500 Then
+    '                            pdfBi.Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
+    '                        Else
+    '                            ResizeImage(pdfBi, 250).Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
+    '                        End If
+    '                        sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & pdfBi.Size.Width & "x" & pdfBi.Size.Height & ":" & RemoveSpecialChars(f.FileName) & ":" & md5string
+    '                        pdfBi.Dispose()
+
+    '                    End If
+    '                    Return sp
+    '#Else
+    '                    Dim dd As String = CStr(Date.UtcNow.ToFileTime)
+    '                    Dim p As String = StorageFolder & "\" & dd & "." & fileextension
+    '                    'Thumb path
+    '                    Dim thumb As String = StorageFolderThumbs & "\th" & dd & ".jpg"
+    '                    f.SaveAs(p)
+
+    '                    Dim fs As New IO.FileStream(p, IO.FileMode.Open)
+    '                    Dim md5string As String = MD5(fs)
+    '                    fs.Close()
+
+    '                    Dim sp As String = ""
+
+    '                    If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
+    '                        If SmartLinkDuplicateImages = False Then
+    '                            FileIO.FileSystem.DeleteFile(p)
+    '                            FileIO.FileSystem.DeleteFile(thumb)
+    '                            Throw New ArgumentException(duplicateFile)
+    '                        Else
+    '                            Dim wpi As WPostImage = GetImageDataByMD5(md5string)
+    '                            FileIO.FileSystem.DeleteFile(p)
+    '                            sp = wpi.ChanbName & ":" & CStr(wpi.Size) & ":" & wpi.Dimensions & ":" & wpi.RealName & ":" & wpi.MD5
+    '                        End If
+    '                    Else
+
+    '                        Dim pdfBi As Drawing.Bitmap = New Drawing.Bitmap(150, 30)
+
+
+    '                        Dim graph As Drawing.Graphics = Drawing.Graphics.FromImage(pdfBi)
+
+    '                        graph.Clear(Drawing.Color.White)
+    '                        graph.DrawString("PDF File", New Drawing.Font(Drawing.FontFamily.GenericMonospace, 20, Drawing.FontStyle.Regular, Drawing.GraphicsUnit.Pixel), Drawing.Brushes.Black, 0, 0)
+
+    '                        graph.Dispose()
+
+
+    '                        If (pdfBi.Width * pdfBi.Height) < 62500 Then
+    '                            pdfBi.Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
+    '                        Else
+    '                            ResizeImage(pdfBi, 250).Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
+    '                        End If
+    '                        sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & pdfBi.Size.Width & "x" & pdfBi.Size.Height & ":" & RemoveSpecialChars(f.FileName) & ":" & md5string
+    '                        pdfBi.Dispose()
+
+    '                    End If
+    '                    Return sp
+    '#End If
+
+    '                Case "WEBM"
+
+    '                    Dim dd As String = CStr(Date.UtcNow.ToFileTime)
+    '                    Dim p As String = StorageFolder & "\" & dd & "." & fileextension
+    '                    'Thumb path
+    '                    ' Dim thumb As String = StorageFolderThumbs & "\th" & dd & ".jpg"
+    '                    f.SaveAs(p)
+
+    '                    Dim fs As New IO.FileStream(p, IO.FileMode.Open)
+    '                    Dim md5string As String = MD5(fs)
+    '                    fs.Close()
+
+    '                    Dim sp As String = ""
+
+    '                    If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
+    '                        If SmartLinkDuplicateImages = False Then
+    '                            FileIO.FileSystem.DeleteFile(p)
+    '                            ' FileIO.FileSystem.DeleteFile(thumb)
+    '                            Throw New ArgumentException(duplicateFile)
+    '                        Else
+    '                            Dim wpi As WPostImage = GetImageDataByMD5(md5string)
+    '                            FileIO.FileSystem.DeleteFile(p)
+    '                            sp = wpi.ChanbName & ":" & CStr(wpi.Size) & ":" & wpi.Dimensions & ":" & wpi.RealName & ":" & wpi.MD5
+    '                        End If
+    '                    Else
+
+
+    '                        sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & "video" & ":" & RemoveSpecialChars(f.FileName) & ":" & md5string
+    '                    End If
+    '                    Return sp
+    '                Case "MP3", "OGG"
+    '                    Dim dd As String = CStr(Date.UtcNow.ToFileTime)
+    '                    Dim p As String = StorageFolder & "\" & dd & "." & fileextension
+    '                    f.SaveAs(p)
+    '                    Dim fs As New IO.FileStream(p, IO.FileMode.Open)
+    '                    Dim md5string As String = MD5(fs)
+    '                    fs.Close()
+    '                    Dim sp As String = ""
+    '                    If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
+    '                        If SmartLinkDuplicateImages = False Then
+    '                            FileIO.FileSystem.DeleteFile(p)
+    '                            Throw New ArgumentException(duplicateFile)
+    '                        Else
+    '                            Dim wpi As WPostImage = GetImageDataByMD5(md5string)
+    '                            FileIO.FileSystem.DeleteFile(p)
+    '                            sp = wpi.ChanbName & ":" & CStr(wpi.Size) & ":" & wpi.Dimensions & ":" & wpi.RealName & ":" & wpi.MD5
+    '                        End If
+    '                    Else
+    '                        sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & "audio" & ":" & RemoveSpecialChars(f.FileName) & ":" & md5string
+    '                    End If
+    '                    Return sp
+    '                Case "" ' A case of "" may occure when no file is uploaded. Simply return nothing.
+    '                    Return ""
+    '                Case Else
+    '                    Throw New ArgumentException("Unsupported file type")
+    '            End Select
+    '        End If
+    '    End Function
+
+    Private Sub SaveAllFilesToSinglePost(ByVal li As List(Of HttpPostedFile), ByVal postId As Integer)
+        Dim connection As DbConnection = DatabaseEngine.GetDBConnection
+        connection.Open()
+        For Each file As HttpPostedFile In li
+            SavePostFile(file, True, postId, connection)
+        Next
+        connection.Close()
+    End Sub
+
+    Private Sub SavePostFile(ByVal f As HttpPostedFile, ByVal isReply As Boolean, ByVal postId As Integer, Optional ByVal Connection As DbConnection = Nothing)
         ' If f.ContentLength > MaximumFileSize Then Throw New Exception(FileToBig)
         If FileIsImage(f) Then
 
@@ -57,9 +369,8 @@ Public Module GlobalFunctions
                 'End If
             Catch ex As Exception
                 'No image is required when replying
-                If f.ContentLength = 0 And reply = True Then
-                    Return ""
-                    Exit Function
+                If f.ContentLength = 0 And isReply Then
+                    Exit Sub
                 Else
                     Throw New ArgumentException(BadOrNoImage)
                 End If
@@ -71,7 +382,8 @@ Public Module GlobalFunctions
             Dim dd As String = CStr(Date.UtcNow.ToFileTime)
             'Full image path
             Dim p As String = StorageFolder & "\" & dd & "." & fileextension
-            'Thumb path
+
+            ''Thumb path
             Dim thumb As String
             If fileextension = "png" Then
                 thumb = StorageFolderThumbs & "\th" & dd & ".png"
@@ -94,37 +406,51 @@ Public Module GlobalFunctions
                 End If
             End If
 
+            'SaveThumbnail(dd, w, fileextension)
+
             'Save the image.
             f.SaveAs(p)
 
-            'Calculate the file hash. I save the file then calulate the hash because f.InputStream always return a null stream. 
             Dim fs As New IO.FileStream(p, IO.FileMode.Open)
             Dim md5string As String = MD5(fs)
             fs.Close()
 
-            Dim sp As String = ""
-
-            If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
+            If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection) Then
                 'If image already exist, we fetch the matching image data from the database, and delete the saved files.
                 If SmartLinkDuplicateImages = False Then
                     FileIO.FileSystem.DeleteFile(p)
                     FileIO.FileSystem.DeleteFile(thumb)
                     Throw New ArgumentException(duplicateFile)
                 Else
-                    Dim wpi As WPostImage = GetImageDataByMD5(md5string)
+                    Dim wpi As WPostImage = GetFileDataByMD5(md5string)
                     'Delete previously saved files.
                     FileIO.FileSystem.DeleteFile(p)
                     FileIO.FileSystem.DeleteFile(thumb)
-                    sp = wpi.ChanbName & ":" & CStr(wpi.Size) & ":" & wpi.Dimensions & ":" & wpi.RealName & ":" & wpi.MD5
+                    'Change the necessary variables
+                    wpi.PostID = postId
+                    wpi.RealName = f.FileName
+
+                    AddFileToDatabase(wpi, postId, Connection)
                 End If
             Else
-                'chanb name : size in bytes : dimensions : realname : md5
-                sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & w.Size.Width & "x" & w.Size.Height & ":" & RemoveSpecialChars(f.FileName) & ":" & md5string
+
+                Dim wpi As New WPostImage
+                wpi.ChanbName = dd & "." & fileextension
+                wpi.Size = f.ContentLength
+                wpi.Dimensions = w.Size.Width & "x" & w.Size.Height
+                wpi.Extension = fileextension.ToUpper
+                wpi.RealName = f.FileName
+                wpi.MD5 = md5string
+                wpi.PostID = postId
+                wpi.MimeType = GetMimeType(fileextension)
+                AddFileToDatabase(wpi, postId, Connection)
+
                 w.Dispose()
             End If
-            Return sp
 
-        Else 'Maybe a PDF or SVG file or no file
+
+
+        Else 'Maybe a PDF/SVG/WEBM/OGG/MP3 file or no file
             Dim fileextension As String = f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1)
 
             Select Case fileextension.ToUpper()
@@ -139,19 +465,24 @@ Public Module GlobalFunctions
                     Dim md5string As String = MD5(fs)
                     fs.Close()
 
-                    Dim sp As String = ""
 
-                    If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
+
+                    If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection) Then
 
                         If SmartLinkDuplicateImages = False Then
                             FileIO.FileSystem.DeleteFile(p)
                             FileIO.FileSystem.DeleteFile(thumb)
                             Throw New ArgumentException(duplicateFile)
                         Else
-                            Dim wpi As WPostImage = GetImageDataByMD5(md5string)
+                            Dim wpi As WPostImage = GetFileDataByMD5(md5string)
                             FileIO.FileSystem.DeleteFile(p)
-                            sp = wpi.ChanbName & ":" & CStr(wpi.Size) & ":" & wpi.Dimensions & ":" & wpi.RealName & ":" & wpi.MD5
+
+                            wpi.RealName = f.FileName
+                            wpi.PostID = postId
+                            AddFileToDatabase(wpi, postId, Connection)
+
                         End If
+
                     Else
 
                         Dim svgBi As Drawing.Bitmap
@@ -167,21 +498,28 @@ Public Module GlobalFunctions
                             g.Dispose()
                         End Try
 
-
-                        'If IO.File.ReadAllText(p).Contains("<script>") Then
-
-                        'End If
-
                         If (svgBi.Width * svgBi.Height) < 62500 Then
                             svgBi.Save(thumb)
                         Else
                             ResizeImage(svgBi, 250).Save(thumb)
                         End If
-                        sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & svgBi.Size.Width & "x" & svgBi.Size.Height & ":" & RemoveSpecialChars(f.FileName) & ":" & md5string
+
+                        Dim wpi As New WPostImage
+                        wpi.ChanbName = dd & "." & fileextension
+                        wpi.Size = f.ContentLength
+                        wpi.Dimensions = svgBi.Size.Width & "x" & svgBi.Size.Height
+                        wpi.Extension = fileextension.ToUpper
+                        wpi.RealName = f.FileName
+                        wpi.MD5 = md5string
+                        wpi.PostID = postId
+                        wpi.MimeType = GetMimeType(fileextension)
                         svgBi.Dispose()
+
+                        AddFileToDatabase(wpi, postId, Connection)
+
                     End If
 
-                    Return sp
+
                 Case "PDF"
 #If EnablePDF Then
                     Dim dd As String = CStr(Date.UtcNow.ToFileTime)
@@ -194,17 +532,18 @@ Public Module GlobalFunctions
                     Dim md5string As String = MD5(fs)
                     fs.Close()
 
-                    Dim sp As String = ""
 
-                    If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
+
+                    If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection) Then
                         If SmartLinkDuplicateImages = False Then
                             FileIO.FileSystem.DeleteFile(p)
                             FileIO.FileSystem.DeleteFile(thumb)
                             Throw New ArgumentException(duplicateFile)
                         Else
-                            Dim wpi As WPostImage = GetImageDataByMD5(md5string)
-                            FileIO.FileSystem.DeleteFile(p)
-                            sp = wpi.ChanbName & ":" & CStr(wpi.Size) & ":" & wpi.Dimensions & ":" & wpi.RealName & ":" & wpi.MD5
+                            Dim wpi As WPostImage = GetFileDataByMD5(md5string)
+                            wpi.RealName = f.FileName
+                            wpi.PostID = postId
+                            AddFileToDatabase(wpi, postId, Connection)
                         End If
                     Else
 
@@ -231,11 +570,22 @@ Public Module GlobalFunctions
                         Else
                             ResizeImage(pdfBi, 250).Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
                         End If
-                        sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & pdfBi.Size.Width & "x" & pdfBi.Size.Height & ":" & RemoveSpecialChars(f.FileName) & ":" & md5string
+
+                        Dim wpi As New WPostImage
+                        wpi.ChanbName = dd & "." & fileextension
+                        wpi.Size = f.ContentLength
+                        wpi.Dimensions = pdfBi.Size.Width & "x" & pdfBi.Size.Height
+                        wpi.Extension = fileextension.ToUpper
+                        wpi.RealName = f.FileName
+                        wpi.MD5 = md5string
+                        wpi.PostID = postId
+                        wpi.MimeType = GetMimeType(fileextension)
                         pdfBi.Dispose()
 
+                        AddFileToDatabase(wpi, postId, Connection)
+
                     End If
-                    Return sp
+
 #Else
                     Dim dd As String = CStr(Date.UtcNow.ToFileTime)
                     Dim p As String = StorageFolder & "\" & dd & "." & fileextension
@@ -247,17 +597,19 @@ Public Module GlobalFunctions
                     Dim md5string As String = MD5(fs)
                     fs.Close()
 
-                    Dim sp As String = ""
 
-                    If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
+                    If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection)  Then
                         If SmartLinkDuplicateImages = False Then
                             FileIO.FileSystem.DeleteFile(p)
                             FileIO.FileSystem.DeleteFile(thumb)
                             Throw New ArgumentException(duplicateFile)
                         Else
-                            Dim wpi As WPostImage = GetImageDataByMD5(md5string)
+                            Dim wpi As WPostImage = GetFileDataByMD5(md5string)
                             FileIO.FileSystem.DeleteFile(p)
-                            sp = wpi.ChanbName & ":" & CStr(wpi.Size) & ":" & wpi.Dimensions & ":" & wpi.RealName & ":" & wpi.MD5
+
+                            wpi.RealName = f.FileName
+                            wpi.PostID = postId
+                            AddFileToDatabase(wpi, postId, Connection)
                         End If
                     Else
 
@@ -277,43 +629,60 @@ Public Module GlobalFunctions
                         Else
                             ResizeImage(pdfBi, 250).Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
                         End If
-                        sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & pdfBi.Size.Width & "x" & pdfBi.Size.Height & ":" & RemoveSpecialChars(f.FileName) & ":" & md5string
+
+                        Dim wpi As New WPostImage
+                        wpi.ChanbName = dd & "." & fileextension
+                        wpi.Size = f.ContentLength
+                        wpi.Dimensions = pdfBi.Size.Width & "x" & pdfBi.Size.Height
+                        wpi.Extension = fileextension.ToUpper
+                        wpi.RealName = f.FileName
+                        wpi.MD5 = md5string
+                        wpi.PostID = postId
+                        wpi.MimeType = GetMimeType(fileextension)
                         pdfBi.Dispose()
 
+                        AddFileToDatabase(wpi, postId, Connection)
+
                     End If
-                    Return sp
+
 #End If
 
                 Case "WEBM"
 
                     Dim dd As String = CStr(Date.UtcNow.ToFileTime)
                     Dim p As String = StorageFolder & "\" & dd & "." & fileextension
-                    'Thumb path
-                    ' Dim thumb As String = StorageFolderThumbs & "\th" & dd & ".jpg"
                     f.SaveAs(p)
 
                     Dim fs As New IO.FileStream(p, IO.FileMode.Open)
                     Dim md5string As String = MD5(fs)
                     fs.Close()
 
-                    Dim sp As String = ""
-
-                    If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
+                    If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection) Then
                         If SmartLinkDuplicateImages = False Then
                             FileIO.FileSystem.DeleteFile(p)
-                            ' FileIO.FileSystem.DeleteFile(thumb)
                             Throw New ArgumentException(duplicateFile)
                         Else
-                            Dim wpi As WPostImage = GetImageDataByMD5(md5string)
+                            Dim wpi As WPostImage = GetFileDataByMD5(md5string)
                             FileIO.FileSystem.DeleteFile(p)
-                            sp = wpi.ChanbName & ":" & CStr(wpi.Size) & ":" & wpi.Dimensions & ":" & wpi.RealName & ":" & wpi.MD5
+                            wpi.RealName = f.FileName
+                            wpi.PostID = postId
+                            AddFileToDatabase(wpi, postId, Connection)
                         End If
                     Else
 
+                        Dim wpi As New WPostImage
+                        wpi.ChanbName = dd & "." & fileextension
+                        wpi.Size = f.ContentLength
+                        wpi.Dimensions = "video"
+                        wpi.Extension = fileextension.ToUpper
+                        wpi.RealName = f.FileName
+                        wpi.MD5 = md5string
+                        wpi.PostID = postId
+                        wpi.MimeType = GetMimeType(fileextension)
+                        AddFileToDatabase(wpi, postId, Connection)
 
-                        sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & "video" & ":" & RemoveSpecialChars(f.FileName) & ":" & md5string
                     End If
-                    Return sp
+
                 Case "MP3", "OGG"
                     Dim dd As String = CStr(Date.UtcNow.ToFileTime)
                     Dim p As String = StorageFolder & "\" & dd & "." & fileextension
@@ -321,73 +690,80 @@ Public Module GlobalFunctions
                     Dim fs As New IO.FileStream(p, IO.FileMode.Open)
                     Dim md5string As String = MD5(fs)
                     fs.Close()
-                    Dim sp As String = ""
-                    If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
+
+                    If (Not AllowDuplicatesFiles) And FileExistInDB(md5string) Then
                         If SmartLinkDuplicateImages = False Then
                             FileIO.FileSystem.DeleteFile(p)
                             Throw New ArgumentException(duplicateFile)
                         Else
-                            Dim wpi As WPostImage = GetImageDataByMD5(md5string)
+                            Dim wpi As WPostImage = GetFileDataByMD5(md5string)
                             FileIO.FileSystem.DeleteFile(p)
-                            sp = wpi.ChanbName & ":" & CStr(wpi.Size) & ":" & wpi.Dimensions & ":" & wpi.RealName & ":" & wpi.MD5
+                            wpi.RealName = f.FileName
+                            wpi.PostID = postId
+                            AddFileToDatabase(wpi, postId, Connection)
                         End If
                     Else
-                        sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & "audio" & ":" & RemoveSpecialChars(f.FileName) & ":" & md5string
+
+                        Dim wpi As New WPostImage
+                        wpi.ChanbName = dd & "." & fileextension
+                        wpi.Size = f.ContentLength
+                        wpi.Dimensions = "audio"
+                        wpi.Extension = fileextension.ToUpper
+                        wpi.RealName = f.FileName
+                        wpi.MD5 = md5string
+                        wpi.PostID = postId
+                        wpi.MimeType = GetMimeType(fileextension)
+                        AddFileToDatabase(wpi, postId, Connection)
+
                     End If
-                    Return sp
                 Case "" ' A case of "" may occure when no file is uploaded. Simply return nothing.
-                    Return ""
+                    Return
                 Case Else
                     Throw New ArgumentException("Unsupported file type")
             End Select
         End If
-    End Function
+    End Sub
 
-    Private Function RemoveEXIF(ByVal i As Drawing.Image) As Drawing.Image
-        Dim mem As New IO.MemoryStream
-        i.Save(mem, Drawing.Imaging.ImageFormat.Bmp)
-        Dim bi As Drawing.Image = Drawing.Image.FromStream(mem)
-        bi.Save(mem, i.RawFormat)
-        Return Drawing.Image.FromStream(mem)
-    End Function
+    'Private Sub SaveThumbnail(ByVal chanbName As String, ByVal i As Drawing.Image, ByVal fileextension As String)
 
-    Public Function GetWPostImage(ByVal sp As String) As WPostImage
-        Dim wp As New WPostImage
-        wp.ChanbName = sp.Split(CChar(":")).ElementAt(0)
-        wp.Size = CLng(sp.Split(CChar(":")).ElementAt(1))
-        wp.Dimensions = sp.Split(CChar(":")).ElementAt(2)
-        wp.RealName = sp.Split(CChar(":")).ElementAt(3)
-        wp.MD5 = sp.Split(CChar(":")).ElementAt(4)
-        wp.Extension = wp.RealName.Split(CChar(".")).ElementAt(wp.RealName.Split(CChar(".")).Length - 1).ToUpper
-        Return wp
-    End Function
+    '    If fileextension = "png" Then
+    '        'Save thumnail as png
+    '        Dim thumb As String = StorageFolderThumbs & "\th" & chanbName & ".png"
 
-    ''' <summary>
-    ''' Save multiple files.
-    ''' </summary>
-    ''' <param name="li"></param>
-    ''' <returns></returns>
-    ''' <remarks></remarks>
-    Private Function saveMFile(ByVal li As HttpFileCollection) As String
-        Dim s As New StringBuilder
-        Dim list As New List(Of String)
-        For Each a As String In li.Keys
-            Dim f As HttpPostedFile = li.Item(a)
-            If (f.ContentLength > 0) Then
-                list.Add(saveFile(f, True))
-                list.Add(";")
-            Else
-                'Maybe an empty file field.
-            End If
-        Next
-        'Remove the last ';'
-        If list.Count > 1 Then list.RemoveAt(list.Count - 1)
-        For Each x In list
-            s.Append(x)
-        Next
-        list.Clear()
-        Return s.ToString
-    End Function
+    '        Dim codec As Drawing.Imaging.ImageCodecInfo = Drawing.Imaging.ImageCodecInfo.GetImageEncoders().First(Function(c) c.MimeType = "image/png")
+
+    '        Dim parameters As New Drawing.Imaging.EncoderParameters(3)
+    '        parameters.Param(0) = New Drawing.Imaging.EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 100L)
+    '        parameters.Param(1) = New Drawing.Imaging.EncoderParameter(System.Drawing.Imaging.Encoder.ScanMethod, CInt(Fix(Drawing.Imaging.EncoderValue.ScanMethodInterlaced)))
+    '        parameters.Param(2) = New Drawing.Imaging.EncoderParameter(System.Drawing.Imaging.Encoder.RenderMethod, CInt(Fix(Drawing.Imaging.EncoderValue.RenderProgressive)))
+
+    '        Dim bi As Drawing.Image = ResizeImage(i, 250)
+    '        bi.Save(thumb, codec, parameters)
+    '        bi.Dispose()
+    '        parameters.Dispose()
+    '    Else
+    '        Dim thumb As String = StorageFolderThumbs & "\th" & chanbName & ".jpg"
+    '        Dim codec As Drawing.Imaging.ImageCodecInfo = Drawing.Imaging.ImageCodecInfo.GetImageEncoders().First(Function(c) c.MimeType = "image/jpeg")
+    '        Dim parameters As New Drawing.Imaging.EncoderParameters(3)
+    '        parameters.Param(0) = New Drawing.Imaging.EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 100L)
+    '        parameters.Param(1) = New Drawing.Imaging.EncoderParameter(System.Drawing.Imaging.Encoder.ScanMethod, CInt(Fix(Drawing.Imaging.EncoderValue.ScanMethodInterlaced)))
+    '        parameters.Param(2) = New Drawing.Imaging.EncoderParameter(System.Drawing.Imaging.Encoder.RenderMethod, CInt(Fix(Drawing.Imaging.EncoderValue.RenderProgressive)))
+
+    '        Dim bi As Drawing.Image = ResizeImage(i, 250)
+    '        bi.Save(thumb, codec, parameters)
+    '        bi.Dispose()
+    '        parameters.Dispose()
+    '    End If
+
+    'End Sub
+
+    'Private Function RemoveEXIF(ByVal i As Drawing.Image) As Drawing.Image
+    '    Dim mem As New IO.MemoryStream
+    '    i.Save(mem, Drawing.Imaging.ImageFormat.Bmp)
+    '    Dim bi As Drawing.Image = Drawing.Image.FromStream(mem)
+    '    bi.Save(mem, i.RawFormat)
+    '    Return Drawing.Image.FromStream(mem)
+    'End Function
 
     Private Function FileIsImage(ByVal f As HttpPostedFile) As Boolean
         Dim extension As String = f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1).ToLower ' ToLower because string comparaison is case sensitive.
@@ -504,6 +880,7 @@ Public Module GlobalFunctions
         postHTML = postHTML.Replace("%DATE UTC TEXT%", GetTimeString(po.time))
         postHTML = postHTML.Replace("%LANG reportStr%", reportStr)
         postHTML = postHTML.Replace("%LANG deleteStr%", deleteStr)
+        postHTML = postHTML.Replace("%ROOT%", WebRoot)
 
         Dim parentPoID As Integer = po.PostID
         If po.type = WPost.PostType.Reply Then parentPoID = po.parent
@@ -524,7 +901,8 @@ Public Module GlobalFunctions
 
         postHTML = postHTML.Replace("%IMAGES%", GetFilesHTML(po))
 
-        If pa.IsModerator Then postHTML = postHTML.Replace("%MODPANEL%", pa.modMenu.Replace("%ID%", CStr(po.PostID))) Else postHTML = postHTML.Replace("%MODPANEL%", "")
+        If pa.isModerator Or pa.isAdmin Then postHTML = postHTML.Replace("%MODPANEL%", pa.CredMenu.Replace("%ID%", CStr(po.PostID))) Else postHTML = postHTML.Replace("%MODPANEL%", "")
+
         ''Post text  
         Dim commentShortened As Boolean = False
         If pa.isTrailPost And po.comment.Length > 1500 Then
@@ -554,19 +932,22 @@ Public Module GlobalFunctions
     Public Function ProcessPost(ByVal request As HttpRequest, ByVal Session As HttpSessionState) As String
         Dim message As String = ""
         Dim mode As String = request.Item("mode")
+        Dim isAdmin As Boolean = CBool(Session("admin"))
         Dim cont As Boolean = True
+        'Flood detection check
         If Session.Item("lastpost") Is "" Or Session.Item("lastpost") Is Nothing Then
             Session.Item("lastpost") = Now.ToString
         Else
             Dim i As Date = Date.Parse(CStr(Session.Item("lastpost")))
-            If CInt((Now - i).TotalSeconds) < TimeBetweenRequestes Then
+            If CInt((Now - i).TotalSeconds) <= TimeBetweenRequestes And (mode = "thread" Or mode = "reply") And Not (isAdmin) Then
                 message = FormatHTMLMessage("Error", FloodDetected.Replace("%", CStr(TimeBetweenRequestes)), "", "8888", True)
                 cont = False
             Else
                 Session.Item("lastpost") = Now.ToString
             End If
         End If
-        If EnableCaptcha And (mode = "thread" Or mode = "reply") Then
+        'Captcha check. Administrator does not need to enter captcha
+        If EnableCaptcha And (mode = "thread" Or mode = "reply") And (Not isAdmin) Then
 
             If Not Session("captcha") Is Nothing Then
                 If Not Session("captcha").ToString = request.Item("usercaptcha") Then
@@ -575,11 +956,12 @@ Public Module GlobalFunctions
                 End If
             Else
                 message = FormatHTMLMessage("Error", wrongCaptcha, "", "8888", True)
+                Session.Item("lastpost") = CDate(Now - New TimeSpan(0, 0, 5)).ToString
                 cont = False
             End If
 
         End If
-
+        'Check for files bigger than the allowed limits.
         For Each fileKey As String In request.Files.AllKeys
             Dim f As HttpPostedFile = request.Files(fileKey)
             If f.ContentLength > MaximumFileSize Then
@@ -591,7 +973,7 @@ Public Module GlobalFunctions
         ''Post processing begin here 
         If cont Then
             If IsIPBanned(request.UserHostAddress) Then
-                message = FormatHTMLMessage(BannedMessage, MakeBannedMessage(request.UserHostAddress), "default.aspx", "60", True)
+                message = FormatHTMLMessage("", "", WebRoot & "banned.aspx", "0", False)
             Else
 
                 Select Case mode
@@ -601,33 +983,38 @@ Public Module GlobalFunctions
                         Else
                             'Save file.
                             If request.Files("ufile").ContentLength = 0 Then
+
                                 message = FormatHTMLMessage("error", ImageRequired, "default.aspx", "60", True)
+
                             Else
                                 'Check file size before saving.
                                 If request.Files("ufile").ContentLength > MaximumFileSize Then
                                     message = FormatHTMLMessage("error", FileToBig, "default.aspx", "10", True)
                                     Exit Select
                                 End If
-                                Dim s As String = saveFile(request.Files("ufile"), False)
+
+                                'Dim s As String = saveFile(request.Files("ufile"), False)
+
                                 Dim er As New OPData
                                 er.Comment = ProcessInputs(request.Item("comment"))
-                                er.email = ProcessInputs(request.Item("email"))
+                                er.email = ProcessInputs(request.Item("email")).Trim
 
-                                If request.Item("postername") = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(request.Item("postername"))
+                                If request.Item("postername").Trim() = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(request.Item("postername"))
 
-                                If CBool(Session("admin")) Then er.name = adminPostName
+                                If isAdmin Then er.name = adminPostName
                                 If CBool(Session("mod")) Then er.name = modPostName
 
-                                er.subject = ProcessInputs(request.Item("subject"))
+                                er.subject = ProcessInputs(request.Item("subject")).Trim
                                 er.time = Date.UtcNow
-                                er.imageName = s
                                 er.password = ProcessInputs(request.Item("password"))
                                 er.IP = request.UserHostAddress
-
+                                er.HasFile = True
                                 er.UserAgent = request.UserAgent.Replace("<", "").Replace(">", "")
 
                                 If request.Cookies("pass") IsNot Nothing Then request.Cookies("pass").Value = request.Item("password") Else request.Cookies.Add(New HttpCookie("pass", request.Item("password")))
                                 Dim tid As Integer = MakeThread(er)
+
+                                SavePostFile(request.Files("ufile"), False, tid)
 
                                 message = FormatHTMLMessage(SuccessfulPostString, SuccessfulPostString, "default.aspx?id=" & tid, "1", False)
                             End If
@@ -654,25 +1041,28 @@ Public Module GlobalFunctions
                             End If
                         End If
 
-                        Dim s As String = ""
-                        If request.Files.Count = 0 Then
-                            s = ""
-                        Else
-                            If request.Files.Count = 1 Then
-                                s = saveFile(request.Files(0), True)
-                            ElseIf request.Files.Count > 1 Then
-                                s = saveMFile(request.Files)
-                            End If
-                        End If
+                        If request.Cookies("pass") IsNot Nothing Then request.Cookies("pass").Value = request.Item("password") Else request.Cookies.Add(New HttpCookie("pass", request.Item("password")))
 
-                        Dim totalFiles As Integer = s.Split(CChar(";")).Count
+                        Dim properFiles As New List(Of HttpPostedFile)
+
+                        For Each key As String In request.Files.AllKeys
+
+                            Dim f As HttpPostedFile = request.Files.Item(key)
+                            If (f.ContentLength > 0) Then
+                                properFiles.Add(f)
+                            Else
+                                'Maybe an empty file field.
+                            End If
+                        Next
+                      
+                        Dim totalFiles As Integer = properFiles.Count
 
                         If request.Item("finp") = "yes" And totalFiles > 1 Then ' Add each file to a seperate post, and dump the files.
+
                             Dim pos As Integer = 1
-                            If request.Cookies("pass") IsNot Nothing Then request.Cookies("pass").Value = request.Item("password") Else request.Cookies.Add(New HttpCookie("pass", request.Item("password")))
                             Dim countFiles As Boolean = (request.Item("countf") = "yes")
                             Dim advanced As Boolean = False
-                            For Each singleImage As String In s.Split(CChar(";"))
+                            For Each file As HttpPostedFile In properFiles
                                 Dim er As New OPData
 
                                 If Not advanced Then
@@ -684,51 +1074,60 @@ Public Module GlobalFunctions
                                 End If
 
                                 er.email = ProcessInputs(request.Item("email"))
-
-                                If request.Item("postername") = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(request.Item("postername"))
+                                er.HasFile = True
+                                If request.Item("postername").Trim() = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(request.Item("postername"))
 
                                 If CBool(Session("admin")) Then er.name = adminPostName
                                 If CBool(Session("mod")) Then er.name = modPostName
 
                                 er.subject = ProcessInputs(request.Item("subject"))
                                 er.time = Date.UtcNow
-                                er.imageName = singleImage
                                 er.password = ProcessInputs(request.Item("password"))
                                 er.IP = request.UserHostAddress
                                 er.UserAgent = request.UserAgent.Replace("<", "").Replace(">", "")
-                                ReplyTo(threadid, er)
+                                Dim postId As Integer = ReplyTo(threadid, er)
+                                SavePostFile(file, True, postId)
+
                                 pos += 1
                             Next
+
                             message = FormatHTMLMessage(SuccessfulPostString, SuccessfulPostString, "default.aspx?id=" & request.Item("threadid"), "1", False)
+
                         Else
                             'Single file, or multiple files post.
                             Dim er As New OPData
-                            If (request.Item("comment").Length = 0 Or request.Item("comment").Trim.Length = 0) And s = "" Then
-                                'no image and no text
-                                'blank post
+
+                            If (request.Item("comment").Length = 0 Or request.Item("comment").Trim.Length = 0) And properFiles.Count = 0 Then
+                                'no file and no text == blank post
                                 message = FormatHTMLMessage("Error", noBlankpost, "", "7777", True)
                             Else
+
                                 er.Comment = ProcessInputs(request.Item("comment"))
                                 er.email = ProcessInputs(request.Item("email"))
-                                If request.Item("postername") = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(request.Item("postername"))
+                                If request.Item("postername").Trim() = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(request.Item("postername"))
 
                                 If CBool(Session("admin")) Then er.name = adminPostName
                                 If CBool(Session("mod")) Then er.name = modPostName
 
                                 er.subject = ProcessInputs(request.Item("subject"))
                                 er.time = Date.UtcNow
-                                er.imageName = s
+
                                 er.password = ProcessInputs(request.Item("password"))
                                 er.IP = request.UserHostAddress
-                                er.UserAgent = request.UserAgent.Replace("<", "").Replace(">", "") ' I replace < and > to prevent spoffing a user agent that contain <script> tags.
-                                If request.Cookies("pass") IsNot Nothing Then request.Cookies("pass").Value = request.Item("password") Else request.Cookies.Add(New HttpCookie("pass", request.Item("password")))
-                                ReplyTo(threadid, er)
+                                er.UserAgent = request.UserAgent.Replace("<", "").Replace(">", "")
+                                er.HasFile = Not properFiles.Count = 0
+                                Dim postid As Integer = ReplyTo(threadid, er)
+
+                                If er.HasFile Then
+                                    SaveAllFilesToSinglePost(properFiles, postid)
+                                End If
 
                                 message = FormatHTMLMessage(SuccessfulPostString, SuccessfulPostString, "default.aspx?id=" & request.Item("threadid"), "1", False)
-                            End If
+                                End If
                         End If
+                        properFiles.Clear()
                         'Check if to bump thread or not
-                        If Not ProcessInputs(request.Item("email")) = "sage" And (GetRepliesCount(threadid, True).TotalReplies <= BumpLimit) Then BumpThread(threadid)
+                        If Not ProcessInputs(request.Item("email")) = "sage" Or (GetRepliesCount(threadid, True).TotalReplies < BumpLimit) Then BumpThread(threadid)
 
                         If StaticHTML Then UpdateThreadHtml(threadid)
 
@@ -838,11 +1237,11 @@ Public Module GlobalFunctions
 
                 'Check if greentext
                 If x.StartsWith("&gt;") And Not x.StartsWith("&gt;&gt;") Then
-                    sb.Append("<span class=""quote"">" & x & "</span>")
+                    sb.Append("<tt class=""tt"">" & x.Remove(0, 4) & "</tt>")
 
                     ' Some times, X start with a line terminator that is not vbnewline, so i remove it
                 ElseIf (x.Remove(0, 1).StartsWith("&gt;") And Not x.Remove(0, 1).StartsWith("&gt;&gt;")) Then
-                    sb.Append("<span class=""quote"">" & x.Remove(0, 1) & "</span>")
+                    sb.Append("<tt class=""tt"">" & x.Remove(0, 1).Remove(0, 4) & "</tt>")
 
                 ElseIf IsXvalidQuote(x) Or IsXvalidQuote(x.Remove(0, 1)) Then
                     Dim quotet As String = x
@@ -909,7 +1308,7 @@ Public Module GlobalFunctions
             Dim sb As New StringBuilder
             For i As Integer = 1 To wpolist.Length - 1 Step 1
                 sb.Append(GetPostHTML(wpolist(i), para))
-                If Not wpolist(i)._imageP = "" Then
+                If Not wpolist(i).FileCount = 0 Then
                     trailswithimages += 1
                 End If
             Next
@@ -969,9 +1368,14 @@ Public Module GlobalFunctions
         Return sb.ToString
     End Function
 
-    Function GetModeratorHTMLMenu(ByVal id As String, ByVal powers As String) As String
+    Function GetModeratorHTMLMenu(ByVal powers As String) As String
         If powers = "admin" Then
-            Return ""
+            'adminMenuItems
+            Dim sb As New StringBuilder
+            For Each x In adminMenuItems
+                sb.Append(x.Replace("%WEBROOT%", WebRoot))
+            Next
+            Return sb.ToString
         Else
             Dim power As String() = powers.Split(CChar("-"))
             Dim sb As New StringBuilder
@@ -982,12 +1386,36 @@ Public Module GlobalFunctions
         End If
     End Function
 
-    Sub BanPosterByPost(ByVal postID As Integer)
+    Sub BanPosterByPost(ByVal postID As Integer, ByVal silentBan As Boolean, ByVal modname As String, ByVal reason As String)
         Dim po As WPost = FetchPostData(postID)
-        Dim newText As String = po.comment & bannedMessageHTML
         If IsIPBanned(po.ip) = False Then
-            BanPoster(po.ip, postID)
-            UpdatePostText(postID, newText, True)
+            'internalname$autoperm$length$canview$Localised ban reason.
+            '0             1         2      3          4
+            Dim reasonData As String() = {}
+
+            For Each x In modBanReasons
+                Dim sp As String() = x.Split(CChar("$"))
+                If sp.ElementAt(0) = reason Then
+                    reasonData = sp
+                End If
+            Next
+
+            If reasonData Is Nothing Then
+                Throw New ArgumentNullException("Invalid reason")
+                Exit Sub
+            End If
+
+            Dim permBan As Boolean = (reasonData.ElementAt(1) = "yes")
+            Dim length As Date = Now + New TimeSpan(CInt(reasonData.ElementAt(2)), 0, 0, 0)
+
+            Dim canbrowse As Boolean = (reasonData.ElementAt(3) = "yes")
+
+            BanPoster(po.ip, postID, reason, modname, length, permBan, canbrowse)
+
+            If Not silentBan Then
+                Dim newText As String = po.comment & bannedMessageHTML
+                UpdatePostText(postID, newText, True)
+            End If
         End If
     End Sub
 
@@ -1003,20 +1431,17 @@ Public Module GlobalFunctions
     Private Function GetFilesHTML(ByVal po As WPost) As String
         Dim sb As New StringBuilder
 
-        If Not (po._imageP = "") Then
+        If Not (po.FileCount = 0) Then
             'At least one image is found. Check for more than 1 file
-            Dim filesList As String() = po._imageP.Split(CChar(";"))
 
-            If filesList.Count > 1 Then
+            If po.files.Length > 1 Then
                 'We need to make HTML file rotator.
                 Dim items As New StringBuilder
                 Dim noscriptItems As New StringBuilder
                 Dim advanced As Boolean = False ' The first one is marked as active, the rest as notactive
                 Dim rotatorHTML As String = FilesRotatorTemplate
 
-                For Each file As String In filesList
-
-                    Dim wpi As WPostImage = GetWPostImage(file)
+                For Each wpi As WPostImage In po.files
 
                     If FileIsImage(wpi.Extension) Then
                         Dim scriptItem As String = GetImageHTML(wpi, po.PostID)
@@ -1056,14 +1481,14 @@ Public Module GlobalFunctions
                 Next
 
                 rotatorHTML = rotatorHTML.Replace("%ID%", CStr(po.PostID))
-                rotatorHTML = rotatorHTML.Replace("%IMAGECOUNT%", CStr(filesList.Count))
+                rotatorHTML = rotatorHTML.Replace("%IMAGECOUNT%", CStr(po.FileCount))
                 rotatorHTML = rotatorHTML.Replace("%ITEMS%", items.ToString)
                 rotatorHTML = rotatorHTML.Replace("%NOS%", noscriptItems.ToString)
                 sb.Append(rotatorHTML)
 
             Else
                 'Single image
-                Dim wpi As WPostImage = GetWPostImage(po._imageP)
+                Dim wpi As WPostImage = po.files(0)
                 If FileIsImage(wpi.Extension) Then
                     Dim item As String = GetImageHTML(wpi, po.PostID)
                     item = item.Replace("%filec%", "file") ' We need the 'file' html class in single image mode.
@@ -1192,9 +1617,12 @@ Public Module GlobalFunctions
                     Next
                 End If
                 DeleteThread(id)
-            Else
+            ElseIf w.type = WPost.PostType.Reply Then
                 If dF Then DeletePostFiles(w)
                 DeletePost(id)
+                If StaticHTML Then
+                    UpdateThreadHtml(w.parent)
+                End If
             End If
         End If
     End Sub
@@ -1207,8 +1635,14 @@ Public Module GlobalFunctions
             If ConvertArchivedThreadToHTML Then
                 UpdateThreadHtmlArchive(id)
             End If
-        Else
+        ElseIf w.type = WPost.PostType.Reply Then
             ArchivePost(id)
+            'Update parent thread.
+            If StaticHTML Then
+                UpdateThreadHtml(w.parent)
+            End If
+        Else
+            Return
         End If
     End Sub
 
@@ -1229,12 +1663,11 @@ Public Module GlobalFunctions
     End Sub
 
     Private Sub DeletePostFiles(ByVal po As WPost)
-        If po._imageP = "" Then
+        If po.FileCount = 0 Then
             Exit Sub
         Else
-            For Each x In po._imageP.Split(CChar(";"))
-                Dim ima As WPostImage = GetWPostImage(po._imageP)
-                If ImageExist(ima.MD5, CInt(po.PostID)) = False Then
+            For Each ima As WPostImage In po.files
+                If FileExistInDB(ima.MD5, po.PostID) = False Then
                     Dim realPath As String = StorageFolder & "\" & ima.ChanbName
                     Dim thumbPath As String = StorageFolderThumbs & "\th" & ima.ChanbName
                     IO.File.Delete(realPath)
@@ -1246,6 +1679,10 @@ Public Module GlobalFunctions
     End Sub
 
     Public Function GeneratePageHTML(ByVal isArchive As Boolean, ByVal session As HttpSessionState, ByVal Request As HttpRequest, ByVal Response As HttpResponse) As String
+        If Not CanIPBrowse(Request.UserHostAddress) Then
+            Response.Redirect(WebRoot & "banned.aspx")
+        End If
+
         Dim DisplayingThread As Boolean = Not (Request.Item("id") = "")
 
         Dim pageHTML As String = GenerateGenericHTML()
@@ -1255,7 +1692,9 @@ Public Module GlobalFunctions
 
         If isArchive Then
             pageHTML = pageHTML.Replace("%POSTING MODE%", archiveNotice)
+            pageHTML = pageHTML.Replace("%POSTDIVCLASS%", "hide")
         Else
+            pageHTML = pageHTML.Replace("%POSTDIVCLASS%", "")
             If DisplayingThread Then
                 pageHTML = pageHTML.Replace("%POSTING MODE%", postingModeReplyHtml)
             Else
@@ -1263,65 +1702,60 @@ Public Module GlobalFunctions
             End If
         End If
 
-        If isArchive Then
-            pageHTML = pageHTML.Replace("%POSTDIVCLASS%", "hide")
-        Else
-            pageHTML = pageHTML.Replace("%POSTDIVCLASS%", "")
-        End If
-
-        If DisplayingThread Then
-            pageHTML = pageHTML.Replace("%POST FORM MODE%", "reply")
-        Else
-            pageHTML = pageHTML.Replace("%POST FORM MODE%", "thread")
-        End If
-
         pageHTML = pageHTML.Replace("%POST FORM TID%", Request.Item("id"))
 
-        If DisplayingThread Then
-            pageHTML = pageHTML.Replace("%POST FORM BUTTON%", replyStr)
-        Else
-            pageHTML = pageHTML.Replace("%POST FORM BUTTON%", newThreadStr)
-        End If
-
+        
         If EnableCaptcha And Not isArchive Then
             pageHTML = pageHTML.Replace("%CAPTCHA PHOLDER%", captchaTableEntryHtml)
         Else
             pageHTML = pageHTML.Replace("%CAPTCHA PHOLDER%", "")
         End If
 
-        If DisplayingThread Then
-            pageHTML = pageHTML.Replace("%ADD NEW FILES PHOLDER%", addNewFileButtonHTML)
-        Else
-            pageHTML = pageHTML.Replace("%ADD NEW FILES PHOLDER%", "")
-        End If
-
-        pageHTML = pageHTML.Replace("%MAXIMUM FILE SIZE%", FormatSizeString(MaximumFileSize))
-        pageHTML = pageHTML.Replace("%SESSION PASSWORD%", GetSessionPassword(Request.Cookies, session))
 
         If DisplayingThread Then
+            'Posting rules
             pageHTML = pageHTML.Replace("%POSTING RULES%", postingRulesHTML)
             pageHTML = pageHTML.Replace("%THREAD COUNT%", "")
-        Else
-            pageHTML = pageHTML.Replace("%POSTING RULES%", "")
-            pageHTML = pageHTML.Replace("%THREAD COUNT%", threadCountHTMLli.Replace("%", CStr(GetThreadsCount(isArchive))))
-        End If
 
-        If DisplayingThread Then
+            'Return buttons
             pageHTML = pageHTML.Replace("%RETURN BUTTON DESKTOP%", DesktopReturnButtonHTML.Replace("%P%", pageHandlerLink & ".aspx"))
             pageHTML = pageHTML.Replace("%RETURN BUTTON MOBILE%", MobileReturnButtonHTML.Replace("%P%", pageHandlerLink & ".aspx"))
+
+            'Add new file button
+            pageHTML = pageHTML.Replace("%ADD NEW FILES PHOLDER%", addNewFileButtonHTML)
+
+            'Reply/New thread button
+            pageHTML = pageHTML.Replace("%POST FORM MODE%", "reply")
+            pageHTML = pageHTML.Replace("%POST FORM BUTTON%", replyStr)
         Else
+            'Posting rules
+            pageHTML = pageHTML.Replace("%POSTING RULES%", "")
+            pageHTML = pageHTML.Replace("%THREAD COUNT%", threadCountHTMLli.Replace("%", CStr(GetThreadsCount(isArchive))))
+
+            'Return buttons
             pageHTML = pageHTML.Replace("%RETURN BUTTON DESKTOP%", "")
             pageHTML = pageHTML.Replace("%RETURN BUTTON MOBILE%", "")
+
+            'Add new file button
+            pageHTML = pageHTML.Replace("%ADD NEW FILES PHOLDER%", "")
+
+            'Reply/New thread button
+            pageHTML = pageHTML.Replace("%POST FORM MODE%", "thread")
+            pageHTML = pageHTML.Replace("%POST FORM BUTTON%", newThreadStr)
         End If
 
         pageHTML = pageHTML.Replace("%META NO CACHE%", "")
+        pageHTML = pageHTML.Replace("%MAXIMUM FILE SIZE%", FormatSizeString(MaximumFileSize))
+        pageHTML = pageHTML.Replace("%SESSION PASSWORD%", GetSessionPassword(Request.Cookies, session))
+
 
         '####################################### BODY PROCESSING CODE #######################################
         Dim body As New StringBuilder
         Dim para As New HTMLParameters()
-        para.IsModerator = CBool(session("mod"))
-        para.ModeratorPowers = CStr(session("modpowers"))
-        para.modMenu = CStr(session("modmenu"))
+        para.isModerator = CBool(session("mod"))
+        para.isAdmin = CBool(session("admin"))
+        para.CredPowers = CStr(session("credpower"))
+        para.CredMenu = CStr(session("credmenu"))
         para.isCurrentThread = Not isArchive
 
         Dim validID As Boolean = False
@@ -1388,7 +1822,7 @@ Public Module GlobalFunctions
         If Not DisplayingThread Then ' Show pages numbers list
 
             Dim sb As New StringBuilder
-            sb.Append("<div align='center' class='pagelist desktop'>")
+            sb.Append("<div align=""center"" class=""pagelist desktop"">")
 
             Dim threadCount As Integer = GetThreadsCount(isArchive)
             Dim pagesCount As Double = threadCount / ThreadPerPage
@@ -1433,13 +1867,11 @@ Public Module GlobalFunctions
     Public Function GenerateCatalogPage(ByVal Request As HttpRequest, ByVal session As HttpSessionState) As String
         Dim pageHTML As String = GenerateGenericHTML()
 
-
         pageHTML = pageHTML.Replace("%POSTING MODE%", "")
         pageHTML = pageHTML.Replace("%POSTDIVCLASS%", "")
         pageHTML = pageHTML.Replace("%POST FORM MODE%", "thread")
         pageHTML = pageHTML.Replace("%POST FORM TID%", "")
         pageHTML = pageHTML.Replace("%POST FORM BUTTON%", newThreadStr)
-
 
         If EnableCaptcha Then
             pageHTML = pageHTML.Replace("%CAPTCHA PHOLDER%", captchaTableEntryHtml)
@@ -1572,21 +2004,101 @@ Public Module GlobalFunctions
         Return pageHTML
     End Function
 
+    Function GenerateModSBR(ByVal context As HttpContext) As String
+        Dim pageHTML As String = modSBRPageTemplate
+
+        pageHTML = pageHTML.Replace("%BTITLE%", BoardTitle).Replace("%BDESC%", BoardDesc).Replace("%ROOT%", WebRoot).Replace("%FOOTER TEXT%", footerText)
+
+        Dim id As Integer = -1
+        Try
+            id = Math.Abs(CInt(context.Request.Item("id")))
+        Catch ex As Exception
+            Return FormatHTMLMessage("error", NoPostWasSelected, "", "8888", True)
+            Exit Function
+        End Try
+
+        If id = 0 Then
+            Return FormatHTMLMessage("error", NoPostWasSelected, "", "8888", True)
+            Exit Function
+        End If
+
+        pageHTML = pageHTML.Replace("%ID%", CStr(id))
+        pageHTML = pageHTML.Replace("%SIB%", context.Request.Item("sib"))
+
+        pageHTML = pageHTML.Replace("%LANG modSelectBanReason%", Language.modSelectBanReason)
+        pageHTML = pageHTML.Replace("%LANG banUserStr%", banuserStr)
+
+        Dim sb As New StringBuilder
+        For Each x In modBanReasons
+            'internalname$autoperm$length$canview$Localised ban reason.
+            Dim reasonData As String() = x.Split(CChar("$"))
+            Dim opt As String = "<option value=""" & reasonData(0) & """>" & reasonData(4) & "</option>"
+            sb.Append(opt)
+        Next
+        pageHTML = pageHTML.Replace("%REASONS%", sb.ToString)
+        Return pageHTML
+    End Function
+
+    Function GenerateBanPage(ByVal context As HttpContext) As String
+        Dim bd As BanData = GetBanData(context.Request.UserHostAddress)
+        If bd.BanEffective Then
+            If Now > bd.ExpirationDate Then
+                DropBan(context.Request.UserHostAddress)
+                context.Response.Redirect("default.aspx")
+                Return ""
+            Else
+                Dim pageHTML As String = BanPageTemplate
+                pageHTML = pageHTML.Replace("%BTITLE%", BoardTitle).Replace("%BDESC%", BoardDesc).Replace("%ROOT%", WebRoot).Replace("%FOOTER TEXT%", footerText)
+                pageHTML = pageHTML.Replace("%REASON%", _GetLocalisedBanReason(bd.Comment))
+                pageHTML = pageHTML.Replace("%BOD%", GetTimeString(bd.BannedOn))
+                pageHTML = pageHTML.Replace("%IP%", bd.IP)
+                pageHTML = pageHTML.Replace("%POSTNO%", CStr(bd.PostNumber))
+                If bd.Permanant Then
+                    pageHTML = pageHTML.Replace("%EXP%", "Never")
+                Else
+                    pageHTML = pageHTML.Replace("%EXP%", GetTimeString(bd.ExpirationDate))
+                End If
+                pageHTML = pageHTML.Replace("%LANG bannedMessageStr%", BannedMessage)
+                pageHTML = pageHTML.Replace("%LANG banReasonStr%", banReasonStr)
+                pageHTML = pageHTML.Replace("%LANG bannedOnStr%", bannedOnStr)
+                pageHTML = pageHTML.Replace("%LANG banIpStr%", banIpStr)
+                pageHTML = pageHTML.Replace("%LANG banPostNoStr%", banPostNoStr)
+                pageHTML = pageHTML.Replace("%LANG banExpiryStr%", banExpiryStr)
+                Return pageHTML
+            End If
+        Else
+            context.Response.Redirect("default.aspx")
+            Return ""
+        End If
+    End Function
+
+
+    Private Function _GetLocalisedBanReason(ByVal e As String) As String
+        Dim a As String = ""
+        For Each x In modBanReasons
+            Dim b As String() = x.Split(CChar("$"))
+            If b(0) = e Then
+                a = b(4)
+            End If
+        Next
+        Return a
+    End Function
+
     Private Function GenerateCatalogItems(ByVal ids As Integer()) As String
         Dim sb As New StringBuilder
         Dim data As WPost() = GetWpostList(ids)
         sb.Append("<div align=""center"" id=""threads"">")
-        For Each x In data
+        For Each thread As WPost In data
             Dim t As String = CatalogItemTemplate
-            Dim i As WPostImage = GetWPostImage(x._imageP)
-            Dim ci As ThreadReplies = GetRepliesCount(CInt(x.PostID), False)
-            t = t.Replace("%ID%", CStr(x.PostID))
-            t = t.Replace("%POST LINK%", "default.aspx?id=" & CStr(x.PostID))
+            Dim i As WPostImage = thread.files(0)
+            Dim ci As ThreadReplies = GetRepliesCount(CInt(thread.PostID), False)
+            t = t.Replace("%ID%", CStr(thread.PostID))
+            t = t.Replace("%POST LINK%", "default.aspx?id=" & CStr(thread.PostID))
             t = t.Replace("%THUMB SRC%", GetImageWEBPATHRE(i.ChanbName))
             t = t.Replace("%IMAGE MD5%", i.MD5)
             t = t.Replace("%TC%", CStr(ci.TextReplies))
             t = t.Replace("%IC%", CStr(ci.ImageReplies))
-            t = t.Replace("%POST TEXT%", x.comment)
+            t = t.Replace("%POST TEXT%", ProcessInputs(thread.comment))
             sb.Append(t)
         Next
         sb.Append("</div>")
@@ -1624,7 +2136,7 @@ Public Module GlobalFunctions
 
 
     Function FetchPostData(ByVal id As Integer) As WPost
-        Dim queryString As String = "SELECT type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua, posterID, sticky, locked, mta FROM  board  WHERE (id = " & id & ")"
+        Dim queryString As String = "SELECT type, time, comment, postername, email, password, parentT, subject, IP, ua, posterID, sticky, locked, mta, hasFile FROM  board  WHERE (id = " & id & ")"
         Dim queryObject As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
         Dim reader As IDataReader = queryObject.Reader
         Dim po As New WPost(id)
@@ -1637,36 +2149,29 @@ Public Module GlobalFunctions
             po.password = CStr(ConvertNoNull(reader(5)))
             po.parent = CInt(ConvertNoNull(reader(6)))
             po.subject = CStr(ConvertNoNull(reader(7)))
-            po._imageP = CStr(ConvertNoNull(reader(8)))
-            po.ip = CStr(ConvertNoNull(reader(9)))
-            po.ua = CStr(ConvertNoNull(reader(10)))
-            po.posterID = CStr(ConvertNoNull(reader(11)))
-            If CInt(ConvertNoNull(reader(12))) = 1 Then po.isSticky = True Else po.isSticky = False
-            If CInt(ConvertNoNull(reader(13))) = 1 Then po.locked = True Else po.locked = False
-            If CInt(ConvertNoNull(reader(14))) = 1 Then po.archived = True Else po.archived = False
+            po.ip = CStr(ConvertNoNull(reader(8)))
+            po.ua = CStr(ConvertNoNull(reader(9)))
+            po.posterID = CStr(ConvertNoNull(reader(10)))
+            po.isSticky = reader.GetBoolean(11)
+            po.locked = reader.GetBoolean(12)
+            po.archived = reader.GetBoolean(13)
+            po.HasFile = reader.GetBoolean(14)
         End While
+
+        queryObject.Reader.Close()
+        If po.HasFile Then
+            po.files = GetPostFiles(id, queryObject.Connection)
+            po.FileCount = po.files.Length
+        End If
         queryObject.Connection.Close()
         Return po
     End Function
 
     Function MakeThread(ByVal data As OPData) As Integer
-        Dim queryStr As String = ""
         Dim command As DbCommand = DatabaseEngine.GenerateDbCommand()
 
-        Select Case dbType
-            Case "mssql"
-                queryStr = "INSERT INTO board (type, time, comment, postername, email, password, subject, imagename, IP, bumplevel, ua, sticky, mta) OUTPUT INSERTED.ID " & _
-                                          " VALUES (@type, @time, @comment, @postername, @email, @password, @subject, @imagename, @IP, @bumplevel, @ua, @sticky, @mta)"
-            Case "mysql"
-                queryStr = "INSERT INTO board (type, time, comment, postername, email, password, subject, imagename, IP, bumplevel, ua, sticky, mta) " & _
-                "  VALUES (@type, @time, @comment, @postername, @email, @password, @subject, @imagename, @IP, @bumplevel, @ua, @sticky, @mta)  ; SELECT last_insert_id()"
-            Case Else
-                If isInstalled Then
-                    Throw New Exception(dbTypeInvalid)
-                End If
-        End Select
-
-        command.CommandText = queryStr
+        command.CommandText = "INSERT INTO board (type, time, comment, postername, email, password, subject, IP, bumplevel, ua, sticky, mta, locked, hasFile) " & _
+        "  VALUES (@type, @time, @comment, @postername, @email, @password, @subject, @IP, @bumplevel, @ua, @sticky, @mta, @locked, @hasFile) ; SELECT ID FROM board WHERE (time = @time) AND (IP = @IP)"
 
         command.Parameters.Add(DatabaseEngine.MakeParameter("@type", 0, System.Data.DbType.Int32)) ' Set post type to thread
         command.Parameters.Add(DatabaseEngine.MakeParameter("@time", data.time, System.Data.DbType.DateTime))
@@ -1675,12 +2180,13 @@ Public Module GlobalFunctions
         command.Parameters.Add(DatabaseEngine.MakeParameter("@email", data.email, System.Data.DbType.String))
         command.Parameters.Add(DatabaseEngine.MakeParameter("@password", data.password, System.Data.DbType.String))
         command.Parameters.Add(DatabaseEngine.MakeParameter("@subject", data.subject, System.Data.DbType.String))
-        command.Parameters.Add(DatabaseEngine.MakeParameter("@imagename", data.imageName, System.Data.DbType.String))
         command.Parameters.Add(DatabaseEngine.MakeParameter("@IP", data.IP, System.Data.DbType.String))
         command.Parameters.Add(DatabaseEngine.MakeParameter("@bumplevel", Now, System.Data.DbType.DateTime))
         command.Parameters.Add(DatabaseEngine.MakeParameter("@ua", data.UserAgent, System.Data.DbType.String))
-        command.Parameters.Add(DatabaseEngine.MakeParameter("@sticky", 0, System.Data.DbType.Int32))
-        command.Parameters.Add(DatabaseEngine.MakeParameter("@mta", 0, System.Data.DbType.Int32))
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@sticky", False, System.Data.DbType.Boolean))
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@mta", False, System.Data.DbType.Boolean))
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@locked", False, System.Data.DbType.Boolean))
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@hasFile", data.HasFile, System.Data.DbType.Boolean))
 
         Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(command)
 
@@ -1702,7 +2208,6 @@ Public Module GlobalFunctions
             command.Parameters.Add(DatabaseEngine.MakeParameter("@tid", postID, System.Data.DbType.Int32))
 
             DatabaseEngine.ExecuteNonQuery(command, query.Connection)
-
         End If
 
         query.Connection.Close()
@@ -1718,11 +2223,11 @@ Public Module GlobalFunctions
     ''' <param name="id">id of the thread</param>
     ''' <param name="data">Poster data</param>
     ''' <remarks></remarks>
-    Private Sub ReplyTo(ByVal id As Integer, ByVal data As OPData)
+    Private Function ReplyTo(ByVal id As Integer, ByVal data As OPData) As Integer
         Dim command As DbCommand = DatabaseEngine.GenerateDbCommand
 
-        command.CommandText = "INSERT INTO board (type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua, posterID, mta) VALUES" & _
-                                "(@type, @time, @comment, @postername, @email, @password, @parentT, @subject, @imagename, @IP, @ua, @posterId, @mta)"
+        command.CommandText = "INSERT INTO board (type, time, comment, postername, email, password, parentT, subject, IP, ua, posterID, mta, locked, sticky, hasFile) VALUES" & _
+                                "(@type, @time, @comment, @postername, @email, @password, @parentT, @subject, @IP, @ua, @posterId, @mta, @locked, @sticky, @hasFile) ; SELECT ID FROM board WHERE (time = @time) AND (IP = @IP)"
 
 
         command.Parameters.Add(DatabaseEngine.MakeParameter("@type", 1, System.Data.DbType.Int32)) ' Mark the post as a reply
@@ -1743,18 +2248,29 @@ Public Module GlobalFunctions
 
         command.Parameters.Add(DatabaseEngine.MakeParameter("@subject", CStr(data.subject), System.Data.DbType.String))
 
-        command.Parameters.Add(DatabaseEngine.MakeParameter("@imagename", CStr(data.imageName), System.Data.DbType.String))
-
         command.Parameters.Add(DatabaseEngine.MakeParameter("@IP", CStr(data.IP), System.Data.DbType.String)) '
 
         command.Parameters.Add(DatabaseEngine.MakeParameter("@ua", CStr(data.UserAgent), System.Data.DbType.String)) '
 
         command.Parameters.Add(DatabaseEngine.MakeParameter("@posterId", GenerateUID(id, data.IP), System.Data.DbType.String)) '
 
-        command.Parameters.Add(DatabaseEngine.MakeParameter("@mta", 0, System.Data.DbType.Int32)) ' Mark the post as not archived
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@mta", False, System.Data.DbType.Boolean)) ' Mark the post as not archived
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@locked", False, System.Data.DbType.Boolean))
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@sticky", False, System.Data.DbType.Boolean))
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@hasFile", data.HasFile, System.Data.DbType.Boolean))
 
-        DatabaseEngine.ExecuteNonQuery(command)
-    End Sub
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(command)
+
+        Dim postID As Integer
+        While query.Reader.Read
+            postID = CInt(query.Reader(0))
+        End While
+
+        query.Reader.Close()
+        query.Connection.Close()
+        command.Dispose()
+        Return postID
+    End Function
 
     Public Function GetThreadsCount(ByVal archive As Boolean) As Integer
         Dim queryString As String = ""
@@ -1817,7 +2333,6 @@ Public Module GlobalFunctions
         DatabaseEngine.ExecuteNonQuery(command)
     End Sub
 
-
     Public Function GetThreadChildrenPostsIDs(ByVal id As Long, ByVal includearchived As Boolean) As Integer()
         Dim ila As New List(Of Integer)
         Dim queryString As String = ""
@@ -1845,14 +2360,6 @@ Public Module GlobalFunctions
         If id.Length = 0 Then
             Return il.ToArray
         Else
-            'Prepare sql connection string.
-            'Dim command As DbCommand = DatabaseEngine.GenerateDbCommand
-            'command.CommandText = "SELECT ID, type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua, posterID, sticky, locked, mta FROM  board  WHERE (ID = @id) ORDER BY ID ASC"
-
-            'For Each x As Int32 In id
-            '    command.Parameters.Add(DatabaseEngine.MakeParameter("@id", x, Data.DbType.Int32))
-            'Next
-
             Dim sb As New StringBuilder
             sb.Append("WHERE (ID = " & CStr(id(0)) & ")")
 
@@ -1860,7 +2367,7 @@ Public Module GlobalFunctions
                 sb.Append(" OR (ID = " & id(i) & ") ")
             Next
 
-            Dim queryString As String = "SELECT ID, type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua, posterID, sticky, locked, mta FROM  board  " & sb.ToString & " ORDER BY ID ASC"
+            Dim queryString As String = "SELECT ID, type, time, comment, postername, email, password, parentT, subject, IP, ua, posterID, sticky, locked, mta, hasFile FROM  board  " & sb.ToString & " ORDER BY ID ASC"
 
             Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
             While query.Reader.Read
@@ -1873,15 +2380,25 @@ Public Module GlobalFunctions
                 po.password = CStr(ConvertNoNull(query.Reader(6)))
                 po.parent = CInt(ConvertNoNull(query.Reader(7)))
                 po.subject = CStr(ConvertNoNull(query.Reader(8)))
-                po._imageP = CStr(ConvertNoNull(query.Reader(9)))
-                po.ip = CStr(ConvertNoNull(query.Reader(10)))
-                po.ua = CStr(ConvertNoNull(query.Reader(11)))
-                po.posterID = CStr(ConvertNoNull(query.Reader(12)))
-                If CInt(ConvertNoNull(query.Reader(13))) = 1 Then po.isSticky = True Else po.isSticky = False
-                If CInt(ConvertNoNull(query.Reader(14))) = 1 Then po.locked = True Else po.locked = False
-                If CInt(ConvertNoNull(query.Reader(15))) = 1 Then po.archived = True Else po.archived = False
+                po.ip = CStr(ConvertNoNull(query.Reader(9)))
+                po.ua = CStr(ConvertNoNull(query.Reader(10)))
+                po.posterID = CStr(ConvertNoNull(query.Reader(11)))
+                po.isSticky = query.Reader.GetBoolean(12)
+                po.locked = query.Reader.GetBoolean(13)
+                po.archived = query.Reader.GetBoolean(14)
+                po.HasFile = query.Reader.GetBoolean(15)
+
                 il.Add(po)
             End While
+            query.Reader.Close()
+
+            For Each po As WPost In il
+                If po.HasFile Then
+                    po.files = GetPostFiles(po.PostID, query.Connection)
+                    po.FileCount = po.files.Length
+                End If
+            Next
+
             query.Connection.Close()
             Return il.ToArray
         End If
@@ -1891,9 +2408,9 @@ Public Module GlobalFunctions
         Dim il As New List(Of WPost)
         Dim queryString As String = ""
         If includeArchivedPosts Then
-            queryString = "SELECT ID, type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua, posterID, sticky, locked, mta FROM  board  WHERE (ID = " & threadID & ") OR (parentT = " & threadID & ") ORDER BY ID"
+            queryString = "SELECT ID, type, time, comment, postername, email, password, parentT, subject, IP, ua, posterID, sticky, locked, mta, hasFile FROM  board  WHERE (ID = " & threadID & ") OR (parentT = " & threadID & ") ORDER BY ID"
         Else
-            queryString = "SELECT ID, type, time, comment, postername, email, password, parentT, subject, imagename, IP, ua, posterID, sticky, locked, mta FROM  board  WHERE (ID = " & threadID & ") OR (parentT = " & threadID & ") AND (mta = 0) ORDER BY ID"
+            queryString = "SELECT ID, type, time, comment, postername, email, password, parentT, subject, IP, ua, posterID, sticky, locked, mta, hasFile FROM  board  WHERE (ID = " & threadID & ") OR (parentT = " & threadID & ") AND (mta = 0) ORDER BY ID"
         End If
 
         Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
@@ -1908,15 +2425,24 @@ Public Module GlobalFunctions
             po.password = CStr(ConvertNoNull(query.Reader(6)))
             po.parent = CInt(ConvertNoNull(query.Reader(7)))
             po.subject = CStr(ConvertNoNull(query.Reader(8)))
-            po._imageP = CStr(ConvertNoNull(query.Reader(9)))
-            po.ip = CStr(ConvertNoNull(query.Reader(10)))
-            po.ua = CStr(ConvertNoNull(query.Reader(11)))
-            po.posterID = CStr(ConvertNoNull(query.Reader(12)))
-            If CInt(ConvertNoNull(query.Reader(13))) = 1 Then po.isSticky = True Else po.isSticky = False
-            If CInt(ConvertNoNull(query.Reader(14))) = 1 Then po.locked = True Else po.locked = False
-            If CInt(ConvertNoNull(query.Reader(15))) = 1 Then po.archived = True Else po.archived = False
+            po.ip = CStr(ConvertNoNull(query.Reader(9)))
+            po.ua = CStr(ConvertNoNull(query.Reader(10)))
+            po.posterID = CStr(ConvertNoNull(query.Reader(11)))
+            po.isSticky = query.Reader.GetBoolean(12)
+            po.locked = query.Reader.GetBoolean(13)
+            po.archived = query.Reader.GetBoolean(14)
+            po.HasFile = query.Reader.GetBoolean(15)
             il.Add(po)
         End While
+
+        query.Reader.Close()
+
+        For Each po As WPost In il
+            If po.HasFile Then
+                po.files = GetPostFiles(po.PostID, query.Connection)
+                po.FileCount = po.files.Length
+            End If
+        Next
 
         query.Connection.Close()
         Return il.ToArray
@@ -1989,136 +2515,105 @@ Public Module GlobalFunctions
         End If
     End Function
 
-    Function IsModLoginValid(ByVal name As String, ByVal password As String) As Boolean
-        Dim queryString As String = "SELECT password FROM mods WHERE (username LIKE '" & name & "')"
-        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
+    Public Function GetLoginInfo(ByVal name As String, ByVal password As String) As LoginInfo
+        Dim command As DbCommand = DatabaseEngine.GenerateDbCommand("SELECT password, power FROM mods WHERE (username LIKE @username)")
+        command.Parameters.Add(MakeParameter("@username", name, Data.DbType.String))
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(command)
         Dim sqlPassMd5 As String = ""
+        Dim power As String = ""
         While query.Reader.Read
-            sqlPassMd5 = query.Reader.GetString(0)
+            sqlPassMd5 = CStr(ConvertNoNull(query.Reader(0)))
+            power = CStr(ConvertNoNull(query.Reader(1)))
         End While
         query.Connection.Close()
-        Return (MD5(password) = sqlPassMd5)
-    End Function
-
-    Function GetImageDataByMD5(ByVal md5 As String) As WPostImage
-        Dim queryString As String = ""
-        Select Case dbType
-            Case "mssql"
-                queryString = "SELECT TOP 1 imagename FROM board WHERE (imagename LIKE '%" & md5 & "%')"
-            Case "mysql"
-                queryString = "SELECT imagename FROM board WHERE (imagename LIKE '%" & md5 & "%') LIMIT 0,1"
-            Case Else
-                If isInstalled Then
-                    Throw New Exception(dbTypeInvalid)
-                End If
-        End Select
-        Dim wpi As New WPostImage
-        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
-        Dim imageNameStr As String = ""
-        While query.Reader.Read
-            imageNameStr = query.Reader.GetString(0)
-        End While
-        If imageNameStr = "" Then
-            Throw New ArgumentException("No image exist with the specified MD5.")
+        Dim lgi As New LoginInfo
+        lgi.LogInValid = (MD5(password) = sqlPassMd5)
+        If power = "admin" Then
+            lgi.AccountType = LoginInfo.ChanbAccountType.Administrator
         Else
-            Dim array As String() = imageNameStr.Split(CChar(";"))
-            Dim selectedX As String = ""
-            For Each x In array
-                Dim p As WPostImage = GetWPostImage(x)
-                If p.MD5 = md5 Then
-                    wpi = p
-                End If
-            Next
+            lgi.AccountType = LoginInfo.ChanbAccountType.Moderator
         End If
-        query.Connection.Close()
-        Return wpi
-    End Function
-
-    Public Function ImageExist(ByVal md5 As String, Optional ByVal excludedPost As Integer = -1) As Boolean
-        Dim queryString As String = ""
-        Select Case dbType
-            Case "mssql"
-                If excludedPost = -1 Then
-                    queryString = "SELECT TOP 1 ID FROM board WHERE (imagename LIKE '%" & md5 & "%')"
-                Else
-                    queryString = "SELECT TOP 1 ID FROM board WHERE (ID <> " & excludedPost & ") AND (imagename LIKE '%" & md5 & "%')"
-                End If
-            Case "mysql"
-                If excludedPost = -1 Then
-                    queryString = "SELECT ID FROM board WHERE (imagename LIKE '%" & md5 & "%') LIMIT 0,1"
-                Else
-                    queryString = "SELECT ID FROM board WHERE (ID <> " & excludedPost & ") AND (imagename LIKE '%" & md5 & "%') LIMIT 0,1"
-                End If
-            Case Else
-                If isInstalled Then
-                    Throw New Exception(dbTypeInvalid)
-                End If
-        End Select
-
-        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
-
-        Dim exist As Boolean = False
-        While query.Reader.Read
-            exist = Not (TypeOf query.Reader(0) Is DBNull)
-            'If query.Reader.GetInt32(0) = 0 Then
-            '    b = False
-            'Else
-            '    b = True
-            'End If
-        End While
-        query.Connection.Close()
-        Return exist
+        lgi.Powers = power
+        Return lgi
     End Function
 
     Public Sub NewMod(ByVal name As String, ByVal pas As String, Optional ByVal powers As String = "")
-        If powers = "" Then
-            powers = DefaultModPowers
-        End If
-        DatabaseEngine.ExecuteNonQuery("INSERT INTO mods (username, password, power) VALUES ('" & name & "', '" & MD5(pas) & "', '" & powers & "')")
+        If powers = "" Then powers = DefaultModPowers
+        Dim command As DbCommand = DatabaseEngine.GenerateDbCommand
+        command.CommandText = "INSERT INTO mods (username, password, power) VALUES (@username, @pass, @powers)"
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@username", name, Data.DbType.String))
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@pass", MD5(pas), Data.DbType.String))
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@powers", powers, Data.DbType.String))
+        DatabaseEngine.ExecuteNonQuery(command)
     End Sub
 
     Public Function IsIPBanned(ByVal IP As String) As Boolean
-        Dim queryString As String = "SELECT ID FROM bans WHERE (IP LIKE '" & IP & "')"
-        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
-        Dim banned As Boolean = False
-        While query.Reader.Read
-            banned = Not (TypeOf query.Reader(0) Is DBNull)
-        End While
-        query.Connection.Close()
-        Return banned
+        Dim b As BanData = GetBanData(IP)
+        If b.BanEffective Then
+            If b.Permanant Then
+                Return True
+            Else
+                If Now > b.ExpirationDate Then
+                    DropBan(IP)
+                    Return False
+                Else
+                    Return True
+                End If
+            End If
+        Else
+            Return False
+        End If
     End Function
 
+    Private Function CanIPBrowse(ByVal IP As String) As Boolean
+        Dim b As BanData = GetBanData(IP)
+        If b.BanEffective Then
+            Return b.CanBrowse
+        Else
+            Return True
+        End If
+    End Function
+
+    Private Sub DropBan(ByVal IP As String)
+        Dim command As DbCommand = DatabaseEngine.GenerateDbCommand("UPDATE bans SET effective = @p WHERE (IP LIKE @ip)")
+        command.Parameters.Add(MakeParameter("@p", False, Data.DbType.Boolean))
+        command.Parameters.Add(MakeParameter("@ip", IP, Data.DbType.String))
+        DatabaseEngine.ExecuteNonQuery(command)
+    End Sub
+
     Private Function GetBanData(ByVal IP As String) As BanData
-        Dim queryString As String = "SELECT ID, perm, expiry, comment, post FROM bans WHERE (IP LIKE '" & IP & "')"
-        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
+        Dim command As DbCommand = DatabaseEngine.GenerateDbCommand
+        command.CommandText = "SELECT ID, perm, expiry, comment, post, canview, modname, bannedon, effective FROM bans WHERE (IP LIKE @ip)"
+        command.Parameters.Add(MakeParameter("@ip", IP, System.Data.DbType.String))
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(command)
         Dim data As New BanData
-        While query.Reader.Read
-            data.ID = query.Reader.GetInt32(0)
-            data.PERM = CBool(query.Reader.GetInt32(1))
-            data.EXPIRY = query.Reader.GetDateTime(2)
-            data.COMMENT = query.Reader.GetString(3)
-            data.POSTNO = query.Reader.GetInt32(4)
-        End While
         data.IP = IP
+
+        While query.Reader.Read
+            If TypeOf query.Reader(0) Is DBNull Then
+                data.BanEffective = False
+                data.BanID = -1
+                data.CanBrowse = True
+                data.Comment = ""
+                data.ExpirationDate = Now
+                data.BannedOn = Now
+                data.PostNumber = -1
+            Else
+                data.BanID = CInt(ConvertNoNull(query.Reader(0)))
+                data.Permanant = query.Reader.GetBoolean(1)
+                data.ExpirationDate = CDate(ConvertNoNull(query.Reader(2)))
+                data.Comment = CStr(ConvertNoNull(query.Reader(3)))
+                data.PostNumber = CInt(ConvertNoNull(query.Reader(4)))
+                data.CanBrowse = query.Reader.GetBoolean(5)
+                data.ModeratorName = CStr(ConvertNoNull(query.Reader(6)))
+                data.BannedOn = CDate(ConvertNoNull(query.Reader(7)))
+                data.BanEffective = query.Reader.GetBoolean(8)
+            End If
+        End While
+
         query.Reader.Close()
         query.Connection.Close()
         Return data
-    End Function
-
-    Function GetModPowers(ByVal modname As String) As String
-        Dim command As DbCommand = DatabaseEngine.GenerateDbCommand
-
-        command.CommandText = "SELECT power FROM mods WHERE (username LIKE @modname)"
-
-        command.Parameters.Add(DatabaseEngine.MakeParameter("@modname", modname, Data.DbType.String))
-
-        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(command)
-        Dim powstr As String = ""
-        While query.Reader.Read
-            powstr = query.Reader.GetString(0)
-        End While
-        query.Connection.Close()
-        Return powstr
     End Function
 
     Private Sub UpdatePostText(ByVal postID As Integer, ByVal newText As String, ByVal allowHTML As Boolean)
@@ -2130,8 +2625,19 @@ Public Module GlobalFunctions
         DatabaseEngine.ExecuteNonQuery(command)
     End Sub
 
-    Private Sub BanPoster(ByVal IP As String, ByVal postID As Integer)
-        DatabaseEngine.ExecuteNonQuery("INSERT INTO bans (perm, post, IP) VALUES (0, " & postID & ", '" & IP & "')")
+    Private Sub BanPoster(ByVal IP As String, ByVal postID As Integer, ByVal comment As String, ByVal modname As String, ByVal expirationdate As Date, ByVal permanant As Boolean, Optional ByVal CanBrowse As Boolean = True)
+        Dim command As DbCommand = DatabaseEngine.GenerateDbCommand
+        command.CommandText = "INSERT INTO bans (perm, expiry, comment, post, IP, canview, modname, bannedon) VALUES " & _
+                                " (@perm, @expiry, @comment, @post, @IP, @canview, @modname, @bannedon)"
+        command.Parameters.Add(MakeParameter("@perm", permanant, Data.DbType.Boolean))
+        command.Parameters.Add(MakeParameter("@expiry", expirationdate, Data.DbType.DateTime))
+        command.Parameters.Add(MakeParameter("@comment", comment, Data.DbType.String))
+        command.Parameters.Add(MakeParameter("@post", postID, Data.DbType.Int32))
+        command.Parameters.Add(MakeParameter("@IP", IP, Data.DbType.String))
+        command.Parameters.Add(MakeParameter("@canview", CanBrowse, Data.DbType.Boolean))
+        command.Parameters.Add(MakeParameter("@modname", modname, Data.DbType.String))
+        command.Parameters.Add(MakeParameter("@bannedon", Now, Data.DbType.DateTime))
+        DatabaseEngine.ExecuteNonQuery(command)
     End Sub
 
     Private Function GetLastXPosts(ByVal threadID As Integer, ByVal x As Integer, ByVal includearhived As Boolean) As Integer()
@@ -2160,9 +2666,16 @@ Public Module GlobalFunctions
 
     Private Function GetRepliesCount(ByVal threadID As Integer, ByVal countArchived As Boolean) As ThreadReplies
         Dim s As String = ""
-        If countArchived Then s = " AND ( mta = 1 )" Else s = " AND ( mta = 0 )"
-        Dim textRepliesCount As String = "Select Count(ID) as T from board where (parentT=" & threadID & ") AND (imagename LIKE '')" & s
-        Dim imageRepliesCount As String = "Select Count(ID) as T from board where (parentT=" & threadID & ")  AND (imagename LIKE '%.%')" & s
+        Dim textRepliesCount As DbCommand = DatabaseEngine.GenerateDbCommand("SELECT Count(ID) As T FROM board WHERE (parentT = @id)  AND (hasFile = @f) AND (mta = @mta)")
+        Dim imageRepliesCount As DbCommand = DatabaseEngine.GenerateDbCommand("SELECT Count(ID) As T FROM board WHERE (parentT = @id) AND (hasFile = @f) AND (mta = @mta)")
+
+        textRepliesCount.Parameters.Add(MakeParameter("@mta", countArchived, Data.DbType.Boolean))
+        textRepliesCount.Parameters.Add(MakeParameter("@id", threadID, Data.DbType.Int32))
+        textRepliesCount.Parameters.Add(MakeParameter("@f", False, Data.DbType.Boolean))
+
+        imageRepliesCount.Parameters.Add(MakeParameter("@mta", countArchived, Data.DbType.Boolean))
+        imageRepliesCount.Parameters.Add(MakeParameter("@f", True, Data.DbType.Boolean))
+        imageRepliesCount.Parameters.Add(MakeParameter("@id", threadID, Data.DbType.Int32))
 
         Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(textRepliesCount)
 
@@ -2189,41 +2702,38 @@ Public Module GlobalFunctions
     End Function
 
     Public Sub ToggleSticky(ByVal threadID As Integer)
-        Dim i As Integer = 0 ' 0 unsticky the thread.
-        If Not IsSticky(threadID) Then i = 1 'Need to sticky it.  
-        DatabaseEngine.ExecuteNonQuery("UPDATE board SET sticky = " & i & " WHERE (ID = " & threadID & " )")
+        Dim stk As Boolean = Not IsSticky(threadID)
+        Dim command As DbCommand = DatabaseEngine.GenerateDbCommand
+        command.CommandText = "UPDATE board SET sticky = @stk WHERE (ID = @id )"
+        command.Parameters.Add(MakeParameter("@stk", stk, Data.DbType.Boolean))
+        command.Parameters.Add(MakeParameter("@id", threadID, Data.DbType.Int32))
+        DatabaseEngine.ExecuteNonQuery(command)
     End Sub
 
     Private Function IsSticky(ByVal id As Integer) As Boolean
         Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader("SELECT sticky FROM board  WHERE (ID = " & id & " )")
-        Dim p As Boolean = False
+        Dim p As Boolean
         While query.Reader.Read
-            If TypeOf query.Reader(0) Is DBNull Or CInt(ConvertNoNull(query.Reader(0))) <> 1 Then
-                p = False
-            Else
-                p = True
-            End If
+            p = query.Reader.GetBoolean(0)
         End While
         query.Connection.Close()
         Return p
     End Function
 
     Public Sub ToggleLock(ByVal threadID As Integer)
-        Dim i As Integer = 0
-        If Not IsLocked(threadID) Then i = 1
-        DatabaseEngine.ExecuteNonQuery("UPDATE board SET locked = " & i & " WHERE (ID = " & threadID & " )")
+        Dim lck As Boolean = Not IsLocked(threadID)
+        Dim command As DbCommand = DatabaseEngine.GenerateDbCommand
+        command.CommandText = "UPDATE board SET sticky = @lck WHERE (ID = @id )"
+        command.Parameters.Add(MakeParameter("@lck", lck, Data.DbType.Boolean))
+        command.Parameters.Add(MakeParameter("@id", threadID, Data.DbType.Int32))
+        DatabaseEngine.ExecuteNonQuery(command)
     End Sub
 
     Private Function IsLocked(ByVal id As Integer) As Boolean
-        Dim queryString As String = "SELECT locked FROM board WHERE (ID = " & id & " )"
-        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
-        Dim p As Boolean = False
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader("SELECT locked FROM board WHERE (ID = " & id & ")")
+        Dim p As Boolean
         While query.Reader.Read
-            If TypeOf query.Reader(0) Is DBNull Or CInt(ConvertNoNull(query.Reader(0))) <> 1 Then
-                p = False
-            Else
-                p = True
-            End If
+            p = query.Reader.GetBoolean(0)
         End While
         query.Connection.Close()
         Return p
@@ -2232,13 +2742,9 @@ Public Module GlobalFunctions
     Private Function IsArchived(ByVal id As Integer) As Boolean
         Dim queryString As String = "SELECT mta FROM board WHERE (ID = " & id & " )"
         Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryString)
-        Dim p As Boolean = False
+        Dim p As Boolean
         While query.Reader.Read
-            If CInt(ConvertNoNull(query.Reader(0))) = 1 Then
-                p = True
-            Else
-                p = False
-            End If
+            p = query.Reader.GetBoolean(0)
         End While
         query.Connection.Close()
         Return p
@@ -2277,65 +2783,6 @@ Public Module GlobalFunctions
     Private Function ConvertNoNull(ByVal x As Object) As Object
         If TypeOf x Is DBNull Then Return Nothing Else Return x
     End Function
-
-    'Private Function EscapeChar(ByVal x As Char) As Char
-    '    'HTML ISO 8879 Numerical Character References 
-    '    'http://sunsite.berkeley.edu/amher/iso_8879.html
-    '    Select Case x
-    '        Case ";"
-    '            Return "&#59;"
-    '        Case "#"
-    '            Return "&#35;"
-    '        Case "&"
-    '            Return "&amp;"
-    '        Case "<"
-    '            Return "&lt;"
-    '        Case ">"
-    '            Return "&gt;"
-    '        Case "%"
-    '            Return "&#37;"
-    '        Case "$"
-    '            Return "&#36;"
-    '        Case "'"
-    '            Return "&#39;"
-    '        Case "("
-    '            Return "&#40;"
-    '        Case ")"
-    '            Return "&#41;"
-    '        Case "*"
-    '            Return "&#42;"
-    '        Case "+"
-    '            Return "&#43;"
-    '        Case "/"
-    '            Return "&#47;"
-    '        Case ":"
-    '            Return "&#58;"
-    '        Case "="
-    '            Return "&#61;"
-    '        Case "@"
-    '            Return "&#64;"
-    '        Case "["
-    '            Return "&#91;"
-    '        Case "]"
-    '            Return "&#93;"
-    '        Case "\"
-    '            Return "&#92;"
-    '        Case "^"
-    '            Return "&#94;"
-    '        Case "{"
-    '            Return "&#123;"
-    '        Case "}"
-    '            Return "&#125;"
-    '        Case "|"
-    '            Return "&#124;"
-    '        Case "~"
-    '            Return "&#126;"
-    '        Case """" ' means "
-    '            Return "&quot;"
-    '        Case Else
-    '            Return x
-    '    End Select
-    'End Function
 
     Private Function ProcessInputs(ByVal str As String) As String
         'Dim sb As New StringBuilder
@@ -2460,7 +2907,6 @@ Public Module GlobalFunctions
                 Return i.GetThumbnailImage(DownSizeWithAspectRatio(targetS, i.Size).Width, DownSizeWithAspectRatio(targetS, i.Size).Height, Nothing, System.IntPtr.Zero)
         End Select
     End Function
-
 #End Region
 
 #Region "BB codes processing"
@@ -2510,6 +2956,12 @@ Public Module GlobalFunctions
                 Else
                     Return data
                 End If
+                'Case "backlink"
+                '    Dim re As New Regex("/&gt;&gt;([0-9]+)/")
+                '    For Each x In MatchBBCode(data, re)
+                '        data = data.Replace(x, formatBacklink("#" & x.Replace("&gt;&gt;", ""), x))
+                '    Next
+                '    Return data
                 'Case "latex"
                 '    For Each x In MatchBBCode(data, "latex")
                 '        Dim tempfile As String = STORAGEFOLDER & "\temp" & Now.ToFileTime & ".tex"
@@ -2541,6 +2993,21 @@ Public Module GlobalFunctions
         Dim il As New List(Of String)
         Dim regSTR As String = "\[/?" & bbcode & "\]"
         Dim st As String() = Regex.Split(text, regSTR)
+        Dim isAmatch As Boolean = False
+        For i As Integer = 0 To st.Length - 1 Step 1
+            If Not isAmatch Then
+                'Not a match 
+            Else
+                il.Add(st.ElementAt(i))
+            End If
+            isAmatch = Not isAmatch
+        Next
+        Return il.ToArray
+    End Function
+
+    Private Function MatchBBCode(ByVal text As String, ByVal Regexp As Regex) As String()
+        Dim il As New List(Of String)
+        Dim st As String() = Regexp.Split(text)
         Dim isAmatch As Boolean = False
         For i As Integer = 0 To st.Length - 1 Step 1
             If Not isAmatch Then
@@ -2679,7 +3146,7 @@ Public Module GlobalFunctions
         Dim queryOjb As ChanbQuery = DatabaseEngine.ExecuteQueryReader(queryStr)
         Dim b As Boolean = False
         While queryOjb.Reader.Read
-            If TypeOf queryOjb.Reader(0) Is DBNull Then b = False Else b = True
+            If IsDBNull(queryOjb.Reader(0)) Then b = False Else b = True
         End While
         queryOjb.Connection.Close()
         Return b
@@ -2719,21 +3186,14 @@ Public Module GlobalFunctions
 
         If po.archived Then
             pageHTML = pageHTML.Replace("%POSTING MODE%", archiveNotice)
+            pageHTML = pageHTML.Replace("%POSTDIVCLASS%", "hide")
+            pageHTML = pageHTML.Replace("%POST FORM MODE%", "reply")
+            pageHTML = pageHTML.Replace("%POSTING RULES%", "")
         Else
             pageHTML = pageHTML.Replace("%POSTING MODE%", postingModeReplyHtml)
-        End If
-
-
-        If po.archived Then
-            pageHTML = pageHTML.Replace("%POSTDIVCLASS%", "hide")
-        Else
             pageHTML = pageHTML.Replace("%POSTDIVCLASS%", "")
-        End If
-
-        If po.archived = False Then
-            pageHTML = pageHTML.Replace("%POST FORM MODE%", "reply")
-        Else
             pageHTML = pageHTML.Replace("%POST FORM MODE%", "thread")
+            pageHTML = pageHTML.Replace("%POSTING RULES%", postingRulesHTML)
         End If
 
         pageHTML = pageHTML.Replace("%POST FORM TID%", CStr(tid))
@@ -2751,15 +3211,9 @@ Public Module GlobalFunctions
         pageHTML = pageHTML.Replace("%MAXIMUM FILE SIZE%", FormatSizeString(MaximumFileSize))
         pageHTML = pageHTML.Replace("%SESSION PASSWORD%", "")
 
-        If po.archived Then
-            pageHTML = pageHTML.Replace("%POSTING RULES%", "")
-        Else
-            pageHTML = pageHTML.Replace("%POSTING RULES%", postingRulesHTML)
-        End If
-
         pageHTML = pageHTML.Replace("%THREAD COUNT%", "")
 
-        pageHTML = pageHTML.Replace("%META NO CACHE%", "<META HTTP-EQUIV='pragma' CONTENT='no-cache'>")
+        pageHTML = pageHTML.Replace("%META NO CACHE%", "<META HTTP-EQUIV=""pragma"" CONTENT=""no-cache"">")
 
         pageHTML = pageHTML.Replace("%RETURN BUTTON DESKTOP%", DesktopReturnButtonHTML.Replace("%P%", WebRoot & pageHandlerLink & ".aspx"))
         pageHTML = pageHTML.Replace("%RETURN BUTTON MOBILE%", MobileReturnButtonHTML.Replace("%P%", WebRoot & pageHandlerLink & ".aspx"))
@@ -2770,14 +3224,12 @@ Public Module GlobalFunctions
 
         para.isCurrentThread = Not po.archived
 
-        body.Append("<script type='text/javascript'> timer();</script>")
-
         para.replyButton = False
         para.isTrailPost = False
 
-        body.Append("<div class='thread' id='t" & tid & "'>")
+        body.Append("<div class=""thread"" id=""t" & tid & """>")
         body.Append(GetThreadHTML(tid, para))
-        body.Append("</div><hr ></hr>")
+        body.Append("</div><hr />")
 
         pageHTML = pageHTML.Replace("%BODY%", body.ToString)
 
@@ -2785,6 +3237,235 @@ Public Module GlobalFunctions
 
         Return pageHTML
     End Function
+
+#End Region
+
+#Region "Panel Functions"
+
+    Public Function CountTotalPost() As Integer
+        Dim command As String = "SELECT Count(ID) As T FROM board"
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(command)
+        Dim i As Integer = 0
+        While query.Reader.Read
+            i = CInt(ConvertNoNull(query.Reader(0)))
+        End While
+        query.Reader.Close()
+        query.Connection.Close()
+        Return i
+    End Function
+
+    Public Function CountTotalFiles() As Integer
+        Dim command As String = "SELECT DISTINCT md5 FROM files"
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(command)
+        Dim i As Integer = 0
+        While query.Reader.Read
+            i += 1
+        End While
+        query.Reader.Close()
+        query.Connection.Close()
+        Return i
+    End Function
+
+    Public Function CountTotalUsers() As Integer
+        Dim command As String = "SELECT DISTINCT IP FROM board"
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(command)
+        Dim i As Integer = 0
+        While query.Reader.Read
+            i += 1
+        End While
+        query.Reader.Close()
+        query.Connection.Close()
+        Return i
+    End Function
+
+    Public Function GetChanbVersion() As String
+        Return "0.5.0.153"
+    End Function
+
+#End Region
+
+#Region "Files database processing"
+
+    Private Sub AddFileToDatabase(ByVal wpi As WPostImage, ByVal postID As Integer, Optional ByRef connection As DbConnection = Nothing)
+        Dim command As DbCommand
+        If connection Is Nothing Then
+            command = DatabaseEngine.GenerateDbCommand
+        Else
+            command = DatabaseEngine.GenerateDbCommand(connection)
+        End If
+        '; SELECT ID FROM files WHERE (postID = @postID) AND (md5 = @md5)
+
+        command.CommandText = "INSERT INTO files (postID, chanbname, realname, size, md5, extension, mimetype, dimension) " & _
+                            " VALUES  (@postID, @chanbname, @realname, @size, @md5, @extension, @mimetype, @dimension)"
+
+
+        command.Parameters.Add(MakeParameter("@postID", postID, Data.DbType.Int32))
+        command.Parameters.Add(MakeParameter("@chanbname", wpi.ChanbName, Data.DbType.String))
+        command.Parameters.Add(MakeParameter("@realname", wpi.RealName, Data.DbType.String))
+        command.Parameters.Add(MakeParameter("@size", wpi.Size, Data.DbType.Int64))
+        command.Parameters.Add(MakeParameter("@md5", wpi.MD5, Data.DbType.String))
+        command.Parameters.Add(MakeParameter("@extension", wpi.Extension, Data.DbType.String))
+        command.Parameters.Add(MakeParameter("@mimetype", wpi.MimeType, Data.DbType.String))
+        command.Parameters.Add(MakeParameter("@dimension", wpi.Dimensions, Data.DbType.String))
+
+        If connection Is Nothing Then
+            DatabaseEngine.ExecuteNonQuery(command)
+        Else
+            DatabaseEngine.ExecuteNonQuery(command, connection)
+        End If
+
+
+        'Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(command)
+        'Dim id As Integer = 0
+        'While query.Reader.Read
+        '    id = CInt(query.Reader(0))
+        'End While
+        'query.Reader.Close()
+        'query.Connection.Close()
+        'Return id
+    End Sub
+
+    Public Function GetFileDataByMD5(ByVal md5 As String) As WPostImage
+        Dim wpi As New WPostImage
+
+        Dim command As DbCommand = GenerateDbCommand("SELECT ID, postID, chanbname, realname, size, extension, mimetype, dimension FROM files WHERE (md5 = @md5)")
+
+        command.Parameters.Add(MakeParameter("@md5", md5, Data.DbType.String))
+
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(command)
+
+        While query.Reader.Read
+            If IsDBNull(query.Reader(0)) Then
+                wpi = dummyWImage
+            Else
+                wpi.PostID = CInt(query.Reader(1))
+                wpi.ChanbName = CStr(query.Reader(2))
+                wpi.RealName = CStr(query.Reader(3))
+                wpi.Size = CLng(query.Reader(4))
+                wpi.Extension = CStr(query.Reader(5)).ToUpper
+                wpi.MimeType = CStr(query.Reader(6))
+                wpi.Dimensions = CStr(query.Reader(7))
+                wpi.MD5 = md5
+            End If
+        End While
+        query.Reader.Close()
+        query.Connection.Close()
+        Return wpi
+    End Function
+
+    Public Function GetFileDataByChanbName(ByVal chanbName As String) As WPostImage
+        Dim wpi As New WPostImage
+
+        Dim command As DbCommand = GenerateDbCommand("SELECT ID, postID, md5, realname, size, extension, mimetype, dimension FROM files WHERE (chanbname LIKE @chanbname)")
+
+        command.Parameters.Add(MakeParameter("@chanbname", chanbName, Data.DbType.String))
+
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(command)
+
+        While query.Reader.Read
+            If IsDBNull(query.Reader(0)) Then
+                wpi = dummyWImage
+            Else
+                wpi.PostID = CInt(query.Reader(1))
+                wpi.MD5 = CStr(query.Reader(2))
+                wpi.RealName = CStr(query.Reader(3))
+                wpi.Size = CLng(query.Reader(4))
+                wpi.Extension = CStr(query.Reader(5)).ToUpper
+                wpi.MimeType = CStr(query.Reader(6))
+                wpi.Dimensions = CStr(query.Reader(7))
+                wpi.ChanbName = chanbName
+            End If
+        End While
+        query.Reader.Close()
+        query.Connection.Close()
+        Return wpi
+    End Function
+
+    Public Function FileExistInDB(ByVal md5 As String, Optional ByVal connection As DbConnection = Nothing) As Boolean
+        Dim wpi As New WPostImage
+
+        Dim command As DbCommand
+        If connection Is Nothing Then
+            command = GenerateDbCommand()
+        Else
+            command = GenerateDbCommand(connection)
+        End If
+
+        command.CommandText = "SELECT ID FROM files WHERE (md5 = @md5)"
+
+        command.Parameters.Add(MakeParameter("@md5", md5, Data.DbType.String))
+
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(command)
+        Dim p As Boolean = False
+
+        While query.Reader.Read
+            p = Not IsDBNull(query.Reader(0))
+        End While
+
+        query.Reader.Close()
+        If connection Is Nothing Then query.Connection.Close()
+
+        Return p
+    End Function
+
+    Public Function FileExistInDB(ByVal md5 As String, ByVal ExcludedPost As Integer) As Boolean
+        Dim wpi As New WPostImage
+
+        Dim command As DbCommand = GenerateDbCommand("SELECT ID FROM files WHERE (md5 = @md5) AND (postId <> @exP)")
+
+        command.Parameters.Add(MakeParameter("@md5", md5, Data.DbType.String))
+        command.Parameters.Add(MakeParameter("@exP", ExcludedPost, Data.DbType.Int32))
+
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(command)
+        Dim p As Boolean = False
+
+        While query.Reader.Read
+            p = Not IsDBNull(query.Reader(0))
+        End While
+
+        query.Reader.Close()
+        query.Connection.Close()
+
+        Return p
+    End Function
+
+    Public Function GetPostFiles(ByVal postId As Integer, Optional ByVal connection As DbConnection = Nothing) As WPostImage()
+        Dim command As DbCommand
+        If connection Is Nothing Then
+            command = DatabaseEngine.GenerateDbCommand
+        Else
+            command = DatabaseEngine.GenerateDbCommand(connection)
+        End If
+
+        command.CommandText = "SELECT ID, chanbname, realname, size, md5, extension, mimetype, dimension FROM files WHERE (postID = @postID)"
+
+        command.Parameters.Add(MakeParameter("@postID", postId, Data.DbType.Int32))
+
+        Dim il As New List(Of WPostImage)
+
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader(command)
+
+        While query.Reader.Read
+            Dim wpi As New WPostImage
+            wpi.PostID = postId
+            wpi.ChanbName = CStr(query.Reader(1))
+            wpi.RealName = CStr(query.Reader(2))
+            wpi.Size = CLng(query.Reader(3))
+            wpi.MD5 = CStr(query.Reader(4))
+            wpi.Extension = CStr(query.Reader(5)).ToUpper
+            wpi.MimeType = CStr(query.Reader(6))
+            wpi.Dimensions = CStr(query.Reader(7))
+
+            il.Add(wpi)
+        End While
+
+        query.Reader.Close()
+        If connection Is Nothing Then query.Connection.Close()
+
+        Return il.ToArray
+        il.Clear()
+    End Function
+
 
 #End Region
 

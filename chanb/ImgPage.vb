@@ -37,9 +37,9 @@
             Else
 
                 Dim md5 As String = .Request.Item("md5")
-                If ImageExist(md5) Then
+                If FileExistInDB(md5) Then
 
-                    Dim ImageData As WPostImage = GetImageDataByMD5(md5)
+                    Dim ImageData As WPostImage = GetFileDataByMD5(md5)
 
                     If FileIO.FileSystem.FileExists(StorageFolder & "\" & ImageData.ChanbName) Then
                         .Response.Clear()
@@ -69,7 +69,7 @@
         End With
     End Sub
 
-    Private Function GetMimeType(ByVal fileExtension As String) As String
+    Public Function GetMimeType(ByVal fileExtension As String) As String
         Select Case fileExtension.ToUpper
             Case "JPG"
                 Return "image/jpeg"
@@ -77,6 +77,8 @@
                 Return "image/jpeg"
             Case "BMP"
                 Return "image/bmp"
+            Case "GIF"
+                Return "image/gif"
             Case "PNG"
                 Return "image/png"
             Case "SVG"

@@ -23,17 +23,16 @@ Public Module JSONApi
         Dim sb As New StringBuilder
         Dim data As WPost() = GetThreadData(tid, includeArch)
         For Each x As WPost In data
-            If Not x._imageP = "" Then
-                For Each sp In x._imageP.Split(CChar(";"))
-                    Dim image As WPostImage = GetWPostImage(sp)
-                    For Each ext In filetypes
-                        If image.Extension = ext.ToUpper Then
-                            sb.Append(GetImageWEBPATH(image.ChanbName))
-                            sb.Append(vbNewLine)
-                        End If
-                    Next
+
+            For Each file As WPostImage In x.files
+                For Each ext In filetypes
+                    If file.Extension = ext.ToUpper Then
+                        sb.Append(GetImageWEBPATH(file.ChanbName))
+                        sb.Append(vbNewLine)
+                    End If
                 Next
-            End If
+            Next
+
         Next
         Return sb.ToString
     End Function

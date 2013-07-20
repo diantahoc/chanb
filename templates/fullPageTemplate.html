@@ -18,7 +18,7 @@
 </div>
 %POSTING MODE%
 <div id="postdiv" align="center" class="%POSTDIVCLASS%">
-<form enctype="multipart/form-data" action="%ROOT%post.aspx" method="post" title="%POST FORM BUTTON%">
+<form enctype="multipart/form-data" action="%ROOT%post.aspx" method="post" title="%POST FORM BUTTON%" defaultbutton="sbf" >
 <input type="hidden" name="mode" value="%POST FORM MODE%" />
 <input type="hidden" name="threadid" value="%POST FORM TID%" />
 <table>
@@ -37,6 +37,7 @@
 <th>%LANG subjectString%</th>
 <td><input class="form-text" style="float:left;" name="subject" size="30" type="text"/>
 <a id='submitFormjs' class="form-button hide" onclick="beforePost();$(this).closest('form').submit();">%POST FORM BUTTON%</a>
+<input class="hide" id="sbf" type="submit" value"sbf" /> 
 <script type="text/javascript">$("#submitFormjs").removeClass("hide");</script>
 <noscript>
 <input style="margin-left:2px;" name="post" value="%POST FORM BUTTON%" type="submit"/>

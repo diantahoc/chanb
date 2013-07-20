@@ -1,6 +1,24 @@
 ﻿function quote(id) {
-    document.getElementById("commentfield").value += ">>" + id + "\n";
+    insert(document.getElementById("commentfield"), ">>" + id);
 }
+
+function insert(textarea, text) {
+    if (!textarea) return;
+
+    if (textarea.createTextRange && textarea.caretPos) {
+        var caretPos = textarea.caretPos;
+        caretPos.text = caretPos.text.charAt(caretPos.text.length - 1) == " " ? text + " " : text;
+    } else if (textarea.setSelectionRange) {
+        var start = textarea.selectionStart;
+        var end = textarea.selectionEnd;
+        textarea.value = textarea.value.substr(0, start) + text + textarea.value.substr(end);
+        textarea.setSelectionRange(start + text.length, start + text.length);
+    } else {
+        textarea.value += text + " ";
+    }
+    textarea.focus();
+}
+
 
 function createUf() {
     var divTag = document.createElement("input");
@@ -463,3 +481,105 @@ function openWindow(link,title) {
 		newwin.focus()
 	}
 }
+
+
+function initQR() { 
+
+/*<div id="qrbox" class="qr">
+    <div id="qrtitle" class="qrtitle">
+		<span class="qrmove">Quick reply</span><a style="float:right;" class="form-button form-button-red" href="javascript:qr('hide')">X</a>
+	</div>
+    <div id="qrbody" class="qrbody">
+        <input class="form-text" id="qrname" type="text" style="max-width: 135px" />
+        <input class="form-text" id="qremail" type="text" style="max-width: 135px" />
+        <input class="form-text" id="qrsubject" type="text" style="max-width: 135px" />
+        
+        <br />
+        
+        <textarea id="qrtext" cols="50" rows="10" class="form-textarea"></textarea>
+        
+        <br />
+        
+        <a class="form-button" onclick="qr('sumbit')">Send</a>
+	</div>
+</div>*/
+
+
+    var qrbox = document.createElement("div");
+    qrbox.setAttribute("id", "qrbox");
+    qrbox.setAttribute("class", "qr");
+
+    var qrtitle = document.createElement("div");
+
+    qrtitle.setAttribute("id", "qrtitle");
+    qrtitle.setAttribute("class", "qrtitle");
+
+    var spanqrmove = document.createElement("span");
+    spanqrmove.setAttribute("class", "qrmove");
+    spanqrmove.text = "Quick Reply";
+
+    var qrhideB = document.createElement("a");
+    qrhideB.setAttribute("class", "form-button form-button-red");
+    qrhideB.setAttribute("style", "float:right;");
+    qrhideB.setAttribute("href", "javascript:qr('hide')");
+    qrhideB.text = "X";
+
+    qrtitle.appendChild(spanqrmove);
+    qrtitle.appendChild(qrhideB);
+
+    var br = document.createElement("br");
+    
+    var qrbody = document.createElement("div");
+    qrbody.setAttribute("id", "qrbody");
+    qrbody.setAttribute("class", "qrbody");
+
+    var qrname = document.createElement("input");
+    qrname.setAttribute("id", "qrname");
+    qrname.setAttribute("class", "form-text");
+    qrname.setAttribute("type", "text");
+    qrname.setAttribute("style", "max-width: 135px");
+    qrbody.appendChild(qrname);
+    
+    var qremail = document.createElement("input");
+    qremail.setAttribute("id", "qremail");
+    qremail.setAttribute("class", "form-text");
+    qremail.setAttribute("type", "text");
+    qremail.setAttribute("style", "max-width: 135px");
+    qrbody.appendChild(qremail);
+    
+    var qrsubject = document.createElement("input");
+    qrsubject.setAttribute("id", "qrsubject");
+    qrsubject.setAttribute("class", "form-text");
+    qrsubject.setAttribute("type", "text");
+    qrsubject.setAttribute("style", "max-width: 135px");
+    qrbody.appendChild(qrsubject);
+
+    qrbody.appendChild(br);
+    
+    
+    var qrtext = document.createElement("textarea");
+    qrtext.setAttribute("id", "qrtext");
+    qrtext.setAttribute("cols", "50");
+    qrtext.setAttribute("rows", "10");
+    qrtext.setAttribute("class", "form-textarea");
+    qrbody.appendChild(qrtext);
+    
+    qrbody.appendChild(br);
+
+    var qrsendB = document.createElement("a");
+    qrsendB.setAttribute("class", "form-button");
+    qrsendB.setAttribute("href", "javascript:qr('send')");
+    qrsendB.text = "Reply";
+    qrbody.appendChild(qrsendB);
+    
+    qrbox.appendChild(qrtitle);
+    qrbox.appendChild(qrbody);
+
+    var body = $(".thread")[0];
+    
+    body.appendChild(qrbox);
+    
+    $("#qrbox").draggable({ handle: "#qrtitle" });
+}
+
+function qr(command) { }

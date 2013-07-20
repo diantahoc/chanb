@@ -25,9 +25,9 @@
             Else
                 _name = value
             End If
-#If TripCodeSupport Then
-     If _name.Contains("#") And Not _name.Contains("##") Then _name = _name.Replace(GetTrip(_name), "!" & ComputeTrip(GetTrip(_name)))
-#End If
+
+            If _name.Contains("#") And Not _name.Contains("##") Then _name = _name.Replace(GetTrip(_name), "<span class=""trip"">!" & ComputeTrip(GetTrip(_name)) & "</span>")
+
         End Set
     End Property
 
@@ -71,14 +71,15 @@
     End Property
 
     Public time As Date
-    Public imageName As String
+    Public HasFile As Boolean
     Public IP As String
     Public UserAgent As String
 
-#If TripCodeSupport Then
+
     Private Function GetTrip(ByVal s As String) As String
         Dim hashtagPostion As Integer
         Dim doubleHashtags As Integer
+
 
         For i As Integer = 0 To s.Length - 1 Step 1
             If s(i) = "#" Then
@@ -107,8 +108,14 @@
     'Private hiddenSalt As Char() = MD5(normalSalt.ToString).ToCharArray
 
     Private Function ComputeTrip(ByVal tripc As String) As String
-        Return UnixCrypt.Crypt(tripc.Substring(1, 2), tripc).Substring(3)
+        Dim g = UnixCrypt.Crypt("channelBoard", tripc).Substring(3).Reverse()
+
+        Dim b As New StringBuilder
+        For i As Integer = g.Count - 1 To g.Count - 1 - 10 Step -1
+            b.Append(g(i))
+        Next
+        Return b.ToString
     End Function
-#End If
+
 
 End Class

@@ -31,10 +31,12 @@
     Public summaryClickToViewStr As String = " Click <a href=""%POSTLINK%"">here</a> to view."
 
     Public ReadOnly banuserStr As String = "Ban user"
+    Public modSilentBanStr As String = "Silent ban"
     Public ReadOnly deletePostStr As String = "Delete post"
     Public ReadOnly tgstickStr As String = "Toggle sticky"
     Public ReadOnly tglockStr As String = "Toggle Lock"
     Public ReadOnly EditpostStr As String = "Edit post"
+    Public modBlurImageStr As String = "Blur image"
     Public ReadOnly higlightPostByThisIDStr As String = "Higlight posts by this ID"
     Public ReadOnly TopStr As String = "Top"
     Public ReadOnly CatalogStr As String = "Catalog"
@@ -58,7 +60,7 @@
     Public ReadOnly NoPostWasSelected As String = "No post was selected"
     Public ReadOnly ReportedSucess As String = "Reported post number %"
     Public ReadOnly BadOrNoImage As String = "No image or image contains errors."
-    Public ReadOnly BannedMessage As String = "You are banned from posting."
+    Public ReadOnly BannedMessage As String = "You are banned."
     Public ReadOnly lockedMessage As String = "Thread is locked."
     Public ReadOnly noBlankpost As String = "Blank post are not allowed."
     Public ReadOnly duplicateFile As String = "Duplicate image detected."
@@ -79,7 +81,10 @@
     Public ReadOnly modNoPower As String = "You have no power to do that."
     Public ReadOnly modBannedPosterStr As String = "Banned the poster of %."
     Public ReadOnly modRequetComplete As String = "Request complete."
-    Public ReadOnly modLoginSucess As String = "Login sucessful"
+    Public ReadOnly modLoginSucess As String = "Login succeeded"
+    Public ReadOnly modLoginFailed As String = "Login failed"
+    Public modSelectBanReason As String = "Select a reason for this ban"
+
     '  Public ReadOnly currentThreadsCountStr As String = "Currently there are % thread(s)."
     Public dbTypeNotSet As String = "Database type is not set"
     Public dbTypeInvalid As String = "Invalid database type"
@@ -88,6 +93,28 @@
     Public installerDbConnectionStringNotSpecified As String = "Database connection string is not specified"
     Public errorOccuredStr As String = "An error has been occured, error message is: %"
     Public isntallerConnectionEstablishedSucess As String = "% connection was sucessfully established."
+
+
+    Public rotatorImagesStr As String = "image(s)" '%LANG rotatorImagesStr%
+    Public rotatorfirstStr As String = "First" '%LANG rotatorfirstStr%
+    Public rotatorlastStr As String = "Last" '%LANG rotatorlastStr%
+    Public rotatorPrevStr As String = "Previous" '%LANG rotatorPrevStr%
+    Public rotatorNextStr As String = "Next" '%LANG rotatornextStr%
+
+
+
+
+
+
+    Public banReasonStr As String = "Reason"
+    Public bannedOnStr As String = "Banned on"
+    Public banIpStr As String = "Your IP was"
+    Public banPostNoStr As String = "The post you were banned for"
+    Public banExpiryStr As String = "Expiration date"
+
+
+
+
 
 #Region "Arabic"
 

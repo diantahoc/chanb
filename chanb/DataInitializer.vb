@@ -77,6 +77,18 @@
         End Get
     End Property
 
+    Public ReadOnly Property ModSBRTemplate() As String
+        Get
+            Return IO.File.ReadAllText(chanbDLLROOT & "templates\modSBR.html")
+        End Get
+    End Property
+
+    Public ReadOnly Property BanPageTemplate() As String
+        Get
+            Return IO.File.ReadAllText(chanbDLLROOT & "templates\bannedPageTemplate.html")
+        End Get
+    End Property
+
     Public ReadOnly Property BoardTitle() As String
         Get
             If DataDB.KeyExist("boardtitle") = False Then

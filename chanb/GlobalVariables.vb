@@ -1,4 +1,4 @@
-﻿#Const TripCodeSupport = False
+﻿Imports Microsoft.VisualBasic.FileIO
 
 Public Module GlobalVariables
 
@@ -8,13 +8,17 @@ Public Module GlobalVariables
         StorageFolder = DI.PhysicalStorageFolderPath
         StorageFolderThumbs = DI.PhysicalStorageFolderPath & "\thumbs"
 
-        If FileIO.FileSystem.DirectoryExists(StorageFolder) = False Then FileIO.FileSystem.CreateDirectory(StorageFolder)
-        If FileIO.FileSystem.DirectoryExists(StorageFolderThumbs) = False Then FileIO.FileSystem.CreateDirectory(StorageFolderThumbs)
+        CheckDir(StorageFolder)
+        CheckDir(StorageFolderThumbs)
 
-        If FileIO.FileSystem.DirectoryExists(ThreadStorageFolder) = False Then FileIO.FileSystem.CreateDirectory(ThreadStorageFolder)
-        If FileIO.FileSystem.DirectoryExists(ArchivedTStorageFolder) = False Then FileIO.FileSystem.CreateDirectory(ArchivedTStorageFolder)
+        CheckDir(ThreadStorageFolder)
+        CheckDir(ArchivedTStorageFolder)
+
+        CheckDir(dataFileDir)
 
         If StaticHTML Then ConvertArchivedThreadToHTML = True
+
+        InitVariables()
     End Sub
 
 #Region "Board configuration"
@@ -92,6 +96,11 @@ Public Module GlobalVariables
         End Get
     End Property
 
+    Private ReadOnly Property dataFileDir() As String
+        Get
+            Return chanb.My.Request.PhysicalApplicationPath & "\bin\datafiles\"
+        End Get
+    End Property
 #End Region
 
 #Region "HTML Templates"
@@ -158,14 +167,14 @@ Public Module GlobalVariables
     Public ReadOnly DesktopReturnButtonHTML As String = "[<a href=""%P%"">" & returnStr & "</a>]"
     Public ReadOnly MobileReturnButtonHTML As String = "<span class=""mobileib button""><a href=""%P%"">" & returnStr & "</a></span>"
 
-    Public ReadOnly searchEngineLinkList As String() = {"<a href='http://iqdb.org/?url=%THUMB_LINK%' target='_blank'>iqdb</a>", "<a href='http://www.google.com/searchbyimage?image_url=%THUMB_LINK%' target='_blank'>google</a>", "<a href='http://saucenao.com/search.php?db=999&url=%THUMB_LINK%' target='_blank'>saucenao</a>"}
+    Public searchEngineLinkList As String() = {"<a href=""http://www.google.com/searchbyimage?image_url=%THUMB_LINK%"" target=""_blank"">google</a>"}
 
     Public ReadOnly reportReasons As String() = {"rulev$Rule violation", "illm$Illegal material", "spam$SPAM/Abuse", "nsfw$Nudity on SFW board"}
 
     Public modPostName As String = "<span style=""color: blue"">Moderator</span>"
     Public adminPostName As String = "<span style=""color: red"">Administrator</span>"
 
-    Public ReadOnly forbiddenPage As String = "<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.0 Transitional//EN""> <html> <head> <title>403 Forbidden</title> </head> <body bottommargin=""0"" leftmargin=""0"" marginheight=""0"" marginwidth=""0"" rightmargin=""0"" topmargin=""0"" bgcolor=""#000000""> <table height=""75%"" width=""100%"" align=""center"" cellspacing=""0"" cellpadding=""0"" border=""0""> <tr> <td bgcolor=""#cccccc"" height=""67%"" width=""15%"">&nbsp;</td> <td bgcolor=""#ffff00"" height=""67%"" width=""14%"">&nbsp;</td> <td bgcolor=""#00ffff"" height=""67%"" width=""14%"">&nbsp;</td> <td bgcolor=""#00ff00"" height=""67%"" width=""14%"">&nbsp;</td> <td bgcolor=""#ff00ff"" height=""67%"" width=""14%"">&nbsp;</td> <td bgcolor=""#ff0000"" height=""67%"" width=""14%"">&nbsp;</td> <td bgcolor=""#0000ff"" height=""67%"" width=""15%"">&nbsp;</td> </tr> <tr> <td bgcolor=""#0000ff"" height=""8%"" width=""15%"">&nbsp;</td> <td bgcolor=""#131313"" height=""8%"" width=""14%"">&nbsp;</td> <td bgcolor=""#ff00ff"" height=""8%"" width=""14%"">&nbsp;</td> <td bgcolor=""#131313"" height=""8%"" width=""14%"">&nbsp;</td> <td bgcolor=""#00ffff"" height=""8%"" width=""14%"">&nbsp;</td> <td bgcolor=""#131313"" height=""8%"" width=""14%"">&nbsp;</td> <td bgcolor=""#cccccc"" height=""8%"" width=""15%"">&nbsp;</td> </tr> </table> <table height=""25%"" width=""100%"" align=""center"" cellspacing=""0"" cellpadding=""5"" border=""0""> <tr> <td bgcolor=""#083e59"" height=""25%"" width=""18%"">&nbsp;</td> <td bgcolor=""#ffffff"" height=""25%"" width=""18%"">&nbsp;</td> <td bgcolor=""#3a007e"" height=""25%"" width=""18%"">&nbsp;</td> <td bgcolor=""#131313"" height=""25%"" width=""20%"" align=""center"" valign=""middle"" style=""line-height:1.25""><font face=""verdana, san-serif"" color=""#00ff00""><font size=""+3"">403</font><br>Forbidden<br><font size=""-1"">STOP RIGHT THERE</font></font></td> <td bgcolor=""#262626"" height=""25%"" width=""26%"" align=""right"" valign=""bottom""></td> </tr> </table> </body> </html>"
+    Public ReadOnly forbiddenPage As String = "<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.0 Transitional//EN""> <html> <head> <title>403 Forbidden</title> </head> <body bottommargin=""0"" leftmargin=""0"" marginheight=""0"" marginwidth=""0"" rightmargin=""0"" topmargin=""0"" bgcolor=""#000000""> <table height=""75%"" width=""100%"" align=""center"" cellspacing=""0"" cellpadding=""0"" border=""0""> <tr> <td bgcolor=""#cccccc"" height=""67%"" width=""15%"">&nbsp;</td> <td bgcolor=""#ffff00"" height=""67%"" width=""14%"">&nbsp;</td> <td bgcolor=""#00ffff"" height=""67%"" width=""14%"">&nbsp;</td> <td bgcolor=""#00ff00"" height=""67%"" width=""14%"">&nbsp;</td> <td bgcolor=""#ff00ff"" height=""67%"" width=""14%"">&nbsp;</td> <td bgcolor=""#ff0000"" height=""67%"" width=""14%"">&nbsp;</td> <td bgcolor=""#0000ff"" height=""67%"" width=""15%"">&nbsp;</td> </tr> <tr> <td bgcolor=""#0000ff"" height=""8%"" width=""15%"">&nbsp;</td> <td bgcolor=""#131313"" height=""8%"" width=""14%"">&nbsp;</td> <td bgcolor=""#ff00ff"" height=""8%"" width=""14%"">&nbsp;</td> <td bgcolor=""#131313"" height=""8%"" width=""14%"">&nbsp;</td> <td bgcolor=""#00ffff"" height=""8%"" width=""14%"">&nbsp;</td> <td bgcolor=""#131313"" height=""8%"" width=""14%"">&nbsp;</td> <td bgcolor=""#cccccc"" height=""8%"" width=""15%"">&nbsp;</td> </tr> </table> <table height=""25%"" width=""100%"" align=""center"" cellspacing=""0"" cellpadding=""5"" border=""0""> <tr> <td bgcolor=""#083e59"" height=""25%"" width=""18%"">&nbsp;</td> <td bgcolor=""#ffffff"" height=""25%"" width=""18%"">&nbsp;</td> <td bgcolor=""#3a007e"" height=""25%"" width=""18%"">&nbsp;</td> <td bgcolor=""#131313"" height=""25%"" width=""20%"" align=""center"" valign=""middle"" style=""line-height:1.25""><font face=""verdana, san-serif"" color=""#00ff00""><font size=""+3"">403</font><br>Forbidden<br><font size=""-1"">STOP RIGHT THERE</font></font></td><td bgcolor=""#262626"" height=""25%"" width=""26%"" align=""right"" valign=""bottom""></td></tr></table></body></html>"
 
     'A ban reason should be in this format
     ' internalname$autoperm$length$canview$Localised ban reason.
@@ -194,6 +203,22 @@ Public Module GlobalVariables
         Return internalname & "$" & perm & "$" & length & "$" & canview & "$" & lang
     End Function
 
+    Private Sub InitVariables()
+        'Search engine links
+        If FileSystem.FileExists(dataFileDir & "SELinks.txt") Then
+            Dim il As New List(Of String)
+            For Each line As String In IO.File.ReadAllLines(dataFileDir & "SELinks.txt")
+                If Not (line.StartsWith("#") Or line = String.Empty) Then il.Add(line)
+            Next
+            searchEngineLinkList = il.ToArray
+            il.Clear()
+        End If
+
+    End Sub
+
+    Private Sub CheckDir(ByVal path As String)
+        If Not FileSystem.DirectoryExists(path) Then FileSystem.CreateDirectory(path)
+    End Sub
 #End Region
 
 End Module

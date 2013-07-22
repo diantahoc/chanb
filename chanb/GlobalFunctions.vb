@@ -36,316 +36,6 @@ Public Module GlobalFunctions
         Next
     End Sub
 
-    '    ''' <summary>
-    '    ''' Save single file.
-    '    ''' </summary>
-    '    ''' <param name="f"></param>
-    '    ''' <param name="reply"></param>
-    '    ''' <returns>File Name.</returns>
-    '    ''' <remarks></remarks>
-    '    Private Function saveFile(ByVal f As HttpPostedFile, ByVal reply As Boolean, ByVal postID As Integer) As String
-    '        ' If f.ContentLength > MaximumFileSize Then Throw New Exception(FileToBig)
-    '        If FileIsImage(f) Then
-
-    '            Dim w As Drawing.Image
-
-    '            Try
-    '                'Check if the file is a valid image
-    '                w = Drawing.Image.FromStream(f.InputStream)
-    '                'If RemoveEXIFData Then
-    '                '    w = RemoveEXIF(w)
-    '                'End If
-    '            Catch ex As Exception
-    '                'No image is required when replying
-    '                If f.ContentLength = 0 And reply = True Then
-    '                    Return ""
-    '                    Exit Function
-    '                Else
-    '                    Throw New ArgumentException(BadOrNoImage)
-    '                End If
-    '            End Try
-
-
-    '            Dim fileextension As String = f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1).ToLower
-
-    '            Dim dd As String = CStr(Date.UtcNow.ToFileTime)
-    '            'Full image path
-    '            Dim p As String = StorageFolder & "\" & dd & "." & fileextension
-
-    '            ''Thumb path
-    '            Dim thumb As String
-    '            If fileextension = "png" Then
-    '                thumb = StorageFolderThumbs & "\th" & dd & ".png"
-    '            Else
-    '                thumb = StorageFolderThumbs & "\th" & dd & ".jpg"
-    '            End If
-
-    '            'Check if resize is needed.
-    '            If (w.Width * w.Height) < 62500 Then
-    '                If fileextension = "png" Then
-    '                    w.Save(thumb, Drawing.Imaging.ImageFormat.Png)
-    '                Else
-    '                    w.Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
-    '                End If
-    '            Else
-    '                If fileextension = "png" Then
-    '                    ResizeImage(w, 250).Save(thumb, Drawing.Imaging.ImageFormat.Png)
-    '                Else
-    '                    ResizeImage(w, 250).Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
-    '                End If
-    '            End If
-
-    '            'SaveThumbnail(dd, w, fileextension)
-
-    '            'Save the image.
-    '            f.SaveAs(p)
-
-    '            'Calculate the file hash. I save the file then calulate the hash because f.InputStream always return a null stream. 
-    '            Dim fs As New IO.FileStream(p, IO.FileMode.Open)
-    '            Dim md5string As String = MD5(fs)
-    '            fs.Close()
-
-    '            Dim sp As String = ""
-
-    '            If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
-    '                'If image already exist, we fetch the matching image data from the database, and delete the saved files.
-    '                If SmartLinkDuplicateImages = False Then
-    '                    FileIO.FileSystem.DeleteFile(p)
-    '                    FileIO.FileSystem.DeleteFile(thumb)
-    '                    Throw New ArgumentException(duplicateFile)
-    '                Else
-    '                    Dim wpi As WPostImage = GetImageDataByMD5(md5string)
-    '                    'Delete previously saved files.
-    '                    FileIO.FileSystem.DeleteFile(p)
-    '                    FileIO.FileSystem.DeleteFile(thumb)
-    '                    sp = wpi.ChanbName & ":" & CStr(wpi.Size) & ":" & wpi.Dimensions & ":" & wpi.RealName & ":" & wpi.MD5
-    '                End If
-    '            Else
-    '                'chanb name : size in bytes : dimensions : realname : md5
-    '                sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & w.Size.Width & "x" & w.Size.Height & ":" & RemoveSpecialChars(f.FileName) & ":" & md5string
-    '                w.Dispose()
-    '            End If
-    '            Return sp
-
-    '        Else 'Maybe a PDF or SVG file or no file
-    '            Dim fileextension As String = f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1)
-
-    '            Select Case fileextension.ToUpper()
-    '                Case "SVG"
-    '                    Dim dd As String = CStr(Date.UtcNow.ToFileTime)
-    '                    Dim p As String = StorageFolder & "\" & dd & "." & fileextension
-    '                    'Thumb path
-    '                    Dim thumb As String = StorageFolderThumbs & "\th" & dd & ".png"
-    '                    f.SaveAs(p)
-
-    '                    Dim fs As New IO.FileStream(p, IO.FileMode.Open)
-    '                    Dim md5string As String = MD5(fs)
-    '                    fs.Close()
-
-    '                    Dim sp As String = ""
-
-    '                    If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
-
-    '                        If SmartLinkDuplicateImages = False Then
-    '                            FileIO.FileSystem.DeleteFile(p)
-    '                            FileIO.FileSystem.DeleteFile(thumb)
-    '                            Throw New ArgumentException(duplicateFile)
-    '                        Else
-    '                            Dim wpi As WPostImage = GetImageDataByMD5(md5string)
-    '                            FileIO.FileSystem.DeleteFile(p)
-    '                            sp = wpi.ChanbName & ":" & CStr(wpi.Size) & ":" & wpi.Dimensions & ":" & wpi.RealName & ":" & wpi.MD5
-    '                        End If
-    '                    Else
-
-    '                        Dim svgBi As Drawing.Bitmap
-
-    '                        Try
-    '                            Dim svgDoc As Svg.SvgDocument = Svg.SvgDocument.Open(p)
-    '                            svgBi = svgDoc.Draw()
-    '                        Catch ex As Exception
-    '                            svgBi = New Drawing.Bitmap(150, 30)
-    '                            Dim g As Drawing.Graphics = Drawing.Graphics.FromImage(svgBi)
-    '                            g.Clear(Drawing.Color.White)
-    '                            g.DrawString("SVG File", New Drawing.Font(Drawing.FontFamily.GenericMonospace, 20, Drawing.FontStyle.Regular, Drawing.GraphicsUnit.Pixel), Drawing.Brushes.Black, 0, 0)
-    '                            g.Dispose()
-    '                        End Try
-
-
-    '                        'If IO.File.ReadAllText(p).Contains("<script>") Then
-
-    '                        'End If
-
-    '                        If (svgBi.Width * svgBi.Height) < 62500 Then
-    '                            svgBi.Save(thumb)
-    '                        Else
-    '                            ResizeImage(svgBi, 250).Save(thumb)
-    '                        End If
-    '                        sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & svgBi.Size.Width & "x" & svgBi.Size.Height & ":" & RemoveSpecialChars(f.FileName) & ":" & md5string
-    '                        svgBi.Dispose()
-    '                    End If
-
-    '                    Return sp
-    '                Case "PDF"
-    '#If EnablePDF Then
-    '                    Dim dd As String = CStr(Date.UtcNow.ToFileTime)
-    '                    Dim p As String = StorageFolder & "\" & dd & "." & fileextension
-    '                    'Thumb path
-    '                    Dim thumb As String = StorageFolderThumbs & "\th" & dd & ".jpg"
-    '                    f.SaveAs(p)
-
-    '                    Dim fs As New IO.FileStream(p, IO.FileMode.Open)
-    '                    Dim md5string As String = MD5(fs)
-    '                    fs.Close()
-
-    '                    Dim sp As String = ""
-
-    '                    If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
-    '                        If SmartLinkDuplicateImages = False Then
-    '                            FileIO.FileSystem.DeleteFile(p)
-    '                            FileIO.FileSystem.DeleteFile(thumb)
-    '                            Throw New ArgumentException(duplicateFile)
-    '                        Else
-    '                            Dim wpi As WPostImage = GetImageDataByMD5(md5string)
-    '                            FileIO.FileSystem.DeleteFile(p)
-    '                            sp = wpi.ChanbName & ":" & CStr(wpi.Size) & ":" & wpi.Dimensions & ":" & wpi.RealName & ":" & wpi.MD5
-    '                        End If
-    '                    Else
-
-    '                        Dim fileS As New IO.FileStream(p, IO.FileMode.Open)
-
-    '                        Dim pd As New TallComponents.PDF.Rasterizer.Document(fileS)
-    '                        Dim page As TallComponents.PDF.Rasterizer.Page = pd.Pages(0)
-
-    '                        Dim scale As Double = 150 / 72
-
-    '                        Dim pdfBi As Drawing.Bitmap = New Drawing.Bitmap(CInt(scale * page.Width), CInt(scale * page.Height))
-
-    '                        Dim graph As Drawing.Graphics = Drawing.Graphics.FromImage(pdfBi)
-    '                        graph.SmoothingMode = Drawing.Drawing2D.SmoothingMode.AntiAlias
-    '                        graph.ScaleTransform(CSng(scale), CSng(scale))
-    '                        graph.Clear(Drawing.Color.White)
-    '                        page.Draw(graph)
-
-    '                        graph.Dispose()
-    '                        fileS.Close()
-
-    '                        If (pdfBi.Width * pdfBi.Height) < 62500 Then
-    '                            pdfBi.Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
-    '                        Else
-    '                            ResizeImage(pdfBi, 250).Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
-    '                        End If
-    '                        sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & pdfBi.Size.Width & "x" & pdfBi.Size.Height & ":" & RemoveSpecialChars(f.FileName) & ":" & md5string
-    '                        pdfBi.Dispose()
-
-    '                    End If
-    '                    Return sp
-    '#Else
-    '                    Dim dd As String = CStr(Date.UtcNow.ToFileTime)
-    '                    Dim p As String = StorageFolder & "\" & dd & "." & fileextension
-    '                    'Thumb path
-    '                    Dim thumb As String = StorageFolderThumbs & "\th" & dd & ".jpg"
-    '                    f.SaveAs(p)
-
-    '                    Dim fs As New IO.FileStream(p, IO.FileMode.Open)
-    '                    Dim md5string As String = MD5(fs)
-    '                    fs.Close()
-
-    '                    Dim sp As String = ""
-
-    '                    If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
-    '                        If SmartLinkDuplicateImages = False Then
-    '                            FileIO.FileSystem.DeleteFile(p)
-    '                            FileIO.FileSystem.DeleteFile(thumb)
-    '                            Throw New ArgumentException(duplicateFile)
-    '                        Else
-    '                            Dim wpi As WPostImage = GetImageDataByMD5(md5string)
-    '                            FileIO.FileSystem.DeleteFile(p)
-    '                            sp = wpi.ChanbName & ":" & CStr(wpi.Size) & ":" & wpi.Dimensions & ":" & wpi.RealName & ":" & wpi.MD5
-    '                        End If
-    '                    Else
-
-    '                        Dim pdfBi As Drawing.Bitmap = New Drawing.Bitmap(150, 30)
-
-
-    '                        Dim graph As Drawing.Graphics = Drawing.Graphics.FromImage(pdfBi)
-
-    '                        graph.Clear(Drawing.Color.White)
-    '                        graph.DrawString("PDF File", New Drawing.Font(Drawing.FontFamily.GenericMonospace, 20, Drawing.FontStyle.Regular, Drawing.GraphicsUnit.Pixel), Drawing.Brushes.Black, 0, 0)
-
-    '                        graph.Dispose()
-
-
-    '                        If (pdfBi.Width * pdfBi.Height) < 62500 Then
-    '                            pdfBi.Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
-    '                        Else
-    '                            ResizeImage(pdfBi, 250).Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
-    '                        End If
-    '                        sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & pdfBi.Size.Width & "x" & pdfBi.Size.Height & ":" & RemoveSpecialChars(f.FileName) & ":" & md5string
-    '                        pdfBi.Dispose()
-
-    '                    End If
-    '                    Return sp
-    '#End If
-
-    '                Case "WEBM"
-
-    '                    Dim dd As String = CStr(Date.UtcNow.ToFileTime)
-    '                    Dim p As String = StorageFolder & "\" & dd & "." & fileextension
-    '                    'Thumb path
-    '                    ' Dim thumb As String = StorageFolderThumbs & "\th" & dd & ".jpg"
-    '                    f.SaveAs(p)
-
-    '                    Dim fs As New IO.FileStream(p, IO.FileMode.Open)
-    '                    Dim md5string As String = MD5(fs)
-    '                    fs.Close()
-
-    '                    Dim sp As String = ""
-
-    '                    If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
-    '                        If SmartLinkDuplicateImages = False Then
-    '                            FileIO.FileSystem.DeleteFile(p)
-    '                            ' FileIO.FileSystem.DeleteFile(thumb)
-    '                            Throw New ArgumentException(duplicateFile)
-    '                        Else
-    '                            Dim wpi As WPostImage = GetImageDataByMD5(md5string)
-    '                            FileIO.FileSystem.DeleteFile(p)
-    '                            sp = wpi.ChanbName & ":" & CStr(wpi.Size) & ":" & wpi.Dimensions & ":" & wpi.RealName & ":" & wpi.MD5
-    '                        End If
-    '                    Else
-
-
-    '                        sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & "video" & ":" & RemoveSpecialChars(f.FileName) & ":" & md5string
-    '                    End If
-    '                    Return sp
-    '                Case "MP3", "OGG"
-    '                    Dim dd As String = CStr(Date.UtcNow.ToFileTime)
-    '                    Dim p As String = StorageFolder & "\" & dd & "." & fileextension
-    '                    f.SaveAs(p)
-    '                    Dim fs As New IO.FileStream(p, IO.FileMode.Open)
-    '                    Dim md5string As String = MD5(fs)
-    '                    fs.Close()
-    '                    Dim sp As String = ""
-    '                    If (Not AllowDuplicatesFiles) And ImageExist(md5string) Then
-    '                        If SmartLinkDuplicateImages = False Then
-    '                            FileIO.FileSystem.DeleteFile(p)
-    '                            Throw New ArgumentException(duplicateFile)
-    '                        Else
-    '                            Dim wpi As WPostImage = GetImageDataByMD5(md5string)
-    '                            FileIO.FileSystem.DeleteFile(p)
-    '                            sp = wpi.ChanbName & ":" & CStr(wpi.Size) & ":" & wpi.Dimensions & ":" & wpi.RealName & ":" & wpi.MD5
-    '                        End If
-    '                    Else
-    '                        sp = dd & "." & fileextension & ":" & f.ContentLength & ":" & "audio" & ":" & RemoveSpecialChars(f.FileName) & ":" & md5string
-    '                    End If
-    '                    Return sp
-    '                Case "" ' A case of "" may occure when no file is uploaded. Simply return nothing.
-    '                    Return ""
-    '                Case Else
-    '                    Throw New ArgumentException("Unsupported file type")
-    '            End Select
-    '        End If
-    '    End Function
-
     Private Sub SaveAllFilesToSinglePost(ByVal li As List(Of HttpPostedFile), ByVal postId As Integer)
         Dim connection As DbConnection = DatabaseEngine.GetDBConnection
         connection.Open()
@@ -410,10 +100,13 @@ Public Module GlobalFunctions
 
             'Save the image.
             f.SaveAs(p)
-
+            
+            ' f.InputStream.Seek(0, IO.SeekOrigin.Begin)
             Dim fs As New IO.FileStream(p, IO.FileMode.Open)
             Dim md5string As String = MD5(fs)
             fs.Close()
+
+            'fs.Close()
 
             If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection) Then
                 'If image already exist, we fetch the matching image data from the database, and delete the saved files.
@@ -422,7 +115,7 @@ Public Module GlobalFunctions
                     FileIO.FileSystem.DeleteFile(thumb)
                     Throw New ArgumentException(duplicateFile)
                 Else
-                    Dim wpi As WPostImage = GetFileDataByMD5(md5string)
+                    Dim wpi As WPostImage = GetFileDataByMD5(md5string, Connection)
                     'Delete previously saved files.
                     FileIO.FileSystem.DeleteFile(p)
                     FileIO.FileSystem.DeleteFile(thumb)
@@ -433,6 +126,7 @@ Public Module GlobalFunctions
                     AddFileToDatabase(wpi, postId, Connection)
                 End If
             Else
+
 
                 Dim wpi As New WPostImage
                 wpi.ChanbName = dd & "." & fileextension
@@ -474,7 +168,7 @@ Public Module GlobalFunctions
                             FileIO.FileSystem.DeleteFile(thumb)
                             Throw New ArgumentException(duplicateFile)
                         Else
-                            Dim wpi As WPostImage = GetFileDataByMD5(md5string)
+                            Dim wpi As WPostImage = GetFileDataByMD5(md5string, Connection)
                             FileIO.FileSystem.DeleteFile(p)
 
                             wpi.RealName = f.FileName
@@ -494,7 +188,7 @@ Public Module GlobalFunctions
                             svgBi = New Drawing.Bitmap(150, 30)
                             Dim g As Drawing.Graphics = Drawing.Graphics.FromImage(svgBi)
                             g.Clear(Drawing.Color.White)
-                            g.DrawString("SVG File", New Drawing.Font(Drawing.FontFamily.GenericMonospace, 20, Drawing.FontStyle.Regular, Drawing.GraphicsUnit.Pixel), Drawing.Brushes.Black, 0, 0)
+                            g.DrawString("SVG", New Drawing.Font(Drawing.FontFamily.GenericMonospace, 20, Drawing.FontStyle.Regular, Drawing.GraphicsUnit.Pixel), Drawing.Brushes.Black, 0, 0)
                             g.Dispose()
                         End Try
 
@@ -521,6 +215,7 @@ Public Module GlobalFunctions
 
 
                 Case "PDF"
+
 #If EnablePDF Then
                     Dim dd As String = CStr(Date.UtcNow.ToFileTime)
                     Dim p As String = StorageFolder & "\" & dd & "." & fileextension
@@ -540,7 +235,7 @@ Public Module GlobalFunctions
                             FileIO.FileSystem.DeleteFile(thumb)
                             Throw New ArgumentException(duplicateFile)
                         Else
-                            Dim wpi As WPostImage = GetFileDataByMD5(md5string)
+                            Dim wpi As WPostImage = GetFileDataByMD5(md5string, Connection)
                             wpi.RealName = f.FileName
                             wpi.PostID = postId
                             AddFileToDatabase(wpi, postId, Connection)
@@ -604,7 +299,7 @@ Public Module GlobalFunctions
                             FileIO.FileSystem.DeleteFile(thumb)
                             Throw New ArgumentException(duplicateFile)
                         Else
-                            Dim wpi As WPostImage = GetFileDataByMD5(md5string)
+                            Dim wpi As WPostImage = GetFileDataByMD5(md5string, Connection)
                             FileIO.FileSystem.DeleteFile(p)
 
                             wpi.RealName = f.FileName
@@ -619,7 +314,7 @@ Public Module GlobalFunctions
                         Dim graph As Drawing.Graphics = Drawing.Graphics.FromImage(pdfBi)
 
                         graph.Clear(Drawing.Color.White)
-                        graph.DrawString("PDF File", New Drawing.Font(Drawing.FontFamily.GenericMonospace, 20, Drawing.FontStyle.Regular, Drawing.GraphicsUnit.Pixel), Drawing.Brushes.Black, 0, 0)
+                        graph.DrawString("PDF", New Drawing.Font(Drawing.FontFamily.GenericMonospace, 20, Drawing.FontStyle.Regular, Drawing.GraphicsUnit.Pixel), Drawing.Brushes.Black, 0, 0)
 
                         graph.Dispose()
 
@@ -662,7 +357,7 @@ Public Module GlobalFunctions
                             FileIO.FileSystem.DeleteFile(p)
                             Throw New ArgumentException(duplicateFile)
                         Else
-                            Dim wpi As WPostImage = GetFileDataByMD5(md5string)
+                            Dim wpi As WPostImage = GetFileDataByMD5(md5string, Connection)
                             FileIO.FileSystem.DeleteFile(p)
                             wpi.RealName = f.FileName
                             wpi.PostID = postId
@@ -691,12 +386,12 @@ Public Module GlobalFunctions
                     Dim md5string As String = MD5(fs)
                     fs.Close()
 
-                    If (Not AllowDuplicatesFiles) And FileExistInDB(md5string) Then
+                    If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection) Then
                         If SmartLinkDuplicateImages = False Then
                             FileIO.FileSystem.DeleteFile(p)
                             Throw New ArgumentException(duplicateFile)
                         Else
-                            Dim wpi As WPostImage = GetFileDataByMD5(md5string)
+                            Dim wpi As WPostImage = GetFileDataByMD5(md5string, Connection)
                             FileIO.FileSystem.DeleteFile(p)
                             wpi.RealName = f.FileName
                             wpi.PostID = postId
@@ -2387,7 +2082,6 @@ Public Module GlobalFunctions
                 po.locked = query.Reader.GetBoolean(13)
                 po.archived = query.Reader.GetBoolean(14)
                 po.HasFile = query.Reader.GetBoolean(15)
-
                 il.Add(po)
             End While
             query.Reader.Close()
@@ -2793,12 +2487,6 @@ Public Module GlobalFunctions
         Return HttpUtility.HtmlEncode(str)
     End Function
 
-    Private Function RemoveSpecialChars(ByVal t As String) As String
-        t = t.Replace(":", "")
-        t = t.Replace(";", "")
-        Return t
-    End Function
-
     Private Function MD5(ByVal s As IO.Stream) As String
         Dim md5s As New System.Security.Cryptography.MD5CryptoServiceProvider
         Return ByteArrayToString(md5s.ComputeHash(s))
@@ -2836,9 +2524,9 @@ Public Module GlobalFunctions
 
     Public Function FormatSizeString(ByVal size As Long) As String
         Dim B As Long = 1024
-        Dim K As Long = 1024 * B
-        Dim M As Long = 1024 * K
-        Dim G As Long = 1024 * G
+        Dim K As Long = 1048576
+        Dim M As Long = 1073741824
+        Dim G As Long = 1099511627776
         Dim KB As Long = CLng(Fix(size / B))
         Dim MB As Long = CLng(Fix(size / K))
         Dim GB As Long = CLng(Fix(size / M))
@@ -3005,20 +2693,20 @@ Public Module GlobalFunctions
         Return il.ToArray
     End Function
 
-    Private Function MatchBBCode(ByVal text As String, ByVal Regexp As Regex) As String()
-        Dim il As New List(Of String)
-        Dim st As String() = Regexp.Split(text)
-        Dim isAmatch As Boolean = False
-        For i As Integer = 0 To st.Length - 1 Step 1
-            If Not isAmatch Then
-                'Not a match 
-            Else
-                il.Add(st.ElementAt(i))
-            End If
-            isAmatch = Not isAmatch
-        Next
-        Return il.ToArray
-    End Function
+    'Private Function MatchBBCode(ByVal text As String, ByVal Regexp As Regex) As String()
+    '    Dim il As New List(Of String)
+    '    Dim st As String() = Regexp.Split(text)
+    '    Dim isAmatch As Boolean = False
+    '    For i As Integer = 0 To st.Length - 1 Step 1
+    '        If Not isAmatch Then
+    '            'Not a match 
+    '        Else
+    '            il.Add(st.ElementAt(i))
+    '        End If
+    '        isAmatch = Not isAmatch
+    '    Next
+    '    Return il.ToArray
+    'End Function
 
     Private Function GetCodeLang(ByVal x As String) As String
         Dim st As String() = Regex.Split(x, "\[/?lang\]")
@@ -3325,10 +3013,18 @@ Public Module GlobalFunctions
         'Return id
     End Sub
 
-    Public Function GetFileDataByMD5(ByVal md5 As String) As WPostImage
+    Public Function GetFileDataByMD5(ByVal md5 As String, Optional ByVal connection As DbConnection = Nothing) As WPostImage
         Dim wpi As New WPostImage
 
-        Dim command As DbCommand = GenerateDbCommand("SELECT ID, postID, chanbname, realname, size, extension, mimetype, dimension FROM files WHERE (md5 = @md5)")
+        Dim command As DbCommand
+
+        If connection Is Nothing Then
+            command = GenerateDbCommand()
+        Else
+            command = GenerateDbCommand(connection)
+        End If
+
+        command.CommandText = "SELECT ID, postID, chanbname, realname, size, extension, mimetype, dimension FROM files WHERE (md5 = @md5)"
 
         command.Parameters.Add(MakeParameter("@md5", md5, Data.DbType.String))
 
@@ -3349,14 +3045,27 @@ Public Module GlobalFunctions
             End If
         End While
         query.Reader.Close()
-        query.Connection.Close()
+        If connection Is Nothing Then query.Connection.Close()
         Return wpi
     End Function
 
     Public Function GetFileDataByChanbName(ByVal chanbName As String) As WPostImage
         Dim wpi As New WPostImage
 
-        Dim command As DbCommand = GenerateDbCommand("SELECT ID, postID, md5, realname, size, extension, mimetype, dimension FROM files WHERE (chanbname LIKE @chanbname)")
+        Dim command As DbCommand = GenerateDbCommand()
+
+        Select Case dbType
+            Case "mssql"
+                command.CommandText = "SELECT TOP 1 ID, postID, md5, realname, size, extension, mimetype, dimension FROM files WHERE (chanbname LIKE @chanbname)"
+            Case "mysql"
+                command.CommandText = "SELECT ID, postID, md5, realname, size, extension, mimetype, dimension FROM files WHERE (chanbname LIKE @chanbname) LIMIT 0,1"
+            Case Else
+                If isInstalled Then
+                    Throw New Exception(dbTypeInvalid)
+                Else
+                    Return dummyWImage
+                End If
+        End Select
 
         command.Parameters.Add(MakeParameter("@chanbname", chanbName, Data.DbType.String))
 

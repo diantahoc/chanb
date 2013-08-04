@@ -1,5 +1,5 @@
 ﻿function quote(id) {
-    insert(document.getElementById("commentfield"), ">>" + id);
+    insert(document.getElementById("commentfield"), ">>" + id + "\n");
 }
 
 function insert(textarea, text) {
@@ -18,7 +18,6 @@ function insert(textarea, text) {
     }
     textarea.focus();
 }
-
 
 function createUf() {
     var divTag = document.createElement("input");
@@ -99,37 +98,7 @@ function golast(id) {
     $last.addClass('active');
 }
 
-function timer() {
-
-    $(document).ready(function() {
-        window.setInterval("fetchnewreplies()", 15000);
-    });
-}
-
-function fetchnewreplies() {
-
-    var $threadDiv = $(".thread:first");
-    var threadID = $threadDiv.attr('id');
-    var lastpostID = $(".postContainer:last").attr('id');
-    $.get(
-        "api.aspx", {
-            mode: 'fetchrepliesafter',
-            tid: threadID,
-            lp: lastpostID
-        },
-        function(data) {
-
-            //process here.
-            if (!data.toString().length == 0) {
-                $threadDiv.append(data);
-            }
-        }
-    );
-
-}
-
 function refreshcaptcha(level) {
-
     if (level == null) {
         var cap = document.getElementById("captchaImage");
         cap.setAttribute("src", "/captcha.aspx?" + Math.random().toString(10));
@@ -139,14 +108,6 @@ function refreshcaptcha(level) {
     }
     document.getElementById("usercaptcha").value = "";
 }
-
-//function focusRCB() {
-//    document.getElementById('refreshcaptchabutton').setAttribute('src', '/res/refresh-high.png');
-//}
-
-//function unfocusRCB() {
-//    document.getElementById('refreshcaptchabutton').setAttribute('src', '/res/refresh.png');
-//}
 
 function updateAttrb(id, name, value) {
     document.getElementById(id).setAttribute(name, value);
@@ -174,70 +135,17 @@ function hidePassword(id) {
     document.getElementById(id).setAttribute("type", "password");
 }
 
-var selectedId = "";
-
-function higlightID(id) {
-
-    if (selectedId == id) {
-
-        var items = $(".post." + selectedId);
-
-        for (i = 0; i < items.length; i++) {
-
-            var item = $("#" + items[i].getAttribute('id').toString());
-
-            item.removeClass("highlight");
-
-        }
-
-        selectedId = "";
-
-    } else {
-
-        var allitems = $(".post");
-
-        for (i = 0; i < allitems.length; i++) {
-            var item = $("#" + allitems[i].getAttribute('id').toString());
-
-            item.removeClass("highlight");
-
-        }
-
-        var items = $(".post." + id);
-
-        for (i = 0; i < items.length; i++) {
-
-            var item = $("#" + items[i].getAttribute('id').toString());
-
-            item.addClass("highlight");
-
-        }
-
-
-        selectedId = id;
-    }
-}
-
 function checkforNSFWImages() {
-
     var items = $(".cimage");
-
     for (i = 0; i < items.length; i++) {
-
         var id = items[i].getAttribute('id').toString()
-
         var nude = new getNudeObject();
-
         nude.load(id);
-
         nude.scan();
-
     }
-
 }
 
 function getNudeObject() {
-
 
     var nude = new (function() {
         // private var definition
@@ -341,102 +249,6 @@ function getNudeObject() {
     return nude;
 }
 
-
-function backlink() {
-    var i, j, ii, jj, tid, bl, qb, t, form, backlinks, linklist, replies;
-
-    form = document.getElementById("delfrm");
-
-    if (!(replies = form.getElementsByClassName('reply'))) {
-        return;
-    }
-
-    for (i = 0, j = replies.length; i < j; ++i) {
-        if (!(backlinks = replies[i].getElementsByClassName('backlink'))) {
-            continue;
-        }
-        linklist = {};
-        for (ii = 0, jj = backlinks.length; ii < jj; ++ii) {
-            tid = backlinks[ii].getAttribute('href').split(/#/);
-            if (!(t = document.getElementById(tid[1]))) {
-                continue;
-            }
-            //			if (t.tagName == 'DIV') {
-            //				backlinks[ii].textContent = '>>OP';
-            //			}
-            if (linklist[tid[1]]) {
-                continue;
-            }
-            bl = document.createElement('a');
-            bl.className = 'backlink';
-            bl.href = '#' + replies[i].id;
-            bl.textContent = '>>' + replies[i].id.slice(1);
-            if (!(qb = t.getElementsByClassName('quoted-by')[0])) {
-                linklist[tid[1]] = true;
-                qb = document.createElement('div');
-                qb.className = 'quoted-by';
-                qb.textContent = '';
-                qb.appendChild(bl);
-                t.insertBefore(qb, t.getElementsByTagName('blockquote')[0]);
-            }
-            else {
-                linklist[tid[1]] = true;
-                qb.appendChild(document.createTextNode(' '));
-                qb.appendChild(bl);
-            }
-        }
-    }
-}
-
-function beautifiesName(anch) {
-    
-    var fullnameAnchor = $(anch);
-
-    if (fullnameAnchor.text().length > 20) {
-    
-        var shortnameAnchor = document.createElement("a");
-
-        var realId = fullnameAnchor.attr("id").toString().substr(3).toString();
-        
-        //setup the short name anchor
-        shortnameAnchor.setAttribute("href", fullnameAnchor.attr("href").toString());
-        shortnameAnchor.setAttribute("id", "fsn" + realId);
-        shortnameAnchor.setAttribute("class", "fn");
-        shortnameAnchor.text = fullnameAnchor.text().substr(0, 17) + "...";
-        
-        //hide the full name 
-        fullnameAnchor.addClass("hide");
-        
-        //get the span parent
-        var parent = fullnameAnchor.parent();
-        //add the shortNameAnchor       
-        parent.append(shortnameAnchor);
-        //add mouse handlers
-        $(parent).mouseover(function() { showFullName(realId); });
-        $(parent).mouseout(function() { showShortName(realId); });
-    }
-
-   
-}
-
-function beautifiesNames() {
-    var items = $(".fn");
-    for (i = 0; i < items.length; i++) {
-        beautifiesName(items[i])
-    }
-}
-
-function snas() {
-    $("#pname").attr("value", getCookie("postername"));
-    $("#pemail").attr("value", getCookie("posteremail"));
-    if (getCookie("posterpass") == "") { setCookie("posterpass", $("#formps").attr("value"), 3); } else { $("#formps").attr("value", getCookie("posterpass")); $("#formdelP").attr("value", getCookie("posterpass")); }
-
-    var WDLitems = $(".wdlink");
-    for (i = 0; i < WDLitems.length; i++) {
-        wdLink($(WDLitems[i]));
-     }
-}
-
 function getCookie(name) {
     with (document.cookie) {
         var regexp = new RegExp("(^|;\\s+)" + name + "=(.*?)(;|$)");
@@ -460,126 +272,108 @@ function beforePost() {
 }
 
 
-function wdLink(anchor) {
-    var link = anchor.attr("href").toString();
-    var newlink = "javascript:openWindow('" + link + "','" + anchor.text() + "')";
-
-    
-    anchor.attr("href", newlink);
-    anchor.removeAttr("target");
-    
-}
-
-function openWindow(link,title) { 
-    var width  = 750;
-	var height = 250;
-	var left   = (screen.width  - width)/2;
-	var top    = (screen.height - height)/2;
-	var params = 'width='+width+', height='+height+', top='+top+', left='+left+', directories=no, location=no, menubar=no, resizable=no, scrollbars=no, status=yes, toolbar=no';
-	newwin=window.open(link,title, params);
-	if (window.focus) {
-		newwin.focus()
-	}
-}
 
 
-function initQR() { 
 
-/*<div id="qrbox" class="qr">
-    <div id="qrtitle" class="qrtitle">
-		<span class="qrmove">Quick reply</span><a style="float:right;" class="form-button form-button-red" href="javascript:qr('hide')">X</a>
-	</div>
-    <div id="qrbody" class="qrbody">
-        <input class="form-text" id="qrname" type="text" style="max-width: 135px" />
-        <input class="form-text" id="qremail" type="text" style="max-width: 135px" />
-        <input class="form-text" id="qrsubject" type="text" style="max-width: 135px" />
-        
-        <br />
-        
-        <textarea id="qrtext" cols="50" rows="10" class="form-textarea"></textarea>
-        
-        <br />
-        
-        <a class="form-button" onclick="qr('sumbit')">Send</a>
-	</div>
-</div>*/
+//function initQR() { 
+
+///*<div id="qrbox" class="qr">
+//    <div id="qrtitle" class="qrtitle">
+//		<span class="qrmove">Quick reply</span><a style="float:right;" class="form-button form-button-red" href="javascript:qr('hide')">X</a>
+//	</div>
+//    <div id="qrbody" class="qrbody">
+//        <input class="form-text" id="qrname" type="text" style="max-width: 135px" />
+//        <input class="form-text" id="qremail" type="text" style="max-width: 135px" />
+//        <input class="form-text" id="qrsubject" type="text" style="max-width: 135px" />
+//        
+//        <br />
+//        
+//        <textarea id="qrtext" cols="50" rows="10" class="form-textarea"></textarea>
+//        
+//        <br />
+//        
+//        <a class="form-button" onclick="qr('sumbit')">Send</a>
+//	</div>
+//</div>*/
 
 
-    var qrbox = document.createElement("div");
-    qrbox.setAttribute("id", "qrbox");
-    qrbox.setAttribute("class", "qr");
+//    var qrbox = document.createElement("div");
+//    qrbox.setAttribute("id", "qrbox");
+//    qrbox.setAttribute("class", "qr");
 
-    var qrtitle = document.createElement("div");
+//    var qrtitle = document.createElement("div");
 
-    qrtitle.setAttribute("id", "qrtitle");
-    qrtitle.setAttribute("class", "qrtitle");
+//    qrtitle.setAttribute("id", "qrtitle");
+//    qrtitle.setAttribute("class", "qrtitle");
 
-    var spanqrmove = document.createElement("span");
-    spanqrmove.setAttribute("class", "qrmove");
-    spanqrmove.text = "Quick Reply";
+//    var spanqrmove = document.createElement("span");
+//    spanqrmove.setAttribute("class", "qrmove");
+//    spanqrmove.text = "Quick Reply";
 
-    var qrhideB = document.createElement("a");
-    qrhideB.setAttribute("class", "form-button form-button-red");
-    qrhideB.setAttribute("style", "float:right;");
-    qrhideB.setAttribute("href", "javascript:qr('hide')");
-    qrhideB.text = "X";
+//    var qrhideB = document.createElement("a");
+//    qrhideB.setAttribute("class", "form-button form-button-red");
+//    qrhideB.setAttribute("style", "float:right;");
+//    qrhideB.setAttribute("href", "javascript:qr('hide')");
+//    qrhideB.text = "X";
 
-    qrtitle.appendChild(spanqrmove);
-    qrtitle.appendChild(qrhideB);
+//    qrtitle.appendChild(spanqrmove);
+//    qrtitle.appendChild(qrhideB);
 
-    var br = document.createElement("br");
-    
-    var qrbody = document.createElement("div");
-    qrbody.setAttribute("id", "qrbody");
-    qrbody.setAttribute("class", "qrbody");
+//    var br = document.createElement("br");
+//    
+//    var qrbody = document.createElement("div");
+//    qrbody.setAttribute("id", "qrbody");
+//    qrbody.setAttribute("class", "qrbody");
 
-    var qrname = document.createElement("input");
-    qrname.setAttribute("id", "qrname");
-    qrname.setAttribute("class", "form-text");
-    qrname.setAttribute("type", "text");
-    qrname.setAttribute("style", "max-width: 135px");
-    qrbody.appendChild(qrname);
-    
-    var qremail = document.createElement("input");
-    qremail.setAttribute("id", "qremail");
-    qremail.setAttribute("class", "form-text");
-    qremail.setAttribute("type", "text");
-    qremail.setAttribute("style", "max-width: 135px");
-    qrbody.appendChild(qremail);
-    
-    var qrsubject = document.createElement("input");
-    qrsubject.setAttribute("id", "qrsubject");
-    qrsubject.setAttribute("class", "form-text");
-    qrsubject.setAttribute("type", "text");
-    qrsubject.setAttribute("style", "max-width: 135px");
-    qrbody.appendChild(qrsubject);
+//    var qrname = document.createElement("input");
+//    qrname.setAttribute("id", "qrname");
+//    qrname.setAttribute("class", "form-text");
+//    qrname.setAttribute("type", "text");
+//    qrname.setAttribute("style", "max-width: 135px");
+//    qrbody.appendChild(qrname);
+//    
+//    var qremail = document.createElement("input");
+//    qremail.setAttribute("id", "qremail");
+//    qremail.setAttribute("class", "form-text");
+//    qremail.setAttribute("type", "text");
+//    qremail.setAttribute("style", "max-width: 135px");
+//    qrbody.appendChild(qremail);
+//    
+//    var qrsubject = document.createElement("input");
+//    qrsubject.setAttribute("id", "qrsubject");
+//    qrsubject.setAttribute("class", "form-text");
+//    qrsubject.setAttribute("type", "text");
+//    qrsubject.setAttribute("style", "max-width: 135px");
+//    qrbody.appendChild(qrsubject);
 
-    qrbody.appendChild(br);
-    
-    
-    var qrtext = document.createElement("textarea");
-    qrtext.setAttribute("id", "qrtext");
-    qrtext.setAttribute("cols", "50");
-    qrtext.setAttribute("rows", "10");
-    qrtext.setAttribute("class", "form-textarea");
-    qrbody.appendChild(qrtext);
-    
-    qrbody.appendChild(br);
+//    qrbody.appendChild(br);
+//    
+//    
+//    var qrtext = document.createElement("textarea");
+//    qrtext.setAttribute("id", "qrtext");
+//    qrtext.setAttribute("cols", "50");
+//    qrtext.setAttribute("rows", "10");
+//    qrtext.setAttribute("class", "form-textarea");
+//    qrbody.appendChild(qrtext);
+//    
+//    qrbody.appendChild(br);
 
-    var qrsendB = document.createElement("a");
-    qrsendB.setAttribute("class", "form-button");
-    qrsendB.setAttribute("href", "javascript:qr('send')");
-    qrsendB.text = "Reply";
-    qrbody.appendChild(qrsendB);
-    
-    qrbox.appendChild(qrtitle);
-    qrbox.appendChild(qrbody);
+//    var qrsendB = document.createElement("a");
+//    qrsendB.setAttribute("class", "form-button");
+//    qrsendB.setAttribute("href", "javascript:qr('send')");
+//    qrsendB.text = "Reply";
+//    qrbody.appendChild(qrsendB);
+//    
+//    qrbox.appendChild(qrtitle);
+//    qrbox.appendChild(qrbody);
 
-    var body = $(".thread")[0];
-    
-    body.appendChild(qrbox);
-    
-    $("#qrbox").draggable({ handle: "#qrtitle" });
-}
+//    var body = $(".thread")[0];
+//    
+//    body.appendChild(qrbox);
+//    
+//    $("#qrbox").draggable({ handle: "#qrtitle" });
+//}
 
-function qr(command) { }
+//function qr(command) { }
+
+

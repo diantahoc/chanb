@@ -59,5 +59,53 @@ Namespace My.Resources
                 resourceCulture = value
             End Set
         End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to /****** Object:  Table [dbo].[bans]    Script Date: 07/20/2013 08:13:55 ******/
+        '''IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[bans]&apos;) AND type in (N&apos;U&apos;))
+        '''DROP TABLE [dbo].[bans]
+        '''
+        '''/****** Object:  Table [dbo].[board]    Script Date: 07/20/2013 08:13:55 ******/
+        '''IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[board]&apos;) AND type in (N&apos;U&apos;))
+        '''DROP TABLE [dbo].[board]
+        '''
+        '''/****** Object:  Table [dbo].[files]    Script Date: 07/20/2013 08:13:55 ******/
+        '''IF  [rest of string was truncated]&quot;;.
+        '''</summary>
+        Friend ReadOnly Property mssqlDatabaseSetup() As String
+            Get
+                Return ResourceManager.GetString("mssqlDatabaseSetup", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to -- phpMyAdmin SQL Dump
+        '''-- version 3.3.8.1
+        '''-- http://www.phpmyadmin.net
+        '''--
+        '''-- Host: 127.0.0.1
+        '''-- Generation Time: Jul 20, 2013 at 08:32 AM
+        '''-- Server version: 5.1.51
+        '''-- PHP Version: 5.3.3
+        '''
+        '''SET SQL_MODE=&quot;NO_AUTO_VALUE_ON_ZERO&quot;;
+        '''
+        '''
+        '''/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+        '''/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+        '''/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+        '''/*!40101 SET NAMES utf8 */;
+        '''
+        '''--
+        '''-- Database: `channelboard`
+        '''--
+        '''
+        '''-- ------------------ [rest of string was truncated]&quot;;.
+        '''</summary>
+        Friend ReadOnly Property mysqlDatabaseSetup() As String
+            Get
+                Return ResourceManager.GetString("mysqlDatabaseSetup", resourceCulture)
+            End Get
+        End Property
     End Module
 End Namespace

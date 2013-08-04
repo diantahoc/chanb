@@ -11,6 +11,8 @@
         DataDB = New ValuesStore(boardDataFileDB)
     End Sub
 
+#Region "Templates files"
+
     Public ReadOnly Property OPPostTemplate() As String
         Get
             Return IO.File.ReadAllText(chanbDLLROOT & "templates\opposttemplate.html")
@@ -89,55 +91,73 @@
         End Get
     End Property
 
-    Public ReadOnly Property BoardTitle() As String
+#End Region
+
+    Public Property BoardTitle() As String
         Get
-            If DataDB.KeyExist("boardtitle") = False Then
-                DataDB.AddKey("boardtitle", "Channel Board")
+            If DataDB.KeyExist("BoardTitle") = False Then
+                DataDB.AddKey("BoardTitle", "Channel Board")
                 DataDB.Save()
                 Return "Channel Board"
             Else
-                Return CStr(DataDB.GetKey("boardtitle"))
+                Return CStr(DataDB.GetKey("BoardTitle"))
             End If
         End Get
+        Set(ByVal value As String)
+            DataDB.AddKey("BoardTitle", value)
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property BoardLetter() As String
+    Public Property BoardLetter() As String
         Get
-            If DataDB.KeyExist("boardletter") = False Then
-                DataDB.AddKey("boardletter", "c")
+            If DataDB.KeyExist("BoardLetter") = False Then
+                DataDB.AddKey("BoardLetter", "c")
                 DataDB.Save()
                 Return "c"
             Else
-                Return CStr(DataDB.GetKey("boardletter"))
+                Return CStr(DataDB.GetKey("BoardLetter"))
             End If
         End Get
+        Set(ByVal value As String)
+            DataDB.AddKey("BoardLetter", value)
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property BoardDescription() As String
+    Public Property BoardDescription() As String
         Get
-            If DataDB.KeyExist("boarddesc") = False Then
-                DataDB.AddKey("boarddesc", "ASP.NET Image board")
+            If DataDB.KeyExist("BoardDescription") = False Then
+                DataDB.AddKey("BoardDescription", "ASP.NET Image board")
                 DataDB.Save()
                 Return "ASP.NET Image board"
             Else
-                Return CStr(DataDB.GetKey("boarddesc"))
+                Return CStr(DataDB.GetKey("BoardDescription"))
             End If
         End Get
+        Set(ByVal value As String)
+            DataDB.AddKey("BoardDescription", value)
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property FloodInterval() As Integer
+    Public Property FloodInterval() As Integer
         Get
-            If DataDB.KeyExist("fi") = False Then
-                DataDB.AddKey("fi", "10")
+            If DataDB.KeyExist("FloodInterval") = False Then
+                DataDB.AddKey("FloodInterval", "10")
                 DataDB.Save()
                 Return 10
             Else
-                Return CInt(DataDB.GetKey("fi"))
+                Return CInt(DataDB.GetKey("FloodInterval"))
             End If
         End Get
+        Set(ByVal value As Integer)
+            DataDB.AddKey("FloodInterval", CStr(value))
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property FooterText() As String
+    Public Property FooterText() As String
         Get
             If DataDB.KeyExist("FooterText") = False Then
                 DataDB.AddKey("FooterText", "<a href='https://github.com/diantahoc/chanb' target='_blank'>ChanB</a> ASP.NET board.")
@@ -147,105 +167,141 @@
                 Return CStr(DataDB.GetKey("FooterText"))
             End If
         End Get
+        Set(ByVal value As String)
+            DataDB.AddKey("FooterText", value)
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property MaximumFileSize() As Long
+    Public Property MaximumFileSize() As Long
         Get
-            If DataDB.KeyExist("mfs") = False Then
-                DataDB.AddKey("mfs", CStr(15 * 1024 * 1024))
+            If DataDB.KeyExist("MaximumFileSize") = False Then
+                DataDB.AddKey("MaximumFileSize", CStr(15 * 1024 * 1024))
                 DataDB.Save()
                 Return 15 * 1024 * 1024
             Else
-                Return CLng(DataDB.GetKey("mfs"))
+                Return CLng(DataDB.GetKey("MaximumFileSize"))
             End If
         End Get
+        Set(ByVal value As Long)
+            DataDB.AddKey("MaximumFileSize", CStr(value))
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property AutoDeleteFiles() As Boolean
+    Public Property AutoDeleteFiles() As Boolean
         Get
-            If DataDB.KeyExist("DeleteFiles") = False Then
-                DataDB.AddKey("DeleteFiles", CStr(True))
+            If DataDB.KeyExist("AutoDeleteFiles") = False Then
+                DataDB.AddKey("AutoDeleteFiles", CStr(True))
                 DataDB.Save()
                 Return True
             Else
-                Return CBool(DataDB.GetKey("DeleteFiles"))
+                Return CBool(DataDB.GetKey("AutoDeleteFiles"))
             End If
         End Get
+        Set(ByVal value As Boolean)
+            DataDB.AddKey("AutoDeleteFiles", CStr(value))
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property ThreadPerPage() As Integer
+    Public Property ThreadPerPage() As Integer
         Get
-            If DataDB.KeyExist("tpp") = False Then
-                DataDB.AddKey("tpp", "10")
+            If DataDB.KeyExist("ThreadPerPage") = False Then
+                DataDB.AddKey("ThreadPerPage", "10")
                 DataDB.Save()
                 Return 10
             Else
-                Return CInt(DataDB.GetKey("tpp"))
+                Return CInt(DataDB.GetKey("ThreadPerPage"))
             End If
         End Get
+        Set(ByVal value As Integer)
+            DataDB.AddKey("ThreadPerPage", CStr(value))
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property MaximumPages() As Integer
+    Public Property MaximumPages() As Integer
         Get
-            If DataDB.KeyExist("maxpages") = False Then
-                DataDB.AddKey("maxpages", "15")
+            If DataDB.KeyExist("MaximumPages") = False Then
+                DataDB.AddKey("MaximumPages", "10")
                 DataDB.Save()
-                Return 15
+                Return 10
             Else
-                Return CInt(DataDB.GetKey("maxpages"))
+                Return CInt(DataDB.GetKey("MaximumPages"))
             End If
         End Get
+        Set(ByVal value As Integer)
+            DataDB.AddKey("MaximumPages", CStr(value))
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property AllowDuplicatesFiles() As Boolean
+    Public Property AllowDuplicatesFiles() As Boolean
         Get
-            If DataDB.KeyExist("allowdups") = False Then
-                DataDB.AddKey("allowdups", CStr(False))
+            If DataDB.KeyExist("AllowDuplicatesFiles") = False Then
+                DataDB.AddKey("AllowDuplicatesFiles", CStr(False))
                 DataDB.Save()
                 Return False
             Else
-                Return CBool(DataDB.GetKey("allowdups"))
+                Return CBool(DataDB.GetKey("AllowDuplicatesFiles"))
             End If
         End Get
+        Set(ByVal value As Boolean)
+            DataDB.AddKey("AllowDuplicatesFiles", CStr(value))
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property SmartLinkDuplicateImages() As Boolean
+    Public Property SmartLinkDuplicateImages() As Boolean
         Get
-            If DataDB.KeyExist("smartlinkdups") = False Then
-                DataDB.AddKey("smartlinkdups", CStr(True))
+            If DataDB.KeyExist("SmartLinkDuplicateImages") = False Then
+                DataDB.AddKey("SmartLinkDuplicateImages", CStr(True))
                 DataDB.Save()
                 Return True
             Else
-                Return CBool(DataDB.GetKey("smartlinkdups"))
+                Return CBool(DataDB.GetKey("SmartLinkDuplicateImages"))
             End If
         End Get
+        Set(ByVal value As Boolean)
+            DataDB.AddKey("SmartLinkDuplicateImages", CStr(value))
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property EnableUserID() As Boolean
+    Public Property EnableUserID() As Boolean
         Get
-            If DataDB.KeyExist("uid") = False Then
-                DataDB.AddKey("uid", CStr(True))
+            If DataDB.KeyExist("EnableUserID") = False Then
+                DataDB.AddKey("EnableUserID", CStr(True))
                 DataDB.Save()
                 Return True
             Else
-                Return CBool(DataDB.GetKey("uid"))
+                Return CBool(DataDB.GetKey("EnableUserID"))
             End If
         End Get
+        Set(ByVal value As Boolean)
+            DataDB.AddKey("EnableUserID", CStr(value))
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property TrailPostsCount() As Integer
+    Public Property TrailPostsCount() As Integer
         Get
-            If DataDB.KeyExist("TrailPosts") = False Then
-                DataDB.AddKey("TrailPosts", "4")
+            If DataDB.KeyExist("TrailPostsCount") = False Then
+                DataDB.AddKey("TrailPostsCount", "4")
                 DataDB.Save()
                 Return 4
             Else
-                Return CInt(DataDB.GetKey("TrailPosts"))
+                Return CInt(DataDB.GetKey("TrailPostsCount"))
             End If
         End Get
+        Set(ByVal value As Integer)
+            DataDB.AddKey("TrailPostsCount", CStr(value))
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property BumpLimit() As Integer
+    Public Property BumpLimit() As Integer
         Get
             If DataDB.KeyExist("BumpLimit") = False Then
                 DataDB.AddKey("BumpLimit", "250")
@@ -255,9 +311,13 @@
                 Return CInt(DataDB.GetKey("BumpLimit"))
             End If
         End Get
+        Set(ByVal value As Integer)
+            DataDB.AddKey("BumpLimit", CStr(value))
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property ResizeMethod() As Integer
+    Public Property ResizeMethod() As Integer
         Get
             If DataDB.KeyExist("ResizeMethod") = False Then
                 DataDB.AddKey("ResizeMethod", "1")
@@ -267,9 +327,13 @@
                 Return CInt(DataDB.GetKey("ResizeMethod"))
             End If
         End Get
+        Set(ByVal value As Integer)
+            DataDB.AddKey("ResizeMethod", CStr(value))
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property StorageFolderName() As String
+    Public Property StorageFolderName() As String
         Get
             If DataDB.KeyExist("StorageFolderName") = False Then
                 DataDB.AddKey("StorageFolderName", "images")
@@ -279,9 +343,13 @@
                 Return CStr(DataDB.GetKey("StorageFolderName"))
             End If
         End Get
+        Set(ByVal value As String)
+            DataDB.AddKey("StorageFolderName", value)
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property PhysicalStorageFolderPath() As String
+    Public Property PhysicalStorageFolderPath() As String
         Get
             If DataDB.KeyExist("PhysicalStorageFolderPath") = False Then
                 Return chanb.My.Request.PhysicalApplicationPath & "\" & StorageFolderName
@@ -289,9 +357,13 @@
                 Return CStr(DataDB.GetKey("PhysicalStorageFolderPath"))
             End If
         End Get
+        Set(ByVal value As String)
+            DataDB.AddKey("PhysicalStorageFolderPath", value)
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property WebStorageFolderPath() As String
+    Public Property WebStorageFolderPath() As String
         Get
             If DataDB.KeyExist("WebStorageFolderPath") = False Then
                 Dim prefix As String = ""
@@ -309,21 +381,29 @@
                 Return CStr(DataDB.GetKey("WebStorageFolderPath"))
             End If
         End Get
+        Set(ByVal value As String)
+            DataDB.AddKey("WebStorageFolderPath", value)
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property isInstalled() As Boolean
+    Public Property isInstalled() As Boolean
         Get
-            If DataDB.KeyExist("isinstalled") = False Then
-                DataDB.AddKey("isinstalled", CStr(False))
+            If DataDB.KeyExist("isInstalled") = False Then
+                DataDB.AddKey("isInstalled", CStr(False))
                 DataDB.Save()
                 Return False
             Else
-                Return CBool(DataDB.GetKey("isinstalled"))
+                Return CBool(DataDB.GetKey("isInstalled"))
             End If
         End Get
+        Set(ByVal value As Boolean)
+            DataDB.AddKey("isInstalled", CStr(value))
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property DefaultModPowers() As String
+    Public Property DefaultModPowers() As String
         Get
             If DataDB.KeyExist("DefaultModPowers") = False Then
                 DataDB.AddKey("DefaultModPowers", "1-1-1-1-0")
@@ -333,9 +413,13 @@
                 Return CStr(DataDB.GetKey("DefaultModPowers"))
             End If
         End Get
+        Set(ByVal value As String)
+            DataDB.AddKey("DefaultModPowers", value)
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property EnableArchive() As Boolean
+    Public Property EnableArchive() As Boolean
         Get
             If DataDB.KeyExist("EnableArchive") = False Then
                 DataDB.AddKey("EnableArchive", CStr(True))
@@ -345,9 +429,13 @@
                 Return CBool(DataDB.GetKey("EnableArchive"))
             End If
         End Get
+        Set(ByVal value As Boolean)
+            DataDB.AddKey("EnableArchive", CStr(value))
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property EnableSmilies() As Boolean
+    Public Property EnableSmilies() As Boolean
         Get
             If DataDB.KeyExist("EnableSmilies") = False Then
                 DataDB.AddKey("EnableSmilies", CStr(True))
@@ -357,9 +445,13 @@
                 Return CBool(DataDB.GetKey("EnableSmilies"))
             End If
         End Get
+        Set(ByVal value As Boolean)
+            DataDB.AddKey("EnableSmilies", CStr(value))
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property EnableCaptcha() As Boolean
+    Public Property EnableCaptcha() As Boolean
         Get
             If DataDB.KeyExist("EnableCaptcha") = False Then
                 DataDB.AddKey("EnableCaptcha", CStr(True))
@@ -369,9 +461,13 @@
                 Return CBool(DataDB.GetKey("EnableCaptcha"))
             End If
         End Get
+        Set(ByVal value As Boolean)
+            DataDB.AddKey("EnableCaptcha", CStr(value))
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property CaptchaLevel() As Integer
+    Public Property CaptchaLevel() As Integer
         Get
             If DataDB.KeyExist("CaptchaLevel") = False Then
                 DataDB.AddKey("CaptchaLevel", "5")
@@ -381,9 +477,13 @@
                 Return CInt(DataDB.GetKey("CaptchaLevel"))
             End If
         End Get
+        Set(ByVal value As Integer)
+            DataDB.AddKey("CaptchaLevel", CStr(value))
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property RemoveEXIFData() As Boolean
+    Public Property RemoveEXIFData() As Boolean
         Get
             If DataDB.KeyExist("RemoveEXIFData") = False Then
                 DataDB.AddKey("RemoveEXIFData", CStr(True))
@@ -393,9 +493,13 @@
                 Return CBool(DataDB.GetKey("RemoveEXIFData"))
             End If
         End Get
+        Set(ByVal value As Boolean)
+            DataDB.AddKey("RemoveEXIFData", CStr(value))
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property StaticMode() As Boolean
+    Public Property StaticMode() As Boolean
         Get
             If DataDB.KeyExist("StaticMode") = False Then
                 DataDB.AddKey("StaticMode", CStr(False))
@@ -405,9 +509,13 @@
                 Return CBool(DataDB.GetKey("StaticMode"))
             End If
         End Get
+        Set(ByVal value As Boolean)
+            DataDB.AddKey("StaticMode", CStr(value))
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property EnableImpresonationProtection() As Boolean
+    Public Property EnableImpresonationProtection() As Boolean
         Get
             If DataDB.KeyExist("EnableImpresonationProtection") = False Then
                 DataDB.AddKey("EnableImpresonationProtection", CStr(True))
@@ -417,9 +525,13 @@
                 Return CBool(DataDB.GetKey("EnableImpresonationProtection"))
             End If
         End Get
+        Set(ByVal value As Boolean)
+            DataDB.AddKey("EnableImpresonationProtection", CStr(value))
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property DatabaseType() As String
+    Public Property DatabaseType() As String
         Get
             If DataDB.KeyExist("dbType") = False Then
                 If isInstalled = True Then
@@ -431,9 +543,13 @@
                 Return CStr(DataDB.GetKey("dbType"))
             End If
         End Get
+        Set(ByVal value As String)
+            DataDB.AddKey("dbType", value)
+            DataDB.Save()
+        End Set
     End Property
 
-    Public ReadOnly Property ConvertArchivedThreadToHTML() As Boolean
+    Public Property ConvertArchivedThreadToHTML() As Boolean
         Get
             If DataDB.KeyExist("ConvertArchivedThreadToHTML") = False Then
                 DataDB.AddKey("ConvertArchivedThreadToHTML", CStr(True))
@@ -443,6 +559,42 @@
                 Return CBool(DataDB.GetKey("ConvertArchivedThreadToHTML"))
             End If
         End Get
+        Set(ByVal value As Boolean)
+            DataDB.AddKey("ConvertArchivedThreadToHTML", CStr(value))
+            DataDB.Save()
+        End Set
+    End Property
+
+    Public Property CheckExifOrientation() As Boolean
+        Get
+            If DataDB.KeyExist("CheckExifOrientation") = False Then
+                DataDB.AddKey("CheckExifOrientation", CStr(True))
+                DataDB.Save()
+                Return True
+            Else
+                Return CBool(DataDB.GetKey("CheckExifOrientation"))
+            End If
+        End Get
+        Set(ByVal value As Boolean)
+            DataDB.AddKey("CheckExifOrientation", CStr(value))
+            DataDB.Save()
+        End Set
+    End Property
+
+    Public Property ShowThreadRepliesCount() As Boolean
+        Get
+            If DataDB.KeyExist("ShowThreadRepliesCount") = False Then
+                DataDB.AddKey("ShowThreadRepliesCount", CStr(True))
+                DataDB.Save()
+                Return True
+            Else
+                Return CBool(DataDB.GetKey("ShowThreadRepliesCount"))
+            End If
+        End Get
+        Set(ByVal value As Boolean)
+            DataDB.AddKey("ShowThreadRepliesCount", CStr(value))
+            DataDB.Save()
+        End Set
     End Property
 
     Public Sub UpdateSetting(ByVal name As String, ByVal newData As String)
@@ -450,15 +602,15 @@
         DataDB.Save()
     End Sub
 
-    Public Sub UpdateSetting(ByVal name As String, ByVal newData As Integer)
-        DataDB.AddKey(name, CStr(newData))
-        DataDB.Save()
-    End Sub
+    'Public Sub UpdateSetting(ByVal name As String, ByVal newData As Integer)
+    '    DataDB.AddKey(name, CStr(newData))
+    '    DataDB.Save()
+    'End Sub
 
-    Public Sub UpdateSetting(ByVal name As String, ByVal newData As Boolean)
-        DataDB.AddKey(name, CStr(newData))
-        DataDB.Save()
-    End Sub
+    'Public Sub UpdateSetting(ByVal name As String, ByVal newData As Boolean)
+    '    DataDB.AddKey(name, CStr(newData))
+    '    DataDB.Save()
+    'End Sub
 
 
 End Class

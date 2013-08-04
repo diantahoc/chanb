@@ -1,6 +1,11 @@
 ﻿Public Class WPost
     'Public _imageP As String = ""
-    Public FileCount As Integer = 0
+    Public ReadOnly Property FileCount() As Integer
+        Get
+            Return files.Length
+        End Get
+    End Property
+
     Public files As WPostImage() = {}
     Public HasFile As Boolean = False
     Public comment As String = ""

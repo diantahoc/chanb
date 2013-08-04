@@ -117,39 +117,28 @@ Public Module InstallActions
                     Response.End()
                 End If
 
-
-                Dim chanbsqlfile As String = Request.PhysicalApplicationPath & "\chanbsql.sql"
-                Dim chanbmySQLfile As String = Request.PhysicalApplicationPath & "\chanbmysql.sql"
-
                 Try
                     Select Case Request.Item("db").ToLower
 
                         Case "mssql"
 
-                            If FileIO.FileSystem.FileExists(chanbsqlfile) = False Then
-                                Response.Write("The chanbsql.sql file was not found. Please upload it to your application root, or upload the script manually")
-                            Else
-                                Dim sq As New Data.SqlClient.SqlConnection(Request.Item("dbconnectionstring"))
-                                sq.Open()
-                                Dim q As New Data.SqlClient.SqlCommand(IO.File.ReadAllText(chanbsqlfile), sq)
-                                q.ExecuteNonQuery()
-                                sq.Close()
-                                Response.Write(FormatHTMLMessage("OK", "Database updated sucessfully", "", "8887", False))
-
-                            End If
+                          
+                            Dim sq As New Data.SqlClient.SqlConnection(Request.Item("dbconnectionstring"))
+                            sq.Open()
+                            Dim q As New Data.SqlClient.SqlCommand(My.Resources.mssqlDatabaseSetup, sq)
+                            q.ExecuteNonQuery()
+                            sq.Close()
+                            Response.Write(FormatHTMLMessage("OK", "Database updated sucessfully", "", "8887", False))
 
                         Case "mysql"
 
-                            If FileIO.FileSystem.FileExists(chanbmySQLfile) = False Then
-                                Response.Write("The chanbmysql.sql file was not found. Please upload it to your application root, or upload the script manually")
-                            Else
-                                Dim sq As New MySql.Data.MySqlClient.MySqlConnection(Request.Item("dbconnectionstring"))
-                                sq.Open()
-                                Dim q As New MySql.Data.MySqlClient.MySqlCommand(IO.File.ReadAllText(chanbmySQLfile), sq)
-                                q.ExecuteNonQuery()
-                                sq.Close()
-                                Response.Write(FormatHTMLMessage("OK", "Database updated sucessfully", "", "8887", False))
-                            End If
+                            Dim sq As New MySql.Data.MySqlClient.MySqlConnection(Request.Item("dbconnectionstring"))
+                            sq.Open()
+                            Dim q As New MySql.Data.MySqlClient.MySqlCommand(My.Resources.mysqlDatabaseSetup, sq)
+                            q.ExecuteNonQuery()
+                            sq.Close()
+                            Response.Write(FormatHTMLMessage("OK", "Database updated sucessfully", "", "8887", False))
+
 
                         Case Else
 
@@ -212,27 +201,13 @@ Public Module InstallActions
                         '    reader.Close()
                         'Next
 
-
-
-                        'If res = 0 Then 'Database need configuring.
-
-                        Dim chanbsqlfile As String = Request.PhysicalApplicationPath & "\chanbsql.sql"
-                        If FileIO.FileSystem.FileExists(chanbsqlfile) = False Then
-                            Response.Write("The chanbsql.sql file was not found. Please upload it to your application root, or upload and excute the script manually")
+                        Try
+                            Dim q As New Data.SqlClient.SqlCommand(My.Resources.mssqlDatabaseSetup, sq)
+                            q.ExecuteNonQuery()
+                        Catch ex As Exception
+                            Response.Write("Error occured while updating database structure: " & ex.Message)
                             Response.End()
-                        Else
-
-                            Try
-                                Dim q As New Data.SqlClient.SqlCommand(IO.File.ReadAllText(chanbsqlfile), sq)
-                                q.ExecuteNonQuery()
-                            Catch ex As Exception
-                                Response.Write("Error occured while updating database structure: " & ex.Message)
-                                Response.End()
-                            End Try
-                        End If
-
-                        'End If
-
+                        End Try
                         sq.Close()
 
                     Case "mysql"
@@ -269,20 +244,14 @@ Public Module InstallActions
 
                         'If res = 0 Then 'Database need configuring.
 
-                        Dim chanbmySQLfile As String = Request.PhysicalApplicationPath & "\chanbmysql.sql"
-                        If FileIO.FileSystem.FileExists(chanbmySQLfile) = False Then
-                            Response.Write("The chanbmysql.sql file was not found. Please upload it to your application root, or upload and excute the script manually")
+                        Try
+                            Dim q As New MySql.Data.MySqlClient.MySqlCommand(My.Resources.mysqlDatabaseSetup, sq)
+                            q.ExecuteNonQuery()
+                        Catch ex As Exception
+                            Response.Write("Error occured while updating database structure: " & ex.Message)
                             Response.End()
-                        Else
+                        End Try
 
-                            Try
-                                Dim q As New MySql.Data.MySqlClient.MySqlCommand(IO.File.ReadAllText(chanbmySQLfile), sq)
-                                q.ExecuteNonQuery()
-                            Catch ex As Exception
-                                Response.Write("Error occured while updating database structure: " & ex.Message)
-                                Response.End()
-                            End Try
-                        End If
 
                         'End If
 
@@ -307,44 +276,44 @@ Public Module InstallActions
 
                 Dim StorageFolderName As String = FileIO.FileSystem.GetDirectoryInfo(Request.Item("StorageFolder")).Name
 
-                di.UpdateSetting("StorageFolderName", StorageFolderName)
+                di.StorageFolderName = StorageFolderName
 
-                di.UpdateSetting("PhysicalStorageFolderPath", Request.Item("StorageFolder"))
+                di.PhysicalStorageFolderPath = Request.Item("StorageFolder")
 
-                di.UpdateSetting("WebStorageFolderPath", Request.Item("StorageFolderWeb"))
+                di.WebStorageFolderPath = Request.Item("StorageFolderWeb")
 
-                di.UpdateSetting("boardtitle", Request.Item("BoardTitle"))
+                di.BoardTitle = Request.Item("BoardTitle")
 
-                di.UpdateSetting("boarddesc", Request.Item("BoardDesc"))
+                di.BoardDescription = Request.Item("BoardDesc")
 
-                di.UpdateSetting("fi", (Request.Item("TimeBetweenRequestes")))
+                di.FloodInterval = CInt(Request.Item("TimeBetweenRequestes"))
 
-                di.UpdateSetting("mfs", CInt(Request.Item("MaximumFileSize")) * 1024)
+                di.MaximumFileSize = CLng(CInt(Request.Item("MaximumFileSize")) * 1024)
 
-                di.UpdateSetting("tpp", CInt(Request.Item("ThreadPerPage")))
+                di.ThreadPerPage = CInt(Request.Item("ThreadPerPage"))
 
-                di.UpdateSetting("maxpages", CInt(Request.Item("MaximumPages")))
+                di.MaximumPages = CInt(Request.Item("MaximumPages"))
 
-                di.UpdateSetting("TrailPosts", CInt(Request.Item("TrailPosts")))
+                di.TrailPostsCount = CInt(Request.Item("TrailPosts"))
 
-                di.UpdateSetting("BumpLimit", CInt(Request.Item("BumpLimit")))
+                di.BumpLimit = CInt(Request.Item("BumpLimit"))
 
-                di.UpdateSetting("uid", CBool(Request.Item("EnableUserID")))
+                di.EnableUserID = CBool(Request.Item("EnableUserID"))
 
-                di.UpdateSetting("EnableArchive", CBool(Request.Item("EnableArchive")))
+                di.EnableArchive = CBool(Request.Item("EnableArchive"))
 
-                di.UpdateSetting("EnableCaptcha", CBool(Request.Item("EnableCaptcha")))
+                di.EnableCaptcha = CBool(Request.Item("EnableCaptcha"))
+               
+                di.CaptchaLevel = CInt(Request.Item("CaptchaLevel"))
 
-                di.UpdateSetting("CaptchaLevel", CInt(Request.Item("CaptchaLevel")))
+                di.AutoDeleteFiles = CBool(Request.Item("DeleteFiles"))
 
-                di.UpdateSetting("DeleteFiles", CBool(Request.Item("DeleteFiles")))
+                di.AllowDuplicatesFiles = CBool(Request.Item("AllowDuplicatesFiles"))
 
-                di.UpdateSetting("allowdups", CBool(Request.Item("AllowDuplicatesFiles")))
-
-                di.UpdateSetting("dbType", Request.Item("db"))
+                di.DatabaseType = Request.Item("db")
 
                 If Not Request.Item("SmartLinkDuplicateImages") = "" Then
-                    di.UpdateSetting("smartlinkdups", CBool(Request.Item("SmartLinkDuplicateImages")))
+                    di.SmartLinkDuplicateImages = CBool(Request.Item("SmartLinkDuplicateImages"))
                 End If
 
                 'Make the admin
@@ -352,10 +321,9 @@ Public Module InstallActions
 
                 'Finally, mark the board as installed.
 
-                di.UpdateSetting("isinstalled", True)
+                di.isInstalled = True
 
                 Response.Write(FormatHTMLMessage(sucessStr, "Installation was sucessful. Click <a href='%O%default.aspx'>here</a> to open your new board.", "%O%default.aspx", "5", False).Replace("%O%", WebRoot))
-
 
             Case Else
                 Response.Write(FormatHTMLMessage(errorStr, "Invalid install command.", "", "8888", True))

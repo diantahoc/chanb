@@ -9,15 +9,18 @@
     Try
         Select Case Request.Item("mode")
             Case "fetchrepliesafter" ' tid = thread id , lp = last post 
-                Dim threadid As Integer = CInt(Request.Item("tid").Replace("t", ""))
-                Dim lastpost As Integer = CInt(Request.Item("lp").Replace("pc", ""))
+                Dim threadid As Integer = CInt(Request.Item("tid"))
+                Dim lastpost As Integer = CInt(Request.Item("lp"))
                 Dim pa As New HTMLParameters
                 pa.isCurrentThread = True
                 pa.isTrailPost = False
-                pa.IsModerator = CBool(Session("mod"))
-                pa.ModeratorPowers = CStr(Session("modpowers"))
-                pa.modMenu = CStr(Session("modmenu"))
+                pa.isModerator = CBool(Session("mod"))
+                pa.isAdmin = CBool(Session("admin"))
+                pa.CredPowers = CStr(Session("credpower"))
+                pa.CredMenu = CStr(Session("credmenu"))
                 pa.replyButton = False
+                Response.ContentType = "application/json"
+                Response.ContentEncoding = Text.Encoding.UTF8
                 Response.Write(WpostsToJsonList(GetThreadRepliesAfter(threadid, lastpost, False), pa))
             Case "getfileslist" ' tid = thread id , ft = file types jpg,bmp, list ... , ar = boolean include archived
                 Dim tid As Integer = CInt(Request.Item("tid"))
@@ -29,13 +32,6 @@
             Case "getthreadpagenumber" 'tid = thread id
                 Dim i As Integer = CInt(Request.Item("tid"))
                 Response.Write(GetThreadPageNumber(i))
-            Case "replytothread"
-                'tid = thread id
-                'name = name
-                'email = email
-                'pass = pass
-                'subject = subject
-                'captcha
             Case Else
                 Response.Write("Invalid mode")
         End Select
@@ -43,7 +39,4 @@
     Catch ex As Exception
         Response.Write("Server or syntax error")
     End Try
-    
-
-
-  %>
+%>

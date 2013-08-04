@@ -46,6 +46,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\ColorCode.dll</HintPath>
     </Reference>
+    <Reference Include="ExifLib, Version=1.4.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\ExifLib.dll</HintPath>
+    </Reference>
     <Reference Include="MarkdownSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\MarkdownSharp.dll</HintPath>
@@ -53,6 +57,10 @@
     <Reference Include="mysql.data, Version=6.6.5.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\mysqlv2\mysql.data.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Svg, Version=0.5.2.36557, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -105,23 +113,33 @@
     <Content Include="archive.aspx" />
     <Content Include="captcha.aspx" />
     <Content Include="catalog.aspx" />
+    <Content Include="catalogItemTemplate.html" />
     <Content Include="default.aspx" />
     <Content Include="faq.aspx" />
+    <Content Include="fullPageTemplate.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="img.aspx" />
     <Content Include="installer.aspx" />
     <Content Include="js\jquery-ui.min.js" />
-    <Content Include="js\jquery.bgiframe-2.1.2.js" />
     <Content Include="js\jquery.min.js" />
+    <Content Include="MakeAllStatic.aspx" />
     <Content Include="mobile.css" />
     <Content Include="res\bgdark.png" />
     <Content Include="res\bggrey.png" />
     <Content Include="res\bgwhite.png" />
     <Content Include="res\locked.png" />
     <Content Include="res\sticky.png" />
+    <Content Include="RotatorTemplate.html" />
+    <Content Include="imageTemplate.html" />
     <Content Include="login.aspx" />
     <Content Include="modaction.aspx" />
+    <Content Include="opPostTemplate.html" />
     <Content Include="post.aspx" />
+    <Content Include="postTemplate.html" />
     <Content Include="scripts.js" />
+    <Content Include="threadTemplate.html" />
+    <Content Include="videoTemplate.html" />
     <Content Include="yotsubab.css" />
   </ItemGroup>
   <ItemGroup>
@@ -186,6 +204,13 @@
       <DependentUpon>deletepost.aspx</DependentUpon>
       <SubType>ASPXCodebehind</SubType>
     </Compile>
+    <Compile Include="dscripts.aspx.designer.vb">
+      <DependentUpon>dscripts.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="dscripts.aspx.vb">
+      <DependentUpon>dscripts.aspx</DependentUpon>
+      <SubType>ASPXCodebehind</SubType>
+    </Compile>
     <Compile Include="faq.aspx.designer.vb">
       <DependentUpon>faq.aspx</DependentUpon>
     </Compile>
@@ -219,6 +244,13 @@
     <Compile Include="LangEngine.vb" />
     <Compile Include="Language.vb" />
     <Compile Include="LoginInfo.vb" />
+    <Compile Include="MakeAllStatic.aspx.designer.vb">
+      <DependentUpon>MakeAllStatic.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="MakeAllStatic.aspx.vb">
+      <DependentUpon>MakeAllStatic.aspx</DependentUpon>
+      <SubType>ASPXCodebehind</SubType>
+    </Compile>
     <Compile Include="Misc.vb" />
     <Compile Include="login.aspx.designer.vb">
       <DependentUpon>login.aspx</DependentUpon>
@@ -300,6 +332,8 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="dscripts.aspx" />
+    <Content Include="extension.js" />
     <Content Include="fileHandler.ashx" />
     <None Include="My Project\Application.myapp">
       <Generator>MyApplicationCodeGenerator</Generator>
@@ -310,13 +344,21 @@
       <CustomToolNamespace>My</CustomToolNamespace>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
+    <Content Include="audiofileTemplate.html" />
     <Content Include="banned.aspx" />
+    <Content Include="bannedPageTemplate.html" />
     <Content Include="deletepost.aspx" />
+    <Content Include="deletepostPage.html" />
+    <Content Include="js\extension.js" />
     <Content Include="js\noworker.nude.min.js" />
     <Content Include="js\worker.nude.js" />
+    <Content Include="modSBR.html" />
     <Content Include="modSelectBanReason.aspx" />
     <Content Include="panel.aspx" />
+    <Content Include="panelTemplate.html" />
     <Content Include="report.aspx" />
+    <Content Include="reportPage.html" />
+    <Content Include="scratch.htm" />
     <Content Include="sysadmin.css" />
     <Content Include="web.config" />
   </ItemGroup>

@@ -46,7 +46,9 @@ Public Module GlobalVariables
     Public RemoveEXIFData As Boolean = DI.RemoveEXIFData
     Public StaticHTML As Boolean = DI.StaticMode
     Public EnableImpresonationProtection As Boolean = DI.EnableImpresonationProtection
-    Public ConvertArchivedThreadToHTML As Boolean = True
+    Public ConvertArchivedThreadToHTML As Boolean = DI.ConvertArchivedThreadToHTML
+    Public CheckEXIFOrientation As Boolean = DI.CheckExifOrientation
+    Public ShowThreadRepliesCount As Boolean = DI.ShowThreadRepliesCount
 
     ''' <summary>
     ''' Get application web root.
@@ -176,6 +178,8 @@ Public Module GlobalVariables
 
     Public ReadOnly forbiddenPage As String = "<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.0 Transitional//EN""> <html> <head> <title>403 Forbidden</title> </head> <body bottommargin=""0"" leftmargin=""0"" marginheight=""0"" marginwidth=""0"" rightmargin=""0"" topmargin=""0"" bgcolor=""#000000""> <table height=""75%"" width=""100%"" align=""center"" cellspacing=""0"" cellpadding=""0"" border=""0""> <tr> <td bgcolor=""#cccccc"" height=""67%"" width=""15%"">&nbsp;</td> <td bgcolor=""#ffff00"" height=""67%"" width=""14%"">&nbsp;</td> <td bgcolor=""#00ffff"" height=""67%"" width=""14%"">&nbsp;</td> <td bgcolor=""#00ff00"" height=""67%"" width=""14%"">&nbsp;</td> <td bgcolor=""#ff00ff"" height=""67%"" width=""14%"">&nbsp;</td> <td bgcolor=""#ff0000"" height=""67%"" width=""14%"">&nbsp;</td> <td bgcolor=""#0000ff"" height=""67%"" width=""15%"">&nbsp;</td> </tr> <tr> <td bgcolor=""#0000ff"" height=""8%"" width=""15%"">&nbsp;</td> <td bgcolor=""#131313"" height=""8%"" width=""14%"">&nbsp;</td> <td bgcolor=""#ff00ff"" height=""8%"" width=""14%"">&nbsp;</td> <td bgcolor=""#131313"" height=""8%"" width=""14%"">&nbsp;</td> <td bgcolor=""#00ffff"" height=""8%"" width=""14%"">&nbsp;</td> <td bgcolor=""#131313"" height=""8%"" width=""14%"">&nbsp;</td> <td bgcolor=""#cccccc"" height=""8%"" width=""15%"">&nbsp;</td> </tr> </table> <table height=""25%"" width=""100%"" align=""center"" cellspacing=""0"" cellpadding=""5"" border=""0""> <tr> <td bgcolor=""#083e59"" height=""25%"" width=""18%"">&nbsp;</td> <td bgcolor=""#ffffff"" height=""25%"" width=""18%"">&nbsp;</td> <td bgcolor=""#3a007e"" height=""25%"" width=""18%"">&nbsp;</td> <td bgcolor=""#131313"" height=""25%"" width=""20%"" align=""center"" valign=""middle"" style=""line-height:1.25""><font face=""verdana, san-serif"" color=""#00ff00""><font size=""+3"">403</font><br>Forbidden<br><font size=""-1"">STOP RIGHT THERE</font></font></td><td bgcolor=""#262626"" height=""25%"" width=""26%"" align=""right"" valign=""bottom""></td></tr></table></body></html>"
 
+    Public ReadOnly replyCountSpan As String = "<span>&nbsp;(<b>%REPLY COUNT%</b><span> reply.)</span></span>"
+
     'A ban reason should be in this format
     ' internalname$autoperm$length$canview$Localised ban reason.
     ' length: in days
@@ -196,6 +200,7 @@ Public Module GlobalVariables
         wpi.Extension = "JPG"
         wpi.Dimensions = "250x250"
         wpi.ChanbName = "notfound.jpg"
+        wpi._isDummy = True
         Return wpi
     End Function
 
@@ -213,7 +218,6 @@ Public Module GlobalVariables
             searchEngineLinkList = il.ToArray
             il.Clear()
         End If
-
     End Sub
 
     Private Sub CheckDir(ByVal path As String)

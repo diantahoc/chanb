@@ -419,6 +419,9 @@ Public Module GlobalFunctions
         End If
     End Sub
 
+
+
+
     'Private Sub SaveThumbnail(ByVal chanbName As String, ByVal i As Drawing.Image, ByVal fileextension As String)
 
     '    If fileextension = "png" Then
@@ -541,8 +544,12 @@ Public Module GlobalFunctions
                     postHTML = postHTML.Replace("%LOCKED%", "")
                 End If
 
-                postHTML = postHTML.Replace("%REPLY COUNT%", CStr(GetRepliesCount(CInt(po.PostID), Not pa.isCurrentThread).TotalReplies))
-
+                If ShowThreadRepliesCount Then
+                    postHTML = postHTML.Replace("%REPLY COUNT SPAN%", replyCountSpan.Replace("%REPLY COUNT%", CStr(GetRepliesCount(CInt(po.PostID), Not pa.isCurrentThread).TotalReplies)))
+                Else
+                    postHTML = postHTML.Replace("%REPLY COUNT SPAN%", String.Empty)
+                End If
+              
             Case WPost.PostType.Reply
                 postHTML = ReplyPostTemplate
             Case Else
@@ -573,6 +580,7 @@ Public Module GlobalFunctions
         postHTML = postHTML.Replace("%NAME%", po.name)
         postHTML = postHTML.Replace("%DATE UTC UNIX%", CStr(po.time.ToFileTime))
         postHTML = postHTML.Replace("%DATE UTC TEXT%", GetTimeString(po.time))
+
         postHTML = postHTML.Replace("%LANG reportStr%", reportStr)
         postHTML = postHTML.Replace("%LANG deleteStr%", deleteStr)
         postHTML = postHTML.Replace("%ROOT%", WebRoot)
@@ -922,54 +930,58 @@ Public Module GlobalFunctions
     End Function
 
     Dim wf As New WordFilter
-    Private Function ProcessComment(ByVal po As WPost, ByVal pageHandlerName As String, ByVal para As HTMLParameters) As String
-        Dim sb As New StringBuilder
-        po.comment = wf.FilterText(po.comment)
+    Friend Function ProcessComment(ByVal po As WPost, ByVal pageHandlerName As String, ByVal para As HTMLParameters) As String
+        If po.comment = String.Empty Then
+            Return String.Empty
+        Else
+            Dim sb As New StringBuilder
+            po.comment = wf.FilterText(po.comment)
 
-        For Each line In po.comment.Split(CChar(vbNewLine))
-            Dim x As String = line.Replace(vbNewLine, String.Empty)
-            If Not (x = "") Then
+            For Each line In po.comment.Split(CChar(vbNewLine))
+                Dim x As String = line.Replace(vbNewLine, String.Empty)
+                If Not (x = "") Then
 
-                'Check if greentext
-                If x.StartsWith("&gt;") And Not x.StartsWith("&gt;&gt;") Then
-                    sb.Append("<tt class=""tt"">" & x.Remove(0, 4) & "</tt>")
+                    'Check if greentext
+                    If x.StartsWith("&gt;") And Not x.StartsWith("&gt;&gt;") Then
+                        sb.Append("<tt class=""tt"">" & x.Remove(0, 4) & "</tt>")
 
-                    ' Some times, X start with a line terminator that is not vbnewline, so i remove it
-                ElseIf (x.Remove(0, 1).StartsWith("&gt;") And Not x.Remove(0, 1).StartsWith("&gt;&gt;")) Then
-                    sb.Append("<tt class=""tt"">" & x.Remove(0, 1).Remove(0, 4) & "</tt>")
+                        ' Some times, X start with a line terminator that is not vbnewline, so i remove it
+                    ElseIf (x.Remove(0, 1).StartsWith("&gt;") And Not x.Remove(0, 1).StartsWith("&gt;&gt;")) Then
+                        sb.Append("<tt class=""tt"">" & x.Remove(0, 1).Remove(0, 4) & "</tt>")
 
-                ElseIf IsXvalidQuote(x) Or IsXvalidQuote(x.Remove(0, 1)) Then
-                    Dim quotet As String = x
-                    If IsXvalidQuote(x.Remove(0, 1)) Then quotet = x.Remove(0, 1)
+                    ElseIf IsXvalidQuote(x) Or IsXvalidQuote(x.Remove(0, 1)) Then
+                        Dim quotet As String = x
+                        If IsXvalidQuote(x.Remove(0, 1)) Then quotet = x.Remove(0, 1)
 
-                    If po.archived Then
-                        If ConvertArchivedThreadToHTML Then
-                            sb.Append(formatBacklink(ArchivedTHTMLWebPath & CStr(po.parent) & ".html#p" & quotet.Replace("&gt;&gt;", ""), x))
+                        If po.archived Then
+                            If ConvertArchivedThreadToHTML Then
+                                sb.Append(formatBacklink(ArchivedTHTMLWebPath & CStr(po.parent) & ".html#p" & quotet.Replace("&gt;&gt;", String.Empty), x))
+                            Else
+                                sb.Append(formatBacklink(pageHandlerName & ".aspx?id=" & CStr(po.parent) & "#p" & quotet.Replace("&gt;&gt;", String.Empty), x))
+                            End If
                         Else
-                            sb.Append(formatBacklink(pageHandlerName & ".aspx?id=" & CStr(po.parent) & "#p" & quotet.Replace("&gt;&gt;", ""), x))
+                            If StaticHTML Then
+                                sb.Append(formatBacklink(ThreadHTMLWebPath & CStr(po.parent) & ".html#p" & quotet.Replace("&gt;&gt;", String.Empty), x))
+                            Else
+                                sb.Append(formatBacklink(pageHandlerName & ".aspx?id=" & CStr(po.parent) & "#p" & quotet.Replace("&gt;&gt;", String.Empty), x))
+                            End If
                         End If
+
                     Else
-                        If StaticHTML Then
-                            sb.Append(formatBacklink(ThreadHTMLWebPath & CStr(po.parent) & ".html#p" & quotet.Replace("&gt;&gt;", ""), x))
-                        Else
-                            sb.Append(formatBacklink(pageHandlerName & ".aspx?id=" & CStr(po.parent) & "#p" & quotet.Replace("&gt;&gt;", ""), x))
-                        End If
+                        sb.Append(x)
                     End If
-
-                Else
-                    sb.Append(x)
+                    sb.Append("<br/>")
                 End If
-                sb.Append("<br/>")
-            End If
-        Next
+            Next
 
-        Dim finalcomment As New StringBuilder
+            Dim finalcomment As New StringBuilder
 
-        Dim sr As String = sb.ToString
-        sr = MatchAndProcessBBCodes("spoiler", sr)
-        sr = MatchAndProcessBBCodes("code", sr)
-        sr = MatchAndProcessBBCodes("md", sr)
-        Return sr
+            Dim sr As String = sb.ToString
+            sr = MatchAndProcessBBCodes("spoiler", sr)
+            sr = MatchAndProcessBBCodes("code", sr)
+            sr = MatchAndProcessBBCodes("md", sr)
+            Return sr
+        End If
     End Function
 
     Private Function formatBacklink(ByVal link As String, ByVal text As String) As String
@@ -1126,22 +1138,22 @@ Public Module GlobalFunctions
     Private Function GetFilesHTML(ByVal po As WPost) As String
         Dim sb As New StringBuilder
 
-        If Not (po.FileCount = 0) Then
-            'At least one image is found. Check for more than 1 file
+        If Not po.FileCount = 0 Then
 
-            If po.files.Length > 1 Then
-                'We need to make HTML file rotator.
+            'Check for multiple files.
+            If po.FileCount > 1 Then
+                'We need to add HTML file rotator.
                 Dim items As New StringBuilder
                 Dim noscriptItems As New StringBuilder
-                Dim advanced As Boolean = False ' The first one is marked as active, the rest as notactive
+                Dim isNext As Boolean = False ' The first file is marked as 'active', the rest as 'notactive'
                 Dim rotatorHTML As String = FilesRotatorTemplate
 
                 For Each wpi As WPostImage In po.files
 
                     If FileIsImage(wpi.Extension) Then
-                        Dim scriptItem As String = GetImageHTML(wpi, po.PostID)
+                        Dim scriptItem As String = GetImageHTML(wpi)
 
-                        If Not advanced Then scriptItem = scriptItem.Replace("%AN%", "active") Else scriptItem = scriptItem.Replace("%AN%", "notactive")
+                        If Not isNext Then scriptItem = scriptItem.Replace("%AN%", "active") Else scriptItem = scriptItem.Replace("%AN%", "notactive")
                         scriptItem = scriptItem.Replace("%filec%", "")
 
                         items.Append(scriptItem)
@@ -1152,19 +1164,19 @@ Public Module GlobalFunctions
                         Select Case wpi.Extension
                             Case "WEBM"
                                 Dim scriptItem As String = GetVideoFileHTML(wpi, po.PostID, "webm")
-                                If Not advanced Then scriptItem = scriptItem.Replace("%AN%", "active") Else scriptItem = scriptItem.Replace("%AN%", "notactive")
+                                If Not isNext Then scriptItem = scriptItem.Replace("%AN%", "active") Else scriptItem = scriptItem.Replace("%AN%", "notactive")
                                 scriptItem = scriptItem.Replace("%filec%", "")
                                 items.Append(scriptItem)
                                 noscriptItems.Append(GetVideoFileHTMLNoScript(wpi))
                             Case "MP3"
                                 Dim scriptItem As String = GetAudioFileHTML(wpi, po.PostID, "mpeg")
-                                If Not advanced Then scriptItem = scriptItem.Replace("%AN%", "active") Else scriptItem = scriptItem.Replace("%AN%", "notactive")
+                                If Not isNext Then scriptItem = scriptItem.Replace("%AN%", "active") Else scriptItem = scriptItem.Replace("%AN%", "notactive")
                                 scriptItem = scriptItem.Replace("%filec%", "")
                                 items.Append(scriptItem)
                                 noscriptItems.Append(GetAudioFileHTMLNoScript(wpi))
                             Case "OGG"
                                 Dim scriptItem As String = GetAudioFileHTML(wpi, po.PostID, "ogg")
-                                If Not advanced Then scriptItem = scriptItem.Replace("%AN%", "active") Else scriptItem = scriptItem.Replace("%AN%", "notactive")
+                                If Not isNext Then scriptItem = scriptItem.Replace("%AN%", "active") Else scriptItem = scriptItem.Replace("%AN%", "notactive")
                                 scriptItem = scriptItem.Replace("%filec%", "")
                                 items.Append(scriptItem)
                                 noscriptItems.Append(GetAudioFileHTMLNoScript(wpi))
@@ -1172,7 +1184,7 @@ Public Module GlobalFunctions
 
                     End If
 
-                    advanced = True
+                    isNext = True
                 Next
 
                 rotatorHTML = rotatorHTML.Replace("%ID%", CStr(po.PostID))
@@ -1182,15 +1194,14 @@ Public Module GlobalFunctions
                 sb.Append(rotatorHTML)
 
             Else
-                'Single image
+                'Single file
                 Dim wpi As WPostImage = po.files(0)
                 If FileIsImage(wpi.Extension) Then
-                    Dim item As String = GetImageHTML(wpi, po.PostID)
+                    Dim item As String = GetImageHTML(wpi)
                     item = item.Replace("%filec%", "file") ' We need the 'file' html class in single image mode.
                     item = item.Replace("%AN%", "") ' No need for active/notactive html class since there is no rotator.
                     sb.Append(item)
                 Else
-
                     Select Case wpi.Extension
                         Case "WEBM"
                             Dim item As String = GetVideoFileHTML(wpi, po.PostID, "webm")
@@ -1215,16 +1226,16 @@ Public Module GlobalFunctions
         Return sb.ToString
     End Function
 
-    Private Function GetImageHTML(ByVal wpi As WPostImage, ByVal postId As Integer) As String
+    Private Function GetImageHTML(ByVal wpi As WPostImage) As String
         Dim r As String = ImageTemplate
-        r = r.Replace("%ID%", CStr(postId))
+        r = r.Replace("%ID%", CStr(wpi.PostID))
         r = r.Replace("%FILE NAME%", wpi.RealName)
         r = r.Replace("%IMAGE TEXT DL%", WebRoot & "img.aspx?cn=" & wpi.ChanbName & "&rn=" & wpi.RealName)
-        r = r.Replace("%IMAGE DL%", GetImageWEBPATH(wpi.ChanbName))
-        r = r.Replace("%IMAGE SRC%", GetImageWEBPATH(wpi.ChanbName))
+        r = r.Replace("%IMAGE DL%", wpi.ImageWebPath)
+        r = r.Replace("%IMAGE SRC%", wpi.ImageWebPath)
         r = r.Replace("%FILE SIZE%", FormatSizeString(wpi.Size))
         r = r.Replace("%IMAGE SIZE%", wpi.Dimensions)
-        r = r.Replace("%THUMB_LINK%", GetImageWEBPATHRE(wpi.ChanbName))
+        r = r.Replace("%THUMB_LINK%", wpi.ImageThumbailWebPath)
         r = r.Replace("%IMAGE MD5%", wpi.MD5)
         r = r.Replace("%IMAGE EXT%", wpi.Extension)
         r = r.Replace("%Search Engine Links%", GetSearchEngineLinks(GetImageWEBPATHRE(wpi.ChanbName)))
@@ -1233,10 +1244,10 @@ Public Module GlobalFunctions
 
     Private Function GetImageHTMLNoScript(ByVal wpi As WPostImage) As String
         Dim nr As String = noscriptItemHTML
-        nr = nr.Replace("%IMAGE SRC%", GetImageWEBPATH(wpi.ChanbName))
-        nr = nr.Replace("%IMAGE DL%", GetImageWEBPATH(wpi.ChanbName))
+        nr = nr.Replace("%IMAGE SRC%", wpi.ImageWebPath)
+        nr = nr.Replace("%IMAGE DL%", wpi.ImageWebPath)
         nr = nr.Replace("%FILE NAME%", wpi.RealName)
-        nr = nr.Replace("%THUMB_LINK%", GetImageWEBPATHRE(wpi.ChanbName))
+        nr = nr.Replace("%THUMB_LINK%", wpi.ImageThumbailWebPath)
         Return nr
     End Function
 
@@ -1246,7 +1257,7 @@ Public Module GlobalFunctions
         r = r.Replace("%FILE NAME%", wpi.RealName)
         r = r.Replace("%FILE SIZE%", FormatSizeString(wpi.Size))
         r = r.Replace("%IMAGE TEXT DL%", WebRoot & "img.aspx?cn=" & wpi.ChanbName & "&rn=" & wpi.RealName)
-        r = r.Replace("%VIDEO LINK%", GetImageWEBPATH(wpi.ChanbName))
+        r = r.Replace("%VIDEO LINK%", wpi.ImageWebPath)
         r = r.Replace("%IMAGE MD5%", wpi.MD5)
         r = r.Replace("%IMAGE EXT%", wpi.Extension)
         r = r.Replace("%NO VIDEO SUPPORT%", noVideoSupportStr)
@@ -1256,7 +1267,7 @@ Public Module GlobalFunctions
 
     Private Function GetVideoFileHTMLNoScript(ByVal wpi As WPostImage) As String
         Dim nr As String = noscriptVideoHTML
-        nr = nr.Replace("%VIDEO LINK%", GetImageWEBPATH(wpi.ChanbName))
+        nr = nr.Replace("%VIDEO LINK%", wpi.ImageWebPath)
         nr = nr.Replace("%FILE NAME%", wpi.RealName)
         Return nr
     End Function
@@ -1267,7 +1278,7 @@ Public Module GlobalFunctions
         r = r.Replace("%FILE NAME%", wpi.RealName)
         r = r.Replace("%FILE SIZE%", FormatSizeString(wpi.Size))
         r = r.Replace("%IMAGE TEXT DL%", WebRoot & "img.aspx?cn=" & wpi.ChanbName & "&rn=" & wpi.RealName)
-        r = r.Replace("%LINK%", GetImageWEBPATH(wpi.ChanbName))
+        r = r.Replace("%LINK%", wpi.ImageWebPath)
         r = r.Replace("%IMAGE MD5%", wpi.MD5)
         r = r.Replace("%IMAGE EXT%", wpi.Extension)
         r = r.Replace("%NO AUDIO SUPPORT%", noVideoSupportStr)
@@ -1277,7 +1288,7 @@ Public Module GlobalFunctions
 
     Private Function GetAudioFileHTMLNoScript(ByVal wpi As WPostImage) As String
         Dim nr As String = noscriptAudioHTML
-        nr = nr.Replace("%LINK%", GetImageWEBPATH(wpi.ChanbName))
+        nr = nr.Replace("%LINK%", wpi.ImageWebPath)
         nr = nr.Replace("%FILE NAME%", wpi.RealName)
         Return nr
     End Function
@@ -1300,13 +1311,19 @@ Public Module GlobalFunctions
         End If
     End Sub
 
+    ''' <summary>
+    ''' Prune a post. It either delete a post or archive it, based on specific conditions. 
+    ''' </summary>
+    ''' <param name="id">Post id. Can be a thread or a reply.</param>
+    ''' <param name="dF">Delete files</param>
+    ''' <remarks></remarks>
     Public Sub PrunePost(ByVal id As Integer, ByVal dF As Boolean)
         If EnableArchive Then
             Archive(id)
         Else
             Dim w As WPost = FetchPostData(id)
             If w.type = WPost.PostType.Thread Then ' post is a thread, delete replies first.
-                If dF Then
+                If dF Then ' dF is a shortcut for delete files.
                     For Each x As WPost In GetThreadData(id, True)
                         DeletePostFiles(x)
                     Next
@@ -1359,10 +1376,10 @@ Public Module GlobalFunctions
 
     Private Sub DeletePostFiles(ByVal po As WPost)
         If po.FileCount = 0 Then
-            Exit Sub
+            Return
         Else
             For Each ima As WPostImage In po.files
-                If FileExistInDB(ima.MD5, po.PostID) = False Then
+                If FileExistInDB(ima.MD5, po.PostID) = False Then ' I exclude this post from file checking so we don't delete another post file that is using the same file.
                     Dim realPath As String = StorageFolder & "\" & ima.ChanbName
                     Dim thumbPath As String = StorageFolderThumbs & "\th" & ima.ChanbName
                     IO.File.Delete(realPath)
@@ -1463,8 +1480,6 @@ Public Module GlobalFunctions
 
 
         If DisplayingThread And validID Then
-
-            body.Append("<script type='text/javascript'> timer();</script>")
 
             'Display a thread and children posts 
             Dim opID As Integer = CInt(Request.Item("id"))
@@ -1856,7 +1871,6 @@ Public Module GlobalFunctions
         queryObject.Reader.Close()
         If po.HasFile Then
             po.files = GetPostFiles(id, queryObject.Connection)
-            po.FileCount = po.files.Length
         End If
         queryObject.Connection.Close()
         Return po
@@ -2089,7 +2103,6 @@ Public Module GlobalFunctions
             For Each po As WPost In il
                 If po.HasFile Then
                     po.files = GetPostFiles(po.PostID, query.Connection)
-                    po.FileCount = po.files.Length
                 End If
             Next
 
@@ -2134,7 +2147,6 @@ Public Module GlobalFunctions
         For Each po As WPost In il
             If po.HasFile Then
                 po.files = GetPostFiles(po.PostID, query.Connection)
-                po.FileCount = po.files.Length
             End If
         Next
 
@@ -2523,13 +2535,9 @@ Public Module GlobalFunctions
     End Function
 
     Public Function FormatSizeString(ByVal size As Long) As String
-        Dim B As Long = 1024
-        Dim K As Long = 1048576
-        Dim M As Long = 1073741824
-        Dim G As Long = 1099511627776
-        Dim KB As Long = CLng(Fix(size / B))
-        Dim MB As Long = CLng(Fix(size / K))
-        Dim GB As Long = CLng(Fix(size / M))
+        Dim KB As Long = CLng(Fix(size / 1024))
+        Dim MB As Long = CLng(Fix(size / 1048576))
+        Dim GB As Long = CLng(Fix(size / 1073741824))
         If KB = 0 Then
             Return size & " B"
         ElseIf KB > 0 And MB = 0 Then
@@ -2556,45 +2564,88 @@ Public Module GlobalFunctions
 
 #Region "Image processing"
 
-    Private Function DownSizeWithAspectRatio(ByVal targetMax As Integer, ByVal isi As Drawing.Size) As Drawing.Size
-        Return New Drawing.Size(targetMax, CInt(Fix(isi.Height / (isi.Width / targetMax))))
-    End Function
+    Private Function ResizeImage(ByVal i As Drawing.Image, ByVal targetMax As Integer) As Drawing.Image
+        Dim thumbSize As Drawing.Size = New Drawing.Size(targetMax, CInt(Fix(i.Height / (i.Width / targetMax))))
+        Dim thumbImage As Drawing.Image
 
-    Private Function ResizeImage(ByVal i As Drawing.Image, ByVal targetS As Integer) As Drawing.Image
         Select Case ResizeMethode
             Case 0 'naive quality
-                Return i.GetThumbnailImage(DownSizeWithAspectRatio(targetS, i.Size).Width, DownSizeWithAspectRatio(targetS, i.Size).Height, Nothing, System.IntPtr.Zero)
+                thumbImage = i.GetThumbnailImage(thumbSize.Width, thumbSize.Height, Nothing, System.IntPtr.Zero)
             Case 1 ' Medium Quality 
-                Dim sizef As Drawing.Size = DownSizeWithAspectRatio(targetS, i.Size)
-                Dim bi As New Drawing.Bitmap(sizef.Width, sizef.Height)
+                Dim bi As New Drawing.Bitmap(thumbSize.Width, thumbSize.Height)
                 Dim g As Drawing.Graphics = Drawing.Graphics.FromImage(bi)
                 g.InterpolationMode = Drawing.Drawing2D.InterpolationMode.Bicubic
                 g.SmoothingMode = Drawing.Drawing2D.SmoothingMode.HighQuality
                 g.PixelOffsetMode = Drawing.Drawing2D.PixelOffsetMode.HighQuality
                 g.CompositingQuality = Drawing.Drawing2D.CompositingQuality.HighQuality
 
-                Dim imageRectangle As Drawing.Rectangle = New Drawing.Rectangle(0, 0, sizef.Width, sizef.Height)
+                Dim imageRectangle As Drawing.Rectangle = New Drawing.Rectangle(0, 0, thumbSize.Width, thumbSize.Height)
                 g.DrawImage(i, imageRectangle)
-                Return bi
-                bi.Dispose()
                 g.Dispose()
+                thumbImage = bi
             Case 2 'Fastest Methode
-                Dim sizef As Drawing.Size = DownSizeWithAspectRatio(targetS, i.Size)
-                Dim bi As New Drawing.Bitmap(sizef.Width, sizef.Height)
+                Dim bi As New Drawing.Bitmap(thumbSize.Width, thumbSize.Height)
                 Dim g As Drawing.Graphics = Drawing.Graphics.FromImage(bi)
                 g.InterpolationMode = Drawing.Drawing2D.InterpolationMode.Default
                 g.SmoothingMode = Drawing.Drawing2D.SmoothingMode.HighSpeed
                 g.PixelOffsetMode = Drawing.Drawing2D.PixelOffsetMode.HighSpeed
                 g.CompositingQuality = Drawing.Drawing2D.CompositingQuality.HighSpeed
-                Dim imageRectangle As Drawing.Rectangle = New Drawing.Rectangle(0, 0, sizef.Width, sizef.Height)
+                Dim imageRectangle As Drawing.Rectangle = New Drawing.Rectangle(0, 0, thumbSize.Width, thumbSize.Height)
                 g.DrawImage(i, imageRectangle)
-                Return bi
-                bi.Dispose()
                 g.Dispose()
+                thumbImage = bi
             Case Else
-                Return i.GetThumbnailImage(DownSizeWithAspectRatio(targetS, i.Size).Width, DownSizeWithAspectRatio(targetS, i.Size).Height, Nothing, System.IntPtr.Zero)
+                thumbImage = i.GetThumbnailImage(thumbSize.Width, thumbSize.Height, Nothing, System.IntPtr.Zero)
         End Select
+
+        If thumbImage Is Nothing Then thumbImage = i.GetThumbnailImage(thumbSize.Width, thumbSize.Height, Nothing, System.IntPtr.Zero)
+
+        Try
+            If CheckEXIFOrientation Then
+                Dim fs As New IO.MemoryStream
+                i.Save(fs, i.RawFormat)
+
+                Dim orientation As Integer = GetImageOrientation(fs)
+                fs.Dispose()
+
+                Select Case orientation
+                    Case 1
+                        Exit Select
+                    Case 2
+                        thumbImage.RotateFlip(Drawing.RotateFlipType.RotateNoneFlipX)
+                    Case 3
+                        thumbImage.RotateFlip(Drawing.RotateFlipType.Rotate180FlipNone)
+                    Case 4
+                        thumbImage.RotateFlip(Drawing.RotateFlipType.RotateNoneFlipY)
+                    Case 5
+                        thumbImage.RotateFlip(Drawing.RotateFlipType.Rotate90FlipY)
+                    Case 6
+                        thumbImage.RotateFlip(Drawing.RotateFlipType.Rotate90FlipNone)
+                    Case 7
+                        thumbImage.RotateFlip(Drawing.RotateFlipType.Rotate90FlipX)
+                    Case 8
+                        thumbImage.RotateFlip(Drawing.RotateFlipType.Rotate270FlipNone)
+                    Case Else
+                        Exit Select
+                End Select
+            End If
+        Catch ex As Exception
+        End Try
+        Return thumbImage
     End Function
+
+    Private Function GetImageOrientation(ByVal fs As IO.Stream) As Integer
+        fs.Seek(0, IO.SeekOrigin.Begin)
+        Dim orient As Object
+        Try
+            Dim exR As New ExifLib.ExifReader(fs)
+            exR.GetTagValue(ExifLib.ExifTags.Orientation, orient)
+            exR.Dispose()
+        Catch ex As Exception
+        End Try
+        If orient Is Nothing Then Return 1 Else Return CInt(orient)
+    End Function
+
 #End Region
 
 #Region "BB codes processing"

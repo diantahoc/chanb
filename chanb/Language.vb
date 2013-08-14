@@ -1,210 +1,111 @@
 ﻿Public Module Language
 
-    Public ReadOnly nameStr As String = "Name"
-    Public ReadOnly subjectStr As String = "Subject"
-    Public ReadOnly emailStr As String = "Email"
-    Public ReadOnly commentStr As String = "Comment"
-    Public ReadOnly passwordStr As String = "Password"
-    Public ReadOnly verificationStr As String = "Verification"
-    Public ReadOnly newThreadStr As String = "New thread"
-    Public ReadOnly filesStr As String = "Files(s)"
-    Public ReadOnly replyStr As String = "Reply"
-    Public ReadOnly deleteStr As String = "Delete"
-    Public ReadOnly reportStr As String = "Report"
-    Public ReadOnly fileOnlyStr As String = "File only"
-    Public ReadOnly addEachFileInNewPostStr As String = "Add each file to a seperate post"
-    Public ReadOnly AnonNameStr As String = "Anonymous"
-    Public ReadOnly stickyStr As String = "Sticky"
-    Public ReadOnly lockedStr As String = "Locked"
-    Public ReadOnly prevStr As String = "Previous"
-    Public ReadOnly nextStr As String = "Next"
-    Public ReadOnly forPostDelStr As String = "For post deletion."
-    Public ReadOnly postingModstr As String = "Posting mode: Reply"
-    Public ReadOnly returnStr As String = "Return"
-    Public ReadOnly addAnotherFStr As String = "Add another file"
-    Public ReadOnly countFilesStr As String = "Count files"
+    Private langDic As New LangEngine("en-US")
 
-    Public summaryPandIStr As String = "%P% post(s) and %I% image reply(ies) omitted."
-    Public summaryPonlyStr As String = "%P% post(s) omitted."
-    Public summaryIonlyStr As String = "%I% image reply(ies) omitted."
+    Public ReadOnly nameStr As String = langDic.Retrive("nameStr")
+    Public ReadOnly subjectStr As String = langDic.Retrive("subjectStr")
+    Public ReadOnly emailStr As String = langDic.Retrive("emailStr")
+    Public ReadOnly commentStr As String = langDic.Retrive("commentStr")
+    Public ReadOnly passwordStr As String = langDic.Retrive("passwordStr")
+    Public ReadOnly verificationStr As String = langDic.Retrive("verificationStr")
+    Public ReadOnly newThreadStr As String = langDic.Retrive("newThreadStr")
+    Public ReadOnly filesStr As String = langDic.Retrive("filesStr")
+    Public ReadOnly replyStr As String = langDic.Retrive("replyStr")
+    Public ReadOnly deleteStr As String = langDic.Retrive("deleteStr")
+    Public ReadOnly reportStr As String = langDic.Retrive("reportStr")
+    Public ReadOnly fileOnlyStr As String = langDic.Retrive("fileOnlyStr")
+    Public ReadOnly addEachFileInNewPostStr As String = langDic.Retrive("addEachFileInNewPostStr")
+    Public ReadOnly AnonNameStr As String = langDic.Retrive("AnonNameStr")
+    Public ReadOnly stickyStr As String = langDic.Retrive("stickyStr")
+    Public ReadOnly lockedStr As String = langDic.Retrive("lockedStr")
+    Public ReadOnly prevStr As String = langDic.Retrive("prevStr")
+    Public ReadOnly nextStr As String = langDic.Retrive("nextStr")
+    Public ReadOnly forPostDelStr As String = langDic.Retrive("forPostDelStr")
+    Public ReadOnly postingModstr As String = langDic.Retrive("postingModstr")
+    Public ReadOnly returnStr As String = langDic.Retrive("returnStr")
+    Public ReadOnly addAnotherFStr As String = langDic.Retrive("addAnotherFStr")
+    Public ReadOnly countFilesStr As String = langDic.Retrive("countFilesStr")
 
-    Public summaryClickToViewStr As String = " Click <a href=""%POSTLINK%"">here</a> to view."
+    Public ReadOnly summaryPandIStr As String = langDic.Retrive("summaryPandIStr")
+    Public ReadOnly summaryPonlyStr As String = langDic.Retrive("summaryPonlyStr")
+    Public ReadOnly summaryIonlyStr As String = langDic.Retrive("summaryIonlyStr")
 
-    Public ReadOnly banuserStr As String = "Ban user"
-    Public modSilentBanStr As String = "Silent ban"
-    Public ReadOnly deletePostStr As String = "Delete post"
-    Public ReadOnly tgstickStr As String = "Toggle sticky"
-    Public ReadOnly tglockStr As String = "Toggle Lock"
-    Public ReadOnly EditpostStr As String = "Edit post"
-    Public modBlurImageStr As String = "Blur image"
-    Public ReadOnly higlightPostByThisIDStr As String = "Higlight posts by this ID"
-    Public ReadOnly TopStr As String = "Top"
-    Public ReadOnly CatalogStr As String = "Catalog"
-    Public ReadOnly RefreshStr As String = "Refresh"
-    Public ReadOnly BottomStr As String = "Bottom"
-    Public ReadOnly CaptchaChallengeStr As String = "CAPTCHA Challenge"
-    Public ReadOnly ArchiveStr As String = "Archive"
-    Public ReadOnly ForbiddenStr As String = "Fobidden"
-    Public ReadOnly sucessStr As String = "Success"
-    Public ReadOnly reportReasonStr As String = "Report reason:"
-    Public invalidIdStr As String = "Invalid ID"
+    Public ReadOnly summaryClickToViewStr As String = langDic.Retrive("summaryClickToViewStr")
 
-    Public errorStr As String = "Error"
+    Public ReadOnly banuserStr As String = langDic.Retrive("banuserStr")
+    Public modSilentBanStr As String = langDic.Retrive("modSilentBanStr")
+    Public ReadOnly deletePostStr As String = langDic.Retrive("deletePostStr")
+    Public ReadOnly tgstickStr As String = langDic.Retrive("tgstickStr")
+    Public ReadOnly tglockStr As String = langDic.Retrive("tglockStr")
+    Public ReadOnly EditpostStr As String = langDic.Retrive("EditpostStr")
+    Public ReadOnly higlightPostByThisIDStr As String = langDic.Retrive("higlightPostByThisIDStr")
+    Public ReadOnly TopStr As String = langDic.Retrive("TopStr")
+    Public ReadOnly CatalogStr As String = langDic.Retrive("CatalogStr")
+    Public ReadOnly RefreshStr As String = langDic.Retrive("RefreshStr")
+    Public ReadOnly BottomStr As String = langDic.Retrive("BottomStr")
+    Public ReadOnly CaptchaChallengeStr As String = langDic.Retrive("CaptchaChallengeStr")
+    Public ReadOnly ArchiveStr As String = langDic.Retrive("ArchiveStr")
+    Public ReadOnly ForbiddenStr As String = langDic.Retrive("ForbiddenStr")
+    Public ReadOnly sucessStr As String = langDic.Retrive("sucessStr")
+    Public ReadOnly reportReasonStr As String = langDic.Retrive("reportReasonStr")
+    Public ReadOnly invalidIdStr As String = langDic.Retrive("invalidIdStr")
 
-    Public ReadOnly ImageRequired As String = "You cannot start a new thread without an image."
-    Public ReadOnly SuccessfulPostString As String = "Post Succesful !"
-    Public ReadOnly FileToBig As String = "The provided file %NAME% is larger than the allowed limit %L%"
-    Public ReadOnly FloodDetected As String = "Flood detected, please allow % seconds before posting, reporting and deleting."
-    Public ReadOnly CannotDeletePostBadPassword As String = "Cannot delete post % , bad password"
-    Public ReadOnly PostDeletedSuccess As String = "Post number % has been deleted"
-    Public ReadOnly NoPostWasSelected As String = "No post was selected"
-    Public ReadOnly ReportedSucess As String = "Reported post number %"
-    Public ReadOnly BadOrNoImage As String = "No image or image contains errors."
-    Public ReadOnly BannedMessage As String = "You are banned."
-    Public ReadOnly lockedMessage As String = "Thread is locked."
-    Public ReadOnly noBlankpost As String = "Blank post are not allowed."
-    Public ReadOnly duplicateFile As String = "Duplicate image detected."
-    Public ReadOnly UnsupportedFile As String = "Unsupported file type."
-    Public ReadOnly arhivedMessage As String = "This thread has 404'ed and it is in the archive now."
-    Public ReadOnly invalidPostmodestr As String = "Invalid posting mode."
-    Public ReadOnly wrongCaptcha As String = "You have mistyped the CAPTCHA. Please try again."
-    Public ReadOnly archiveNoticeStr As String = "This is the archive. Click <a href='" & WebRoot & "default.aspx'>here</a> to go back to the main page."
-    Public ReadOnly noVideoSupportStr As String = "Your browser does not support html5 video"
+    Public ReadOnly errorStr As String = langDic.Retrive("errorStr")
 
-    Public ReadOnly banMsgStr As String = "User was banned for this post."
-    Public ReadOnly commentToolong As String = "<br/><span class='summary'>Comment is too long. Click <a href='%POSTLINK%' target='_blank'>here</a> to view</span>"
+    Public ReadOnly ImageRequired As String = langDic.Retrive("ImageRequired")
+    Public ReadOnly SuccessfulPostString As String = langDic.Retrive("SuccessfulPostString")
+    Public ReadOnly FileToBig As String = langDic.Retrive("FileToBig")
+    Public ReadOnly FloodDetected As String = langDic.Retrive("FloodDetected")
+    Public ReadOnly CannotDeletePostBadPassword As String = langDic.Retrive("CannotDeletePostBadPassword")
+    Public ReadOnly PostDeletedSuccess As String = langDic.Retrive("PostDeletedSuccess")
+    Public ReadOnly NoPostWasSelected As String = langDic.Retrive("NoPostWasSelected")
+    Public ReadOnly ReportedSucess As String = langDic.Retrive("ReportedSucess")
+    Public ReadOnly BadOrNoImage As String = langDic.Retrive("BadOrNoImage")
+    Public ReadOnly BannedMessage As String = langDic.Retrive("BannedMessage")
+    Public ReadOnly lockedMessage As String = langDic.Retrive("lockedMessage")
+    Public ReadOnly noBlankpost As String = langDic.Retrive("noBlankpost")
+    Public ReadOnly duplicateFile As String = langDic.Retrive("duplicateFile")
+    Public ReadOnly UnsupportedFile As String = langDic.Retrive("UnsupportedFile")
+    Public ReadOnly arhivedMessage As String = langDic.Retrive("arhivedMessage")
+    Public ReadOnly invalidPostmodestr As String = langDic.Retrive("invalidPostmodestr")
+    Public ReadOnly wrongCaptcha As String = langDic.Retrive("wrongCaptcha")
+    Public ReadOnly archiveNoticeStr As String = langDic.Retrive("archiveNoticeStr").Replace("%WR%", WebRoot)
+    Public ReadOnly noVideoSupportStr As String = langDic.Retrive("noVideoSupportStr")
 
-
-    Public ReadOnly nameAlreadyUsed As String = "The name '%' is already taken, you cannot post using it"
-
-    Public ReadOnly modRequired As String = "Moderator privilege is required to access this page."
-    Public ReadOnly modNoPower As String = "You have no power to do that."
-    Public ReadOnly modBannedPosterStr As String = "Banned the poster of %."
-    Public ReadOnly modRequetComplete As String = "Request complete."
-    Public ReadOnly modLoginSucess As String = "Login succeeded"
-    Public ReadOnly modLoginFailed As String = "Login failed"
-    Public modSelectBanReason As String = "Select a reason for this ban"
-
-    '  Public ReadOnly currentThreadsCountStr As String = "Currently there are % thread(s)."
-    Public dbTypeNotSet As String = "Database type is not set"
-    Public dbTypeInvalid As String = "Invalid database type"
-
-    Public installerDbTypeNotSpecified As String = "Database type not specified"
-    Public installerDbConnectionStringNotSpecified As String = "Database connection string is not specified"
-    Public errorOccuredStr As String = "An error has been occured, error message is: %"
-    Public isntallerConnectionEstablishedSucess As String = "% connection was sucessfully established."
+    Public ReadOnly banMsgStr As String = langDic.Retrive("banMsgStr")
+    Public ReadOnly commentToolong As String = langDic.Retrive("commentToolong")
 
 
-    Public rotatorImagesStr As String = "image(s)" '%LANG rotatorImagesStr%
-    Public rotatorfirstStr As String = "First" '%LANG rotatorfirstStr%
-    Public rotatorlastStr As String = "Last" '%LANG rotatorlastStr%
-    Public rotatorPrevStr As String = "Previous" '%LANG rotatorPrevStr%
-    Public rotatorNextStr As String = "Next" '%LANG rotatornextStr%
+    Public ReadOnly nameAlreadyUsed As String = langDic.Retrive("nameAlreadyUsed")
+
+    Public ReadOnly modRequired As String = langDic.Retrive("modRequired")
+    Public ReadOnly modNoPower As String = langDic.Retrive("modNoPower")
+    Public ReadOnly modBannedPosterStr As String = langDic.Retrive("modBannedPosterStr")
+    Public ReadOnly modRequetComplete As String = langDic.Retrive("modRequetComplete")
+    Public ReadOnly modLoginSucess As String = langDic.Retrive("modLoginSucess")
+    Public ReadOnly modLoginFailed As String = langDic.Retrive("modLoginFailed")
+    Public ReadOnly modSelectBanReason As String = langDic.Retrive("modSelectBanReason")
+
+    Public ReadOnly dbTypeNotSet As String = langDic.Retrive("dbTypeNotSet")
+    Public ReadOnly dbTypeInvalid As String = langDic.Retrive("dbTypeInvalid")
+
+    Public ReadOnly installerDbTypeNotSpecified As String = langDic.Retrive("installerDbTypeNotSpecified")
+    Public ReadOnly installerDbConnectionStringNotSpecified As String = langDic.Retrive("installerDbConnectionStringNotSpecified")
+    Public ReadOnly errorOccuredStr As String = langDic.Retrive("errorOccuredStr")
+    Public ReadOnly isntallerConnectionEstablishedSucess As String = langDic.Retrive("isntallerConnectionEstablishedSucess")
 
 
+    Public ReadOnly rotatorImagesStr As String = langDic.Retrive("rotatorImagesStr")
+    Public ReadOnly rotatorfirstStr As String = langDic.Retrive("rotatorfirstStr")
+    Public ReadOnly rotatorlastStr As String = langDic.Retrive("rotatorlastStr")
+    Public ReadOnly rotatorPrevStr As String = langDic.Retrive("rotatorPrevStr")
+    Public ReadOnly rotatorNextStr As String = langDic.Retrive("rotatorNextStr")
 
 
-
-
-    Public banReasonStr As String = "Reason"
-    Public bannedOnStr As String = "Banned on"
-    Public banIpStr As String = "Your IP was"
-    Public banPostNoStr As String = "The post you were banned for"
-    Public banExpiryStr As String = "Expiration date"
-
-
-
-
-
-#Region "Arabic"
-
-    'Public ReadOnly nameStr As String = "الاسم"
-    'Public ReadOnly subjectStr As String = "الموضوع"
-    'Public ReadOnly emailStr As String = "البريد الالكتروني"
-    'Public ReadOnly commentStr As String = "التعليق"
-    'Public ReadOnly passwordStr As String = "كلمة السر"
-    'Public ReadOnly verificationStr As String = "التحقق"
-    'Public ReadOnly newThreadStr As String = "موضوع جديد"
-    'Public ReadOnly filesStr As String = "الملفات"
-    'Public ReadOnly replyStr As String = "رد"
-    'Public ReadOnly deleteStr As String = "حذف"
-    'Public ReadOnly reportStr As String = "تبليغ"
-    'Public ReadOnly fileOnlyStr As String = "الملف فقط"
-    'Public ReadOnly addEachFileInNewPostStr As String = "اضف كل ملف الى رد جديد"
-    'Public ReadOnly AnonNameStr As String = "مجهول"
-    'Public ReadOnly stickyStr As String = "معلقة"
-    'Public ReadOnly lockedStr As String = "مغلق"
-    'Public ReadOnly prevStr As String = "السابق"
-    'Public ReadOnly nextStr As String = "التالي"
-    'Public ReadOnly forPostDelStr As String = "من أجل حذف التعليق لاحقا"
-    'Public ReadOnly postingModstr As String = "وضع الارسال : رد"
-    'Public ReadOnly returnStr As String = "الرجوع"
-    'Public ReadOnly addAnotherFStr As String = "اضافة ملف جديد"
-    'Public ReadOnly countFilesStr As String = "قم بعدّ الملفات"
-
-    'Public ReadOnly p1str As String = "% رد"
-    'Public ReadOnly andStr As String = " و "
-    'Public ReadOnly p2str As String = "% فيه صورة"
-    'Public ReadOnly omittedStr As String = " مخبأة. اضغط <a href='%POSTLINK%' target='_blank' class='replylink'>هنا</a> للمشاهدة."
-
-    'Public ReadOnly banuserStr As String = "حظر المستخدم"
-    'Public ReadOnly deletePostStr As String = "محو التعليق"
-    'Public ReadOnly tgstickStr As String = "التبديل بين معلق أو غير معلق"
-    'Public ReadOnly tglockStr As String = "التبديل بين مغلق أو غير مغلق"
-    'Public ReadOnly EditpostStr As String = "تعديل الرد"
-    'Public ReadOnly PosterIdStr As String = "معرف صاحب الرد"
-    'Public ReadOnly TopStr As String = "الى فوق"
-    'Public ReadOnly CatalogStr As String = "الفهرست"
-    'Public ReadOnly RefreshStr As String = "تحديث"
-    'Public ReadOnly BottomStr As String = "الى الاسفل"
-    'Public ReadOnly CaptchaChallengeStr As String = "تحدّي CAPTCHA"
-    'Public ReadOnly ArchiveStr As String = "الأرشيف"
-    'Public ReadOnly ForbiddenStr As String = "ممنوع"
-    'Public ReadOnly sucessStr As String = "تم بنجاح"
-
-    'Public invalidIdStr As String = "معرف غير صالح"
-
-    'Public errorStr As String = "خطأ"
-
-    'Public ReadOnly ImageRequired As String = "لا يمكنك انشاء موضوع جديد من دون صورة"
-    'Public ReadOnly SuccessfulPostString As String = "تم الارسال بنجاح"
-    'Public ReadOnly FileToBig As String = "الملف %NAME% أكبر من الحجم المسموح به %L%"
-    'Public ReadOnly FloodDetected As String = "Flood detected, please allow % seconds before posting, reporting and deleting."
-    'Public ReadOnly CannotDeletePostBadPassword As String = "Cannot delete post % , bad password"
-    'Public ReadOnly PostDeletedSuccess As String = "Post number % has been deleted"
-    'Public ReadOnly NoPostWasSelected As String = "No post was selected"
-    'Public ReadOnly ReportedSucess As String = "Reported post number %"
-    'Public ReadOnly BadOrNoImage As String = "No image or image contains errors."
-    'Public ReadOnly BannedMessage As String = "You are banned from posting."
-    'Public ReadOnly lockedMessage As String = "Thread is locked."
-    'Public ReadOnly noBlankpost As String = "Blank post are not allowed."
-    'Public ReadOnly duplicateFile As String = "Duplicate image detected."
-    'Public ReadOnly UnsupportedFile As String = "Unsupported file type."
-    'Public ReadOnly arhivedMessage As String = "This thread has 404'ed and it is in the archive now."
-    'Public ReadOnly invalidPostmodestr As String = "Invalid posting mode."
-    'Public ReadOnly wrongCaptcha As String = "You have mistyped the CAPTCHA. Please try again."
-    'Public ReadOnly archiveNoticeStr As String = "This is the archive. Click <a href='" & WebRoot & "default.aspx'>here</a> to go back to the main page."
-    'Public ReadOnly noVideoSupportStr As String = "Your browser does not support html5 video"
-
-    'Public ReadOnly banMsgStr As String = "User was banned for this post."
-    'Public ReadOnly commentToolong As String = "<br/><span class='summary'>Comment is too long. Click <a href='%POSTLINK%' target='_blank'>here</a> to view</span>"
-
-
-    'Public ReadOnly nameAlreadyUsed As String = "The name '%' is already taken, you cannot post using it"
-
-    'Public ReadOnly modRequired As String = "Moderator privilege is required to access this page."
-    'Public ReadOnly modNoPower As String = "You have no power to do that."
-    'Public ReadOnly modBannedPosterStr As String = "Banned the poster of %."
-    'Public ReadOnly modRequetComplete As String = "Request complete."
-    'Public ReadOnly modLoginSucess As String = "Login sucessful"
-    ''  Public ReadOnly currentThreadsCountStr As String = "Currently there are % thread(s)."
-    'Public dbTypeNotSet As String = "Database type is not set"
-    'Public dbTypeInvalid As String = "Invalid database type"
-
-    'Public installerDbTypeNotSpecified As String = "Database type not specified"
-    'Public installerDbConnectionStringNotSpecified As String = "Database connection string is not specified"
-    'Public errorOccuredStr As String = "An error has been occured, error message is: %"
-    'Public isntallerConnectionEstablishedSucess As String = "% connection was sucessfully established."
-#End Region
+    Public ReadOnly banReasonStr As String = langDic.Retrive("banReasonStr")
+    Public ReadOnly bannedOnStr As String = langDic.Retrive("bannedOnStr")
+    Public ReadOnly banIpStr As String = langDic.Retrive("banIpStr")
+    Public ReadOnly banPostNoStr As String = langDic.Retrive("banPostNoStr")
+    Public ReadOnly banExpiryStr As String = langDic.Retrive("banExpiryStr")
 
 End Module

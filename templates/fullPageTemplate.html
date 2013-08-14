@@ -6,14 +6,19 @@
 <link rel="Stylesheet" href="%ROOT%yotsubab.css" />
 <link rel="Stylesheet" href="%ROOT%mobile.css" />
 <!--<link rel="Stylesheet" href="%ROOT%css/effeckt/captions.css" />
-<link rel="Stylesheet" href="%ROOT%css/effeckt/effeckt.css" />-->
+<link rel="Stylesheet" href="%ROOT%css/effeckt/effeckt.css" />
+<link type="text/css" rel="stylesheet" href="%ROOT%js/sh/styles/shCoreDefault.css"/>
+<script src="%ROOT%js/xregexp-min.js"></script>
+<script src="%ROOT%js/sh/shCore.js"></script>
+<script src="%ROOT%js/sh/shAutoloader.js"></script>
+-->
 <script src="%ROOT%scripts.js"></script>
 <script src="%ROOT%extension.js"></script>
 <script src="%ROOT%js/jquery.min.js"></script>
 <script src="%ROOT%js/jquery-ui.min.js"></script>
 <script src="%ROOT%js/worker.nude.js"></script>
 <script src="%ROOT%dscripts.aspx"></script>
-<script>    $(document).ready(function() { extension_init(); checkforNSFWImages(); });</script>
+<script>$(document).ready(function() { extension_init(); checkforNSFWImages(); SyntaxHighlighter.all() });</script>
 </head> 
 <body>
 <div class="boardBanner"> 
@@ -22,7 +27,7 @@
 </div>
 %POSTING MODE%
 <div id="postdiv" align="center" class="%POSTDIVCLASS%">
-<form enctype="multipart/form-data" action="%ROOT%post.aspx" method="post" title="%POST FORM BUTTON%" defaultbutton="sbf" >
+<form enctype="multipart/form-data" action="%ROOT%post.aspx" method="post" title="%POST FORM BUTTON%" defaultbutton="zeta" >
 <input type="hidden" name="mode" value="%POST FORM MODE%" />
 <input type="hidden" name="threadid" value="%POST FORM TID%" />
 <table>
@@ -39,12 +44,7 @@
 <tr>
 <th>%LANG subjectString%</th>
 <td><input class="form-text" style="float:left;" name="subject" size="30" type="text"/>
-<a id='submitFormjs' class="form-button hide" onclick="beforePost();$(this).closest('form').submit();">%POST FORM BUTTON%</a>
-<input class="hide" id="sbf" type="submit" value"sbf" /> 
-<script type="text/javascript">$("#submitFormjs").removeClass("hide");</script>
-<noscript>
-<input style="margin-left:2px;" name="post" value="%POST FORM BUTTON%" type="submit"/>
-</noscript>
+<input class="button" style="margin-left:2px;" name="post" value="%POST FORM BUTTON%" type="submit" id="zeta"/>
 </td>
 </tr>
 <tr>

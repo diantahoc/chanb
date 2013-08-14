@@ -113,33 +113,22 @@
     <Content Include="archive.aspx" />
     <Content Include="captcha.aspx" />
     <Content Include="catalog.aspx" />
-    <Content Include="catalogItemTemplate.html" />
     <Content Include="default.aspx" />
     <Content Include="faq.aspx" />
-    <Content Include="fullPageTemplate.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="img.aspx" />
     <Content Include="installer.aspx" />
     <Content Include="js\jquery-ui.min.js" />
     <Content Include="js\jquery.min.js" />
-    <Content Include="MakeAllStatic.aspx" />
     <Content Include="mobile.css" />
     <Content Include="res\bgdark.png" />
     <Content Include="res\bggrey.png" />
     <Content Include="res\bgwhite.png" />
     <Content Include="res\locked.png" />
     <Content Include="res\sticky.png" />
-    <Content Include="RotatorTemplate.html" />
-    <Content Include="imageTemplate.html" />
     <Content Include="login.aspx" />
     <Content Include="modaction.aspx" />
-    <Content Include="opPostTemplate.html" />
     <Content Include="post.aspx" />
-    <Content Include="postTemplate.html" />
     <Content Include="scripts.js" />
-    <Content Include="threadTemplate.html" />
-    <Content Include="videoTemplate.html" />
     <Content Include="yotsubab.css" />
   </ItemGroup>
   <ItemGroup>
@@ -244,13 +233,6 @@
     <Compile Include="LangEngine.vb" />
     <Compile Include="Language.vb" />
     <Compile Include="LoginInfo.vb" />
-    <Compile Include="MakeAllStatic.aspx.designer.vb">
-      <DependentUpon>MakeAllStatic.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="MakeAllStatic.aspx.vb">
-      <DependentUpon>MakeAllStatic.aspx</DependentUpon>
-      <SubType>ASPXCodebehind</SubType>
-    </Compile>
     <Compile Include="Misc.vb" />
     <Compile Include="login.aspx.designer.vb">
       <DependentUpon>login.aspx</DependentUpon>
@@ -264,6 +246,13 @@
     </Compile>
     <Compile Include="modaction.aspx.vb">
       <DependentUpon>modaction.aspx</DependentUpon>
+      <SubType>ASPXCodebehind</SubType>
+    </Compile>
+    <Compile Include="modEditpost.aspx.designer.vb">
+      <DependentUpon>modEditpost.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="modEditpost.aspx.vb">
+      <DependentUpon>modEditpost.aspx</DependentUpon>
       <SubType>ASPXCodebehind</SubType>
     </Compile>
     <Compile Include="modSelectBanReason.aspx.designer.vb">
@@ -317,6 +306,7 @@
       <DependentUpon>report.aspx</DependentUpon>
       <SubType>ASPXCodebehind</SubType>
     </Compile>
+    <Compile Include="textParser.vb" />
     <Compile Include="ThreadReplies.vb" />
     <Compile Include="unixcrypt.vb" />
     <Compile Include="ValueStore.vb" />
@@ -332,6 +322,11 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="css\effeckt\effeckt.css" />
+    <Content Include="css\effeckt\modals.css" />
+    <Content Include="css\effeckt\off-screen-nav.css" />
+    <Content Include="css\panel\normalize.css" />
+    <Content Include="css\panel\styles.css" />
     <Content Include="dscripts.aspx" />
     <Content Include="extension.js" />
     <Content Include="fileHandler.ashx" />
@@ -344,21 +339,33 @@
       <CustomToolNamespace>My</CustomToolNamespace>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
-    <Content Include="audiofileTemplate.html" />
     <Content Include="banned.aspx" />
-    <Content Include="bannedPageTemplate.html" />
     <Content Include="deletepost.aspx" />
-    <Content Include="deletepostPage.html" />
-    <Content Include="js\extension.js" />
     <Content Include="js\noworker.nude.min.js" />
     <Content Include="js\worker.nude.js" />
-    <Content Include="modSBR.html" />
+    <Content Include="modEditpost.aspx" />
     <Content Include="modSelectBanReason.aspx" />
     <Content Include="panel.aspx" />
-    <Content Include="panelTemplate.html" />
     <Content Include="report.aspx" />
-    <Content Include="reportPage.html" />
-    <Content Include="scratch.htm" />
+    <Content Include="res\down.png" />
+    <Content Include="res\next.png" />
+    <Content Include="res\prev.png" />
+    <Content Include="res\refresh-high.png" />
+    <Content Include="res\refresh.png" />
+    <Content Include="res\smiles\catsmile.png" />
+    <Content Include="res\smiles\confused.gif" />
+    <Content Include="res\smiles\cool.gif" />
+    <Content Include="res\smiles\cry.gif" />
+    <Content Include="res\smiles\eek.gif" />
+    <Content Include="res\smiles\lol.gif" />
+    <Content Include="res\smiles\mad.gif" />
+    <Content Include="res\smiles\neutral.gif" />
+    <Content Include="res\smiles\razz.gif" />
+    <Content Include="res\smiles\sad.gif" />
+    <Content Include="res\smiles\smile.gif" />
+    <Content Include="res\smiles\surprised.gif" />
+    <Content Include="res\smiles\wink.gif" />
+    <Content Include="res\up.png" />
     <Content Include="sysadmin.css" />
     <Content Include="web.config" />
   </ItemGroup>

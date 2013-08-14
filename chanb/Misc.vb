@@ -14,4 +14,11 @@
         Return messageTemplate
     End Function
 
+    Public Function FormatHTMLMessage(ByVal errorName As String, ByVal shortDesc As String, ByVal longDesc As String) As String
+
+        Return ""
+
+    End Function
+
+
 End Module

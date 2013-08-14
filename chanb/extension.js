@@ -5,6 +5,7 @@ function extension_init() {
 });
     backlink();
     snas();
+    wdLinks();
     beautifiesNames();
     format_page_title();
 }
@@ -12,6 +13,9 @@ function extension_init() {
 var isCurrentlyFetchingReplies = false;
 var noNewRepliesIncrem = 20;
 var delay = 0;
+
+var pagetitle = document.title;
+
 function ext_timer() {
     //thread updater stuffs
     if ( (! isCurrentlyFetchingReplies) && is_a_thread_opened() ) {
@@ -33,12 +37,13 @@ function format_page_title() {
             //no subject, check the comment
             if (!(commentText == "")) {
                 //if no comment, no need to modifie page title
-                document.title = commentText;
+                pagetitle = commentText;
             }
         } else {
-            document.title = subjectText;
+              pagetitle = subjectText;
         }
     }
+    document.title = pagetitle;
 }
 
 function is_a_thread_opened() {
@@ -60,7 +65,7 @@ function fetchnewreplies() {
 
 function format_reply_div(jsondata) {
 
-    for (i = 0; i < jsondata.length; i++) {
+    for (i = 0; i < jsondata.length; i++){
         var q = replyTemplate;
         var postData = jsondata[i];
 
@@ -100,12 +105,11 @@ function format_reply_div(jsondata) {
         else { q = repl(q, "IMAGES", ""); }
 
         q = repl(q, "POST TEXT", postData.Comment);
-
         var threadDiv = $("#t" + postData.ParentThread.toString());
         threadDiv.append(q);
+        //process wdlinks
+        wdLinks();
     }
-
-
 }
 
 function get_post_link(id) {
@@ -342,6 +346,7 @@ function backlink() {
     }
 }
 
+//Shorten long file names.
 function beautifiesName(anch) {
     var fullnameAnchor = $(anch);
     if (fullnameAnchor.text().length > 20) {
@@ -371,22 +376,25 @@ function beautifiesNames() {
     }
 }
 
-function snas() {
+//Do misc stuffs such as name/email/password saving.
+function snas(){
     $("#pname").attr("value", getCookie("postername"));
     $("#pemail").attr("value", getCookie("posteremail"));
     if (getCookie("posterpass") == "") { setCookie("posterpass", $("#formps").attr("value"), 3); } else { $("#formps").attr("value", getCookie("posterpass")); $("#formdelP").attr("value", getCookie("posterpass")); }
-
-    var WDLitems = $(".wdlink");
-    for (i = 0; i < WDLitems.length; i++) {
-        wdLink($(WDLitems[i]));
-    }
 }
 
-function wdLink(anchor) {
-    var link = anchor.attr("href").toString();
-    var newlink = "javascript:openWindow('" + link + "','" + anchor.text() + "')";
-    anchor.attr("href", newlink);
-    anchor.removeAttr("target");
+//process window links (WDLinks)
+function wdLinks(){
+    var WDLitems = $(".wdlink");
+    for (i = 0; i < WDLitems.length; i++) {
+        var anchor = $(WDLitems[i]);
+        var link = anchor.attr("href").toString();
+        //var newlink = "javascript:openWindow('" + link + "','" + anchor.text() + "')";
+        //anchor.attr("href", newlink);
+        anchor.attr("href", "javascript:openWindow('" + link + "','" + anchor.text() + "')");
+        anchor.removeAttr("target");
+        anchor.removeClass("wdlink");
+    }
 }
 
 function openWindow(link, title) {

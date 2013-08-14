@@ -27,7 +27,7 @@ Public Class ValuesStore
         For i As Integer = 0 To data.Length - 1 Step 1
             Try
                 Dim sp As String() = data(i).Split(Seperator)
-                dic.Add(sp(0), sp(1))
+                dic.Add(sp(0).Trim, sp(1))
             Catch ex As Exception
             End Try
         Next
@@ -38,7 +38,7 @@ Public Class ValuesStore
         If dic.Keys.Contains(KeyName) Then
             Return dic(KeyName)
         Else
-            Return Nothing
+            Return String.Empty
         End If
     End Function
 

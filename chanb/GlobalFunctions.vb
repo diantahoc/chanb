@@ -760,6 +760,10 @@ Public Module GlobalFunctions
                       
                         Dim totalFiles As Integer = properFiles.Count
 
+                        'postId is partially global here since
+                        'when a user post multiple files to each post, I want to redirect him the last reply id he made (typically default.aspx?id=threadid#pPostID).
+                        Dim postId As Integer
+
                         If request.Item("finp") = "yes" And totalFiles > 1 Then ' Add each file to a seperate post, and dump the files.
 
                             Dim pos As Integer = 1
@@ -788,13 +792,13 @@ Public Module GlobalFunctions
                                 er.password = ProcessInputs(request.Item("password"))
                                 er.IP = request.UserHostAddress
                                 er.UserAgent = request.UserAgent.Replace("<", "").Replace(">", "")
-                                Dim postId As Integer = ReplyTo(threadid, er)
+                                postId = ReplyTo(threadid, er)
                                 SavePostFile(file, True, postId)
 
                                 pos += 1
                             Next
 
-                            message = FormatHTMLMessage(SuccessfulPostString, SuccessfulPostString, "default.aspx?id=" & request.Item("threadid"), "1", False)
+                            message = FormatHTMLMessage(SuccessfulPostString, SuccessfulPostString, "default.aspx?id=" & threadid & "#p" & postId, "1", False)
 
                         Else
                             'Single file, or multiple files post.
@@ -818,14 +822,14 @@ Public Module GlobalFunctions
                                 er.password = ProcessInputs(request.Item("password"))
                                 er.IP = request.UserHostAddress
                                 er.UserAgent = request.UserAgent.Replace("<", "").Replace(">", "")
-                                er.HasFile = Not properFiles.Count = 0
-                                Dim postid As Integer = ReplyTo(threadid, er)
+                                er.HasFile = Not (properFiles.Count = 0)
+                                postId = ReplyTo(threadid, er)
 
                                 If er.HasFile Then
                                     SaveAllFilesToSinglePost(properFiles, postid)
                                 End If
 
-                                message = FormatHTMLMessage(SuccessfulPostString, SuccessfulPostString, "default.aspx?id=" & request.Item("threadid"), "1", False)
+                                message = FormatHTMLMessage(SuccessfulPostString, SuccessfulPostString, "default.aspx?id=" & threadid & "#p" & postId, "1", False)
                                 End If
                         End If
                         properFiles.Clear()
@@ -943,11 +947,11 @@ Public Module GlobalFunctions
 
                     'Check if greentext
                     If x.StartsWith("&gt;") And Not x.StartsWith("&gt;&gt;") Then
-                        sb.Append("<tt class=""tt"">" & x.Remove(0, 4) & "</tt>")
+                        sb.Append("<span class=""quote"">" & x & "</span")
 
                         ' Some times, X start with a line terminator that is not vbnewline, so i remove it
                     ElseIf (x.Remove(0, 1).StartsWith("&gt;") And Not x.Remove(0, 1).StartsWith("&gt;&gt;")) Then
-                        sb.Append("<tt class=""tt"">" & x.Remove(0, 1).Remove(0, 4) & "</tt>")
+                        sb.Append("<span class=""quote"">" & x.Remove(0, 1) & "</span>")
 
                     ElseIf IsXvalidQuote(x) Or IsXvalidQuote(x.Remove(0, 1)) Then
                         Dim quotet As String = x
@@ -980,6 +984,8 @@ Public Module GlobalFunctions
             sr = MatchAndProcessBBCodes("spoiler", sr)
             sr = MatchAndProcessBBCodes("code", sr)
             sr = MatchAndProcessBBCodes("md", sr)
+            sr = MatchAndProcessBBCodes("q", sr)
+
             Return sr
         End If
     End Function
@@ -1782,6 +1788,31 @@ Public Module GlobalFunctions
         End If
     End Function
 
+    Sub GenerateModEditPostPage(ByVal context As HttpContext)
+
+        Dim postId As Integer
+
+        Try
+            postId = CInt(context.Request.Item("id"))
+        Catch ex As Exception
+            context.Response.Write(FormatHTMLMessage(errorStr, invalidIdStr, "", "888888", True))
+            context.Response.End()
+        End Try
+
+        If postId > 0 Then
+            Dim postData As WPost = FetchPostData(postId)
+            Dim pageHTML As String = editPostPageTemplate
+            pageHTML = pageHTML.Replace("%BTITLE%", BoardTitle) _
+            .Replace("%BDESC%", BoardDesc).Replace("%ROOT%", WebRoot) _
+            .Replace("%FOOTER TEXT%", footerText) _
+            .Replace("%ID%", CStr(postId)) _
+            .Replace("%POST TEXT%", postData.comment)
+            context.Response.Write(pageHTML)
+        Else
+            context.Response.Write(FormatHTMLMessage(errorStr, invalidIdStr, "", "888888", True))
+            context.Response.End()
+        End If
+    End Sub
 
     Private Function _GetLocalisedBanReason(ByVal e As String) As String
         Dim a As String = ""
@@ -2491,12 +2522,95 @@ Public Module GlobalFunctions
     End Function
 
     Private Function ProcessInputs(ByVal str As String) As String
-        'Dim sb As New StringBuilder
-        'For Each c As Char In CType(str, Char())
-        '    sb.Append(EscapeChar(c))
-        'Next
-        'Return sb.ToString
-        Return HttpUtility.HtmlEncode(str)
+        Dim sb As New StringBuilder
+        For i As Integer = 0 To str.Length - 1 Step 1
+            sb.Append(ToLatin(str(i)))
+        Next
+        Return HttpUtility.HtmlEncode(sb.ToString)
+    End Function
+
+    Private Function ToLatin(ByVal c As String) As String
+        Select Case c
+            Case "О" 'cyrillic 
+                Return "O"
+            Case "о" 'cyrillic
+                Return "o"
+            Case "А" 'cyr
+                Return "A"
+            Case "а" 'cyr
+                Return "a"
+            Case "В" 'cyr
+                Return "B"
+            Case "Β" 'greek
+                Return "B"
+            Case "Е" 'cyr
+                Return "E"
+            Case "е" 'cyr
+                Return "e"
+            Case "Ε" 'greek
+                Return "E"
+            Case "Ѕ" 'cyr
+                Return "S"
+            Case "ѕ" 'cyr
+                Return "s"
+            Case "І" 'cyr
+                Return "I"
+            Case "Ӏ" 'cyr palochka
+                Return "I"
+            Case "і" 'cyr
+                Return "i"
+            Case "Ј" 'cyr
+                Return "J"
+            Case "ј" 'cyr
+                Return "j"
+            Case "Ο" ' greek
+                Return "O"
+            Case "ο" 'greek
+                Return "o"
+            Case "Κ" 'greek
+                Return "K"
+            Case "M" 'cyr
+                Return "M"
+            Case "H" 'cyr
+                Return "H"
+            Case "Р" 'cyr
+                Return "P"
+            Case "р" 'cyr
+                Return "p"
+            Case "С"
+                Return "C"
+            Case "с"
+                Return "c"
+            Case "Т" 'cyr
+                Return "T"
+            Case "Τ" 'greek
+                Return "T"
+            Case "у" 'cyr
+                Return "y"
+            Case "Υ" ' greek
+                Return "Y"
+            Case "Ү" 'cyr
+                Return "Y"
+            Case "Ь" 'cyr
+                Return "b"
+            Case "Х" 'cyr
+                Return "X"
+            Case "х" 'cyr
+                Return "x"
+            Case "ҫ" 'cyr
+                Return "ç"
+            Case "Ҫ" 'cyr
+                Return "Ç"
+            Case "Ԛ" 'cyr
+                Return "Q"
+                ''Not sure about these
+            Case "һ" 'cyr
+                Return "h"
+            Case "ԛ" 'cyr
+                Return "q"
+            Case Else
+                Return c
+        End Select
     End Function
 
     Private Function MD5(ByVal s As IO.Stream) As String
@@ -2636,7 +2750,7 @@ Public Module GlobalFunctions
 
     Private Function GetImageOrientation(ByVal fs As IO.Stream) As Integer
         fs.Seek(0, IO.SeekOrigin.Begin)
-        Dim orient As Object
+        Dim orient As New Object
         Try
             Dim exR As New ExifLib.ExifReader(fs)
             exR.GetTagValue(ExifLib.ExifTags.Orientation, orient)
@@ -2654,7 +2768,6 @@ Public Module GlobalFunctions
         Select Case codename
             Case "spoiler"
                 If data.Contains("[spoiler]") And data.Contains("[/spoiler]") Then
-                    Dim matches As String() = MatchBBCode(data, "spoiler")
                     For Each x In MatchBBCode(data, "spoiler")
                         data = data.Replace("[spoiler]" & x & "[/spoiler]", "<s>" & x & "</s>")
                     Next
@@ -2663,6 +2776,8 @@ Public Module GlobalFunctions
                     Return data
                 End If
             Case "code"
+
+                'Server side code highlighting. 
                 If data.Contains("[code]") And data.Contains("[/code]") Then
                     Try
                         Dim colorizer As New ColorCode.CodeColorizer()
@@ -2683,6 +2798,31 @@ Public Module GlobalFunctions
                 Else
                     Return data
                 End If
+
+                ''Client side
+                'If data.Contains("[code]") And data.Contains("[/code]") Then
+                '    Try
+                '        Dim colorizer As New ColorCode.CodeColorizer()
+                '        For Each x In MatchBBCode(data, "code")
+                '            Dim codeStr As String = x
+
+                '            Dim codeLang As String = GetCodeLang(codeStr)
+
+                '            If Not (codeLang = "") Then
+                '                codeStr = codeStr.Replace("[lang]" & codeLang & "[/lang]", String.Empty)
+                '            End If
+
+                '            data = data.Replace("[code]" & x & "[/code]", "<code class='" & codeLang & "'>" & codeStr & "</code>")
+                '        Next
+                '        Return data
+                '    Catch ex As Exception
+                '        Return data
+                '    End Try
+                'Else
+                '    Return data
+                'End If
+
+
             Case "md"
                 If data.Contains("[md]") And data.Contains("[/md]") Then
                     Dim md As New MarkdownSharp.Markdown
@@ -2690,6 +2830,15 @@ Public Module GlobalFunctions
                         Dim mdt As String = x
                         mdt = mdt.Replace("<br/>", String.Empty)
                         data = data.Replace("[md]" & x & "[/md]", md.Transform(mdt))
+                    Next
+                    Return data
+                Else
+                    Return data
+                End If
+            Case "q"
+                If data.Contains("[q]") And data.Contains("[/q]") Then
+                    For Each x In MatchBBCode(data, "q")
+                        data = data.Replace("[q]" & x & "[/q]", "<tt class=""tt"">" & x & "</tt>")
                     Next
                     Return data
                 Else
@@ -3215,7 +3364,6 @@ Public Module GlobalFunctions
             wpi.Extension = CStr(query.Reader(5)).ToUpper
             wpi.MimeType = CStr(query.Reader(6))
             wpi.Dimensions = CStr(query.Reader(7))
-
             il.Add(wpi)
         End While
 

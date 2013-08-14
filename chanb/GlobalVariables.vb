@@ -49,6 +49,7 @@ Public Module GlobalVariables
     Public ConvertArchivedThreadToHTML As Boolean = DI.ConvertArchivedThreadToHTML
     Public CheckEXIFOrientation As Boolean = DI.CheckExifOrientation
     Public ShowThreadRepliesCount As Boolean = DI.ShowThreadRepliesCount
+    Public BoardLanguage As String = DI.BoardLanguage
 
     ''' <summary>
     ''' Get application web root.
@@ -127,8 +128,9 @@ Public Module GlobalVariables
     Public ReadOnly AudioItemTemplate As String = DI.AudioItemTemplate.Replace(vbNewLine, String.Empty)
     Public ReadOnly ReportPageTemplate As String = DI.ReportPageTemplate.Replace(vbNewLine, String.Empty)
     Public ReadOnly DeletePostPageTemplate As String = DI.DeletePostPageTemplate.Replace(vbNewLine, String.Empty)
-    Public ReadOnly modSBRPageTemplate As String = DI.ModSBRTemplate
-    Public ReadOnly BanPageTemplate As String = DI.BanPageTemplate
+    Public ReadOnly modSBRPageTemplate As String = DI.ModSBRTemplate.Replace(vbNewLine, String.Empty)
+    Public ReadOnly BanPageTemplate As String = DI.BanPageTemplate.Replace(vbNewLine, String.Empty)
+    Public ReadOnly editPostPageTemplate As String = DI.editPostPageTemplate.Replace(vbNewLine, String.Empty)
 
     Public ReadOnly UserIDHtmlSPAN As String = "<span class='posteruid id_%UID%'>(ID: <span class='hand' onclick=""higlightID('%UID%')"" title='%PO%.'>%UID%</span>)</span>".Replace("%PO%", higlightPostByThisIDStr)
 

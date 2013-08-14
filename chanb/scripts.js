@@ -375,5 +375,4 @@ function beforePost() {
 //}
 
 //function qr(command) { }
-
-
+    

@@ -14,24 +14,33 @@ The website gets cleaned each while.
 Current Features
 ========
 
+-Administration related:
+* Installer.
+* Moderator powers customization.
+
+-Board related:
 * Auto updater.
 * Automatic set dumper (with file counting support).
 * Catalog.
-* Code and spoiler tags support.
-* Dual MS SQL or MySQL support. (Each one alone, not together)
 * Duplicate image checking support.
 * Integrated archive.
-* Installer.
 * Markdown support.
 * Mobile support.
-* Moderator powers customization.
+* Multilingual support.
 * Multiple files per post.
-* PDF Support (proper thumbnail generation require TallComponent PDFRasterizer library, not enabled by default).
 * Poster ID support.
 * Smart Linking of duplicate images to the same real file, therefore reducing the consumed disk space.
-* Static mode.
+* Support the following tags: `code`, `spoiler`.
+
+-File support:
+* JPEG, PNG, APNG, GIF, BMP support.
+* PDF Support (proper thumbnail generation require TallComponent PDFRasterizer library, not enabled by default).
 * SVG documents support.
 * Video (WEBM) and audio (MP3, AAC) support.
+
+-Server related:
+* Dual MS SQL or MySQL support. (Each one alone, not together)
+* Static mode.
 
 Planned features
 =================
@@ -40,16 +49,27 @@ Planned features
 * Add LaTeX support.
 * Admin panel.
 * Online language adder and editor.
-* Multilanguage support.
-* Read and write JSON API.
+* Read and write JSON API (partially done.).
+* Client-side code syntax highlighter.
 
 How to install
 ==============
 
-Copy the binary files to your application root, under a directory called bin. Make sure you copy the required dlls, and the templates files under a directory called "templates", in the same dir as chanb.dll.
+* Copy the binary files to your application root, under a directory called `bin`. 
 
-And copy all the .aspx files to your application root.
+* Make sure you copy the required dlls, and the templates files under a directory called `templates`, in the same dir as `chanb.dll`.
 
-Currently, you can change settings by editing the data.as file which is automatically made in the same folder as chanb.dll .
+* Make a folder `langs` in the same directory as `chanb.dll`. Put the `en-US.dic` file in that directory (you can find it in the `languages` folder).
 
-Enjoy
+* Copy all the .aspx files to your application root.
+
+* Point your browser to your website.
+
+* Enjoy.
+
+PS: Currently, you can change settings by editing the `data.dic` file which is automatically made in the same folder as `chanb.dll`.
+
+Bugs reports
+============
+
+Please file an issue when you find a bug, or you have a general complain about channel board.

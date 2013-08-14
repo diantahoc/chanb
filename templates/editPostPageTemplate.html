@@ -17,17 +17,10 @@
 <hr />
 <form action="%ROOT%modaction.aspx" method="post" enctype="application/x-www-form-urlencoded" defaultbutton="nb" > 
 <input type="hidden" name="id" value="%ID%" />
-<input type="hidden" name="action" value="banpost" />
-<input type="hidden" name="sib" value="%SIB%" />
-<span>%LANG modSelectBanReason%</span>
-<select class="form-select" name="reason">
-%REASONS%
-</select>
+<input type="hidden" name="action" value="editpost" />
+<textarea name="new_data" cols="25" rows="10">%POST TEXT%</textarea>
 <br />
-<div>
-<input id="nb" class="button" type="submit" value="%LANG banUserStr%" />
-</div>
-
+<input type="submit" class="button" value="Update" id="nb" />
 </form>
 <hr />
 <div id="absbot" class="absBotText"><span>%FOOTER TEXT%</span></div>

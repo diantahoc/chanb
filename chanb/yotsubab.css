@@ -965,11 +965,7 @@ color:#FFFFFF!important;
 }
 
 .tt{
-/*padding: 0px 5px;
-border: 0.5px solid rgb(233,233, 233);
-background-color: rgb(248, 248, 248);
-border-radius: 3px 3px 3px 3px;*/
-border-left: 4px solid rgb(0, 0, 0)/*221*/;
+border-left: 4px solid rgb(0, 0, 0);
 background-color: rgb(248, 248, 248);
 padding: 0px 15px;
 color: rgb(50, 50, 50);
@@ -978,4 +974,34 @@ font-family: Consolas;
 
 .trip{
     color: rgb(63, 72, 81);
+}
+
+.button {
+  -moz-appearance: none;
+  background-image: linear-gradient(#ededed, #ededed 38%, #dedede);
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  color: #444;
+  text-shadow: 0 1px 0 rgb(240, 240, 240);
+  border-radius: 2px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08), inset 0 1px 2px rgba(255, 255, 255, 0.75);
+  margin: 0px 5px;
+  min-width: 4em;
+  min-height: 34px;
+  -moz-padding-start: 9px;
+  -moz-padding-end: 8px;
+  font-family: 'Segoe UI', Arial, 'Microsoft Yahei', Simsun, sans-serif;
+}
+
+.button:hover {
+  background-image: linear-gradient(#f0f0f0, #f0f0f0 38%, #e0e0e0);
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  color: #000;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.95);
+}
+
+.button:active {
+  background-image: linear-gradient(#e7e7e7, #e7e7e7 38%, #d7d7d7);
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  color: #444;
+  box-shadow: none;
 }

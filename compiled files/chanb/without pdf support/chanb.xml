@@ -17,12 +17,9 @@ chanb
 	<summary>
  Update an existing key or add a new key.
  </summary>
-	<param name="name"></param>
-	<param name="value"></param>
-	<remarks></remarks>
 </member><member name="T:chanb.ValuesStore">
 	<summary>
- A class that represent a simple dictionary / data storing system.
+ A class that represent a simple dictionary / setting storing system.
  Written by diantahoc
  Project: Novelli Torrent
  </summary>
@@ -100,6 +97,44 @@ To modify move field declaration from designer file to code-behind file.
 	<summary>
   Overrides the current thread's CurrentUICulture property for all
   resource lookups using this strongly typed resource class.
+</summary>
+</member><member name="P:chanb.My.Resources.Resources.mssqlDatabaseSetup">
+	<summary>
+  Looks up a localized string similar to /****** Object:  Table [dbo].[bans]    Script Date: 07/20/2013 08:13:55 ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[bans]') AND type in (N'U'))
+DROP TABLE [dbo].[bans]
+
+/****** Object:  Table [dbo].[board]    Script Date: 07/20/2013 08:13:55 ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[board]') AND type in (N'U'))
+DROP TABLE [dbo].[board]
+
+/****** Object:  Table [dbo].[files]    Script Date: 07/20/2013 08:13:55 ******/
+IF  [rest of string was truncated]";.
+</summary>
+</member><member name="P:chanb.My.Resources.Resources.mysqlDatabaseSetup">
+	<summary>
+  Looks up a localized string similar to -- phpMyAdmin SQL Dump
+-- version 3.3.8.1
+-- http://www.phpmyadmin.net
+--
+-- Host: 127.0.0.1
+-- Generation Time: Jul 20, 2013 at 08:32 AM
+-- Server version: 5.1.51
+-- PHP Version: 5.3.3
+
+SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+
+--
+-- Database: `channelboard`
+--
+
+-- ------------------ [rest of string was truncated]";.
 </summary>
 </member><member name="T:chanb.My.Resources.Resources">
 	<summary>
@@ -293,6 +328,13 @@ To modify move field declaration from designer file to code-behind file.
 	<summary>
  Get the complete thread html, over a single SQL query.
  </summary>
+</member><member name="M:chanb.GlobalFunctions.PrunePost(System.Int32,System.Boolean)">
+	<summary>
+ Prune a post. It either delete a post or archive it, based on specific conditions. 
+ </summary>
+	<param name="id">Post id. Can be a thread or a reply.</param>
+	<param name="dF">Delete files</param>
+	<remarks></remarks>
 </member><member name="M:chanb.GlobalFunctions.ReplyTo(System.Int32,chanb.OPData)">
 	<summary>
  Append a post to thread

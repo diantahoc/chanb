@@ -1,23 +1,18 @@
 ﻿Public Class LangEngine
 
     Dim dictObj As ValuesStore
+    Dim languageDirectory As String = chanb.My.Request.PhysicalApplicationPath & "\bin\langs\"
 
     Sub New(ByVal lang As String)
-        Dim basepath As String = chanb.My.Request.PhysicalApplicationPath & "\langs\"
-        If FileIO.FileSystem.FileExists(basepath & lang & ".as") = False Then
-            dictObj = New ValuesStore(basepath & "en")
-            'Throw New ArgumentException("Specified language file does not exist")
+        If FileIO.FileSystem.FileExists(languageDirectory & lang & ".dic") Then
+            dictObj = New ValuesStore(languageDirectory & lang)
         Else
-            dictObj = New ValuesStore(basepath & lang)
+            Throw New ArgumentException("This language does not exist")
         End If
     End Sub
 
     Public Function Retrive(ByVal name As String) As String
-        If dictObj.KeyExist(name) = False Then
-            Return "Invalid key"
-        Else
-            Return (CStr(dictObj.GetKey(name)))
-        End If
+        Return dictObj.GetKey(name)
     End Function
 
 End Class

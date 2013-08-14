@@ -1,0 +1,91 @@
+﻿nameStr╝الاسم
+subjectStr╝ الموضوع
+emailStr╝ البريد الإلكتروني
+commentStr╝ التعليق
+passwordStr╝ كلمة المرور
+verificationStr╝ التحقق
+newThreadStr╝ موضوع جديد
+filesStr╝ ملفات
+replyStr╝ الرد
+deleteStr╝ حذف
+reportStr╝ تبليغ
+fileOnlyStr╝ الملف فقط
+addEachFileInNewPostStr ╝ إضافة كل ملف إلى مشاركة منفصلة
+AnonNameStr ╝ مجهول
+stickyStr ╝ مثبت
+lockedStr ╝ مغلق
+prevStr ╝ السابق
+nextStr ╝ التالي
+forPostDelStr ╝ لحذف المشاركة
+postingModstr ╝ وضع المشاركة: رد
+returnStr ╝ العودة
+addAnotherFStr ╝ إضافة ملف آخر
+countFilesStr ╝ رقم الملفات
+summaryPandIStr╝%P% رد و %I% رد مع صورة مخبأ
+summaryPonlyStr ╝%P% رد  مخبأ
+summaryIonlyStr ╝%I% رد مع صورة مخبأ
+summaryClickToViewStr ╝اضغط <a href="%POSTLINK%">هنا</a> للمشاهدة
+banuserStr ╝ حظر المستخدم
+modSilentBanStr ╝ حظر صامت
+deletePostStr ╝ حذف المنشور
+tgstickStr ╝ تبديل بين مثبت
+tglockStr ╝ تبديل بين قفل
+EditpostStr ╝ تحرير
+higlightPostByThisIDStr ╝تحديد المشاركات بواسطة هذا المعرف
+TopStr ╝ الأعلى
+CatalogStr ╝ الكتالوج
+RefreshStr ╝ التجديد
+BottomStr ╝ الاسفل
+CaptchaChallengeStr ╝ تحدي CAPTCHA
+ArchiveStr ╝ الأرشيف
+ForbiddenStr ╝ محظور
+sucessStr ╝ النجاح
+reportReasonStr ╝ سب التبليغ:
+invalidIdStr ╝ معرف غير صالح
+errorStr ╝ خطأ
+ImageRequired ╝ لا يمكنك بدء موضوع جديد بدون صورة.
+SuccessfulPostString ╝ تم الارسال بنجاح!
+FileToBig ╝ وقدمت ملف%NAME% أكبر من المسموح به%L%
+FloodDetected ╝اسمحوا% ثانية بين المشاركات.
+CannotDeletePostBadPassword ╝ لا يمكن حذف  المشاركة %، كلمة المرور سيئة
+PostDeletedSuccess ╝ تم حذف المشاركة %
+NoPostWasSelected ╝ تم تحديد أي مشاركة 
+ReportedSucess ╝ تم التبليغ عن المشاركة  عدد%
+BadOrNoImage ╝ لا يوجد صورة أو صورة يحتوي على أخطاء.
+BannedMessage ╝ محظور.
+وتخوض lockedMessage ╝ الموضوع.
+لا يسمح noBlankpost ╝ بمشاركة  فارغة
+duplicateFile ╝ صورة مكررة .
+UnsupportedFile ╝ نوع ملف غير معتمد.
+arhivedMessage ╝ هذا الموضوع لديه قد حذف و هو الان في الارشيف.
+invalidPostmodestr ╝ وضع الإرسال غير صالح.
+wrongCaptcha ╝ لقد أخطأت في CAPTCHA. يرجى المحاولة مرة أخرى.
+archiveNoticeStr ╝ هذا هو الأرشيف. أنقر <a href="%WR%default.aspx">هنا</a> للعودة الى الصفحة الرئيسة
+noVideoSupportStr ╝ متصفحك لا يدعم HTML5 الفيديو
+وحظرت banMsgStr ╝ العضو لهذا المنصب.
+commentToolong ╝ <BR/> <span class='summary'> تعليق طويل جدا. انقر <a href='%POSTLINK%' target='_blank'> هنا </ a> لمشاهدة </ SPAN>
+nameAlreadyUsed ╝ اسم '%' مأخوذ بالفعل، فلا تستطيع النشر باستخدامه
+modRequired ╝ مطلوب امتياز مشرف لدخول هذه الصفحة.
+modNoPower ╝ لا يوجد لديك القدرة على فعل ذلك.
+modBannedPosterStr ╝ حظرت ملصق%.
+modRequetComplete ╝ طلب إكمال.
+modLoginSucess ╝ دخول نجحت
+modLoginFailed ╝ فشل تسجيل الدخول
+modSelectBanReason ╝ اختر سببا لهذا الحظر
+currentThreadsCountStr ╝ حاليا هناك موضوع% (ق).
+لم يتم تعيين dbTypeNotSet ╝ نوع قاعدة البيانات
+dbTypeInvalid ╝ نوع قاعدة بيانات غير صالح
+installerDbTypeNotSpecified ╝ نوع قاعدة البيانات لم يتم تحديد
+لم يتم تحديد installerDbConnectionStringNotSpecified ╝ سلسلة اتصال قاعدة البيانات
+errorOccuredStr ╝ وقد حدث خطأ، رسالة الخطأ هو:%
+تأسست بنجاح isntallerConnectionEstablishedSucess ╝ اتصال%.
+rotatorImagesStr ╝ صورة (صور)
+rotatorfirstStr ╝ الأولى
+rotatorlastStr ╝ آخر
+rotatorPrevStr ╝ السابق
+rotatorNextStr ╝ التالي
+banReasonStr ╝ السبب
+bannedOnStr ╝ منعت يوم
+banIpStr ╝ كان IP الخاص بك
+banPostNoStr ╝ في المشاركة التي كانت محظورة ل
+banExpiryStr ╝ تاريخ انتهاء الصلاحية

@@ -15,7 +15,7 @@
 <div class="boardSubtitle">%BDESC%</div>
 </div>
 <hr />
-<form action="%ROOT%post.aspx" method="post" enctype="application/x-www-form-urlencoded" >
+<form action="%ROOT%post.aspx" method="post" enctype="application/x-www-form-urlencoded" defaultbutton="a" >
 <input type="hidden" name="mode" value="delete" />
 <input type="hidden" name="id" value="%ID%" />
 
@@ -38,10 +38,7 @@
 
 <br />
 <div>
-<a href="#" onclick="$(this).closest('form').submit();" class="hide form-button" id="q">%LANG deleteStr%</a>
-<script>$("#q").removeClass("hide");</script>
-
-<noscript><input type="submit" value="%LANG deleteStr%" /></noscript>
+<input id="a" type="submit" class="button" value="%LANG deleteStr%" />
 </div>
 
 </form>

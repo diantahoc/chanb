@@ -85,6 +85,12 @@
         End Get
     End Property
 
+    Public ReadOnly Property editPostPageTemplate() As String
+        Get
+            Return IO.File.ReadAllText(chanbDLLROOT & "templates\editPostPageTemplate.html")
+        End Get
+    End Property
+
     Public ReadOnly Property BanPageTemplate() As String
         Get
             Return IO.File.ReadAllText(chanbDLLROOT & "templates\bannedPageTemplate.html")
@@ -527,6 +533,22 @@
         End Get
         Set(ByVal value As Boolean)
             DataDB.AddKey("EnableImpresonationProtection", CStr(value))
+            DataDB.Save()
+        End Set
+    End Property
+
+    Public Property BoardLanguage() As String
+        Get
+            If DataDB.KeyExist("BoardLanguage") = False Then
+                DataDB.AddKey("BoardLanguage", "en-US")
+                DataDB.Save()
+                Return "en-US"
+            Else
+                Return CStr(DataDB.GetKey("BoardLanguage"))
+            End If
+        End Get
+        Set(ByVal value As String)
+            DataDB.AddKey("BoardLanguage", value)
             DataDB.Save()
         End Set
     End Property

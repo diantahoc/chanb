@@ -59,7 +59,11 @@
                     If powers(4) = "0" Then
                         Response.Write(FormatHTMLMessage(ForbiddenStr, modNoPower, "", "8888", True))
                     Else
-                        'nod
+                        If Request.Item("new_data") = String.Empty Then
+                            Response.Redirect(WebRoot & "modEditpost.aspx?id=" & id)
+                        Else
+                            
+                        End If
                     End If
                 Case Else
                     Response.Write(forbiddenPage)

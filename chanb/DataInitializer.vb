@@ -97,6 +97,12 @@
         End Get
     End Property
 
+    Public ReadOnly Property ErrorPageTemplate() As String
+        Get
+            Return IO.File.ReadAllText(chanbDLLROOT & "templates\errorPageTemplate.html")
+        End Get
+    End Property
+
 #End Region
 
     Public Property BoardTitle() As String

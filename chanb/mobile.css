@@ -361,7 +361,7 @@
 		display: inline-block
 	}
 	
-	.button
+	.buttonm
 	{
 		border-radius: 5px 5px 5px 5px;
 		padding: 5px 10px 5px;
@@ -372,7 +372,7 @@
 		background: #5294f2;
 	}
 	
-	.button a
+	.buttonm a
 	{
 		text-decoration: none!important;
 		color: #FFFFFF !important;
@@ -385,7 +385,7 @@
 		font-size: larger
 	}
 	
-	.button:hover
+	.buttonm:hover
 	{
 		cursor: pointer
 	}
@@ -653,7 +653,7 @@
 		border: 1px solid #98e!important
 	}
 		
-	.button a:hover,a.button:hover
+	.buttonm a:hover,a.buttonm:hover
 	{
 		color: #34345c!important
 	}

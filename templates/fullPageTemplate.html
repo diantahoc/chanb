@@ -18,7 +18,7 @@
 <script src="%ROOT%js/jquery-ui.min.js"></script>
 <script src="%ROOT%js/worker.nude.js"></script>
 <script src="%ROOT%dscripts.aspx"></script>
-<script>$(document).ready(function() { extension_init(); checkforNSFWImages(); SyntaxHighlighter.all() });</script>
+<script>$(document).ready(function() { extension_init(); checkforNSFWImages(); /*SyntaxHighlighter.all()*/ });</script>
 </head> 
 <body>
 <div class="boardBanner"> 
@@ -84,16 +84,16 @@
 </div>
 <div class="navLinks navLinksBot desktop">
 %RETURN BUTTON DESKTOP%
-[<a href="%ROOT%catalog.aspx">%LANG catalogStr%</a>] 
-[<a href="#bottom">%LANG bottomStr%</a>] 
-[<a href="archive.aspx">%LANG archiveStr%</a>]
+<a class="buttonBlue" href="%ROOT%catalog.aspx">%LANG catalogStr%</a>
+<a class="buttonBlue" href="#bottom">%LANG bottomStr%</a>
+<a class="buttonBlue" href="%ROOT%archive.aspx">%LANG archiveStr%</a>
 </div>
 <div class="navLinks mobile" style="margin-top: 10px;">
 %RETURN BUTTON MOBILE%
-<span class="mobileib button"><a href="#bottom">%LANG bottomStr%</a></span>
-<span class="mobileib button"><a href="%ROOT%catalog.aspx">%LANG catalogStr%</a></span>
-<span class="mobileib button"><a href="javascript:document.location.reload();" id="refresh_top">%LANG refreshStr%</a></span>
-<span class="mobileib button"><a href="archive.aspx">%LANG archiveStr%</a></span>
+<span class="mobileib buttonm"><a href="#bottom">%LANG bottomStr%</a></span>
+<span class="mobileib buttonm"><a href="%ROOT%catalog.aspx">%LANG catalogStr%</a></span>
+<span class="mobileib buttonm"><a href="javascript:document.location.reload();" id="refresh_top">%LANG refreshStr%</a></span>
+<span class="mobileib buttonm"><a href="%ROOT%archive.aspx">%LANG archiveStr%</a></span>
 </div>
 <hr />
 <div id="top"></div>
@@ -106,16 +106,16 @@
 </form>
 <div class="navLinks mobile" style="margin-top: 10px;">
 %RETURN BUTTON MOBILE%
-<span class="mobileib button"><a href="#top">%LANG topStr%</a></span>
-<span class="mobileib button"><a href="%ROOT%catalog.aspx">%LANG catalogStr%</a></span>
-<span class="mobileib button"><a href="javascript:document.location.reload();" id="refresh_bottom">%LANG refreshStr%</a></span>
-<span class="mobileib button"><a href="archive.aspx">%LANG archiveStr%</a></span>
+<span class="mobileib buttonm"><a href="#top">%LANG topStr%</a></span>
+<span class="mobileib buttonm"><a href="%ROOT%catalog.aspx">%LANG catalogStr%</a></span>
+<span class="mobileib buttonm"><a href="javascript:document.location.reload();" id="refresh_bottom">%LANG refreshStr%</a></span>
+<span class="mobileib buttonm"><a href="%ROOT%archive.aspx">%LANG archiveStr%</a></span>
 </div>
 <div class="navLinks navLinksBot desktop">
 %RETURN BUTTON DESKTOP%
-[<a href="%ROOT%catalog.aspx">%LANG catalogStr%</a>] 
-[<a href="#top">%LANG topStr%</a>] 
-[<a href="archive.aspx">%LANG archiveStr%</a>]
+<a class="buttonBlue" href="%ROOT%catalog.aspx">%LANG catalogStr%</a>
+<a class="buttonBlue" href="#top">%LANG topStr%</a>
+<a class="buttonBlue" href="%ROOT%archive.aspx">%LANG archiveStr%</a>
 </div>
 <br />
 %PAGES LIST%

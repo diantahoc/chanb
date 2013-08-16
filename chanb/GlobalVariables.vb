@@ -81,6 +81,10 @@ Public Module GlobalVariables
     Public StorageFolderThumbs As String = DI.PhysicalStorageFolderPath & "\thumbs"
     Public StoragefolderWEB As String = DI.WebStorageFolderPath
 
+    Public banFile As String = dataFileDir & "bans"
+    Public requestCountF As String = dataFileDir & "req.txt"
+
+
     Public ReadOnly Property isInstalled() As Boolean
         Get
             Return DI.isInstalled
@@ -131,6 +135,7 @@ Public Module GlobalVariables
     Public ReadOnly modSBRPageTemplate As String = DI.ModSBRTemplate.Replace(vbNewLine, String.Empty)
     Public ReadOnly BanPageTemplate As String = DI.BanPageTemplate.Replace(vbNewLine, String.Empty)
     Public ReadOnly editPostPageTemplate As String = DI.editPostPageTemplate.Replace(vbNewLine, String.Empty)
+    Public ReadOnly errorPageTemplate As String = DI.ErrorPageTemplate.Replace(vbNewLine, String.Empty)
 
     Public ReadOnly UserIDHtmlSPAN As String = "<span class='posteruid id_%UID%'>(ID: <span class='hand' onclick=""higlightID('%UID%')"" title='%PO%.'>%UID%</span>)</span>".Replace("%PO%", higlightPostByThisIDStr)
 
@@ -148,12 +153,12 @@ Public Module GlobalVariables
                             "<li><a href=""%WEBROOT%modaction.aspx?action=tglock&id=%ID%"" target=""_blank"">$</a></li>".Replace("$", tglockStr), _
                             "<li><a href=""%WEBROOT%modaction.aspx?action=editpost&id=%ID%"" target=""_blank"">$</a></li>".Replace("$", EditpostStr)}
 
-    Public adminMenuItems As String() = {"<li><a href=""%WEBROOT%modaction.aspx?action=banpost&id=%ID%&sib=false"" target=""_blank"">$</a></li>".Replace("$", banuserStr) & _
-                                   "<li><a href=""%WEBROOT%modaction.aspx?action=banpost&id=%ID%&sib=true"" target=""_blank"">$</a></li>".Replace("$", banuserStr & " (" & modSilentBanStr & ")"), _
-                        "<li><a href=""%WEBROOT%modaction.aspx?action=delpost&id=%ID%"" target=""_blank"">$</a></li>".Replace("$", deletePostStr), _
-                        "<li><a href=""%WEBROOT%modaction.aspx?action=tgsticky&id=%ID%"" target=""_blank"">$</a></li>".Replace("$", tgstickStr), _
-                        "<li><a href=""%WEBROOT%modaction.aspx?action=tglock&id=%ID%"" target=""_blank"">$</a></li>".Replace("$", tglockStr), _
-                        "<li><a href=""%WEBROOT%modaction.aspx?action=editpost&id=%ID%"" target=""_blank"">$</a></li>".Replace("$", EditpostStr)}
+    Public adminMenuItems As String() = {"<li><a href=""%WEBROOT%adminaction.aspx?action=banpost&id=%ID%&sib=false"" target=""_blank"">$</a></li>".Replace("$", banuserStr) & _
+                                   "<li><a href=""%WEBROOT%adminaction.aspx?action=banpost&id=%ID%&sib=true"" target=""_blank"">$</a></li>".Replace("$", banuserStr & " (" & modSilentBanStr & ")"), _
+                        "<li><a href=""%WEBROOT%adminaction.aspx?action=delpost&id=%ID%"" target=""_blank"">$</a></li>".Replace("$", deletePostStr), _
+                        "<li><a href=""%WEBROOT%adminaction.aspx?action=tgsticky&id=%ID%"" target=""_blank"">$</a></li>".Replace("$", tgstickStr), _
+                        "<li><a href=""%WEBROOT%adminaction.aspx?action=tglock&id=%ID%"" target=""_blank"">$</a></li>".Replace("$", tglockStr), _
+                        "<li><a href=""%WEBROOT%adminaction.aspx?action=editpost&id=%ID%"" target=""_blank"">$</a></li>".Replace("$", EditpostStr)}
 
     Public ReadOnly bannedMessageHTML As String = "<br/><strong style=""color: red;"">%MES%</strong>".Replace("%MES%", banMsgStr)
 
@@ -163,13 +168,13 @@ Public Module GlobalVariables
     Public ReadOnly archiveNotice As String = "<div class=""postingMode""><span>" & archiveNoticeStr & "</span></div>"
 
     Public ReadOnly captchaTableEntryHtml As String = "<tr><th>" & verificationStr & "</th><td><img alt='" & CaptchaChallengeStr & "' id='captchaImage' src=""%ROOT%captcha.aspx"" /><a onclick='refreshcaptcha();'><img alt=""refresh"" src=""%ROOT%res/refresh.png"" /></a><br /><input id='usercaptcha' autocomplete='off' class='form-text' type='text' size ='30' name='usercaptcha' /></td></tr>".Replace("%ROOT%", WebRoot)
-    Public ReadOnly addNewFileButtonHTML As String = "<input type=""checkbox"" name=""finp"" value=""yes"">" & addEachFileInNewPostStr & "</input><br/><input type=""checkbox"" name=""countf"" value=""yes"">" & countFilesStr & "</input><br/><a class=""form-button"" onclick=""createUf();"" >" & addAnotherFStr & "</a>"
+    Public ReadOnly addNewFileButtonHTML As String = "<input type=""checkbox"" name=""finp"" value=""yes"">" & addEachFileInNewPostStr & "</input><br/><input type=""checkbox"" name=""countf"" value=""yes"">" & countFilesStr & "</input><br/><input type='button' onclick='javascript:createUf();' class='button' value='" & addAnotherFStr & "'/>"
 
     Public ReadOnly postingRulesHTML As String = "<li><span>Blank posts are not allowed.</span></li><li>Please <a href=""%ROOT%faq.aspx"" target=""_blank"">visit</a> the FAQ page for info about tags supported.</li>".Replace("%ROOT%", WebRoot)
     Public ReadOnly threadCountHTMLli As String = "<li><span>Currently there is % thread(s).</span></li>"
 
-    Public ReadOnly DesktopReturnButtonHTML As String = "[<a href=""%P%"">" & returnStr & "</a>]"
-    Public ReadOnly MobileReturnButtonHTML As String = "<span class=""mobileib button""><a href=""%P%"">" & returnStr & "</a></span>"
+    Public ReadOnly DesktopReturnButtonHTML As String = "<a class=""buttonBlue"" href=""%P%"">" & returnStr & "</a>"
+    Public ReadOnly MobileReturnButtonHTML As String = "<span class=""mobileib buttonm""><a href=""%P%"">" & returnStr & "</a></span>"
 
     Public searchEngineLinkList As String() = {"<a href=""http://www.google.com/searchbyimage?image_url=%THUMB_LINK%"" target=""_blank"">google</a>"}
 

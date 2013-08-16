@@ -807,6 +807,7 @@ Public Module GlobalFunctions
                             If (request.Item("comment").Length = 0 Or request.Item("comment").Trim.Length = 0) And properFiles.Count = 0 Then
                                 'no file and no text == blank post
                                 message = FormatHTMLMessage("Error", noBlankpost, "", "7777", True)
+                                Exit Select
                             Else
 
                                 er.Comment = ProcessInputs(request.Item("comment"))
@@ -2285,17 +2286,31 @@ Public Module GlobalFunctions
     End Sub
 
     Public Function IsIPBanned(ByVal IP As String) As Boolean
-        Dim b As BanData = GetBanData(IP)
-        If b.BanEffective Then
-            If b.Permanant Then
-                Return True
-            Else
-                If Now > b.ExpirationDate Then
-                    DropBan(IP)
-                    Return False
+        Dim dic As New ValuesStore(banFile)
+        If dic.KeyExist(IP) Then
+            Dim data As String() = dic.GetKey(IP).Split(CChar(":"))
+            Dim effectiveInKey As Boolean = CBool(data(0))
+            If effectiveInKey Then
+                'Check if the ban has expired.
+                Dim b As BanData = GetBanData(IP)
+                If b.BanEffective Then
+
+                    If b.Permanant Then
+                        Return True
+                    Else
+                        If Now > b.ExpirationDate Then
+                            DropBan(IP)
+                            Return False
+                        Else
+                            Return True
+                        End If
+                    End If
+
                 Else
-                    Return True
+                    Return False
                 End If
+            Else
+                Return False
             End If
         Else
             Return False
@@ -2303,9 +2318,22 @@ Public Module GlobalFunctions
     End Function
 
     Private Function CanIPBrowse(ByVal IP As String) As Boolean
-        Dim b As BanData = GetBanData(IP)
-        If b.BanEffective Then
-            Return b.CanBrowse
+        'Dim b As BanData = GetBanData(IP)
+        'If b.BanEffective Then
+        '    Return b.CanBrowse
+        'Else
+        '    Return True
+        'End If
+        Dim dic As New ValuesStore(banFile)
+        If dic.KeyExist(IP) Then
+            Dim data As String() = dic.GetKey(IP).Split(CChar(":"))
+            Dim banned As Boolean = CBool(data(0))
+            Dim canBr As Boolean = CBool(data(1))
+            If banned Then
+                Return canBr
+            Else
+                Return True
+            End If
         Else
             Return True
         End If
@@ -2316,6 +2344,7 @@ Public Module GlobalFunctions
         command.Parameters.Add(MakeParameter("@p", False, Data.DbType.Boolean))
         command.Parameters.Add(MakeParameter("@ip", IP, Data.DbType.String))
         DatabaseEngine.ExecuteNonQuery(command)
+        RemoveIP_FromBanFile(IP)
     End Sub
 
     Private Function GetBanData(ByVal IP As String) As BanData
@@ -2375,7 +2404,34 @@ Public Module GlobalFunctions
         command.Parameters.Add(MakeParameter("@modname", modname, Data.DbType.String))
         command.Parameters.Add(MakeParameter("@bannedon", Now, Data.DbType.DateTime))
         DatabaseEngine.ExecuteNonQuery(command)
+        AddIP_ToBanfile(IP, CanBrowse)
     End Sub
+
+    Private Sub AddIP_ToBanfile(ByVal ip As String, ByVal canbrowse As Boolean)
+        Dim dic As New ValuesStore(banFile)
+        dic.AddKey(ip, "True:" & CStr(canbrowse))
+        dic.Save()
+    End Sub
+
+    Private Sub RemoveIP_FromBanFile(ByVal IP As String)
+        Dim dic As New ValuesStore(banFile)
+        If dic.KeyExist(IP) Then
+            dic.AddKey(IP, "False:True")
+            dic.Save()
+        End If
+    End Sub
+
+    Public Sub UpdateBanFile()
+        Dim dic As New ValuesStore(banFile)
+        Dim query As ChanbQuery = DatabaseEngine.ExecuteQueryReader("SELECT IP, effective, canview FROM bans")
+        While query.Reader.Read
+            dic.AddKey(query.Reader.GetString(0), CStr(query.Reader.GetBoolean(1)) & ":" & CStr(query.Reader.GetBoolean(2)))
+        End While
+        dic.Save()
+        query.Reader.Close()
+        query.Connection.Close()
+    End Sub
+
 
     Private Function GetLastXPosts(ByVal threadID As Integer, ByVal x As Integer, ByVal includearhived As Boolean) As Integer()
         Dim queryString As String = ""

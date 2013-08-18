@@ -1,2 +1,1 @@
-﻿<%  Session("chanb") = "chanb"
-    Response.Write(chanb.GenerateCatalogPage(Request, Session))%>
+﻿<%@ Page Language="vb" AutoEventWireup="false" CodeBehind="catalog.aspx.vb" Inherits="chanb._catalog" %>

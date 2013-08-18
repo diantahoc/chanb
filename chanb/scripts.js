@@ -34,7 +34,7 @@ function createUf() {
     delbutton.setAttribute("type", "button");
     delbutton.setAttribute("value", "X");
     delbutton.setAttribute("id", "delb" + idstr);
-
+    delbutton.setAttribute("class", "buttonBlue bbf");
 
     var br = document.createElement("br");
     br.setAttribute("id", "br" + idstr);

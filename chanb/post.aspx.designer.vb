@@ -13,5 +13,5 @@ Option Explicit On
 
 
 
-Partial Public Class Post
+Partial Public Class _post
 End Class

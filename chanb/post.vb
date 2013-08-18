@@ -23,6 +23,7 @@
     Public isSticky As Boolean
     Public locked As Boolean
     Public archived As Boolean
+    Public replyCount As ThreadReplies
     Sub New(ByVal _id As Integer)
         PostID = _id
     End Sub

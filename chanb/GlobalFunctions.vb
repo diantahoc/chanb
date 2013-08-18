@@ -545,11 +545,12 @@ Public Module GlobalFunctions
                 End If
 
                 If ShowThreadRepliesCount Then
-                    postHTML = postHTML.Replace("%REPLY COUNT SPAN%", replyCountSpan.Replace("%REPLY COUNT%", CStr(GetRepliesCount(CInt(po.PostID), Not pa.isCurrentThread).TotalReplies)))
+                    Dim replyC As ThreadReplies = GetRepliesCount(po.PostID, Not pa.isCurrentThread)
+                    If replyC.TotalReplies > 0 Then postHTML = postHTML.Replace("%REPLY COUNT SPAN%", replyCountSpan.Replace("%REPLY COUNT%", CStr(replyC.TotalReplies))) Else postHTML = postHTML.Replace("%REPLY COUNT SPAN%", String.Empty)
                 Else
                     postHTML = postHTML.Replace("%REPLY COUNT SPAN%", String.Empty)
                 End If
-              
+
             Case WPost.PostType.Reply
                 postHTML = ReplyPostTemplate
             Case Else
@@ -681,23 +682,14 @@ Public Module GlobalFunctions
 
                 Select Case mode
                     Case "thread"
-                        If request.Files.Count = 0 Then
+                        If request.Files.Count = 0 Or request.Files("ufile").ContentLength = 0 Then
                             message = FormatHTMLMessage("error", ImageRequired, "default.aspx", "60", True)
                         Else
-                            'Save file.
-                            If request.Files("ufile").ContentLength = 0 Then
 
-                                message = FormatHTMLMessage("error", ImageRequired, "default.aspx", "60", True)
-
+                            'Check file size before saving.
+                            If request.Files("ufile").ContentLength > MaximumFileSize Then
+                                message = FormatHTMLMessage("error", FileToBig, "default.aspx", "10", True)
                             Else
-                                'Check file size before saving.
-                                If request.Files("ufile").ContentLength > MaximumFileSize Then
-                                    message = FormatHTMLMessage("error", FileToBig, "default.aspx", "10", True)
-                                    Exit Select
-                                End If
-
-                                'Dim s As String = saveFile(request.Files("ufile"), False)
-
                                 Dim er As New OPData
                                 er.Comment = ProcessInputs(request.Item("comment"))
                                 er.email = ProcessInputs(request.Item("email")).Trim
@@ -712,16 +704,24 @@ Public Module GlobalFunctions
                                 er.password = ProcessInputs(request.Item("password"))
                                 er.IP = request.UserHostAddress
                                 er.HasFile = True
-                                er.UserAgent = request.UserAgent.Replace("<", "").Replace(">", "")
+                                er.UserAgent = request.UserAgent.Replace("<", String.Empty).Replace(">", String.Empty)
 
                                 If request.Cookies("pass") IsNot Nothing Then request.Cookies("pass").Value = request.Item("password") Else request.Cookies.Add(New HttpCookie("pass", request.Item("password")))
+
                                 Dim tid As Integer = MakeThread(er)
 
-                                SavePostFile(request.Files("ufile"), False, tid)
-
+                                Try
+                                    SavePostFile(request.Files("ufile"), False, tid)
+                                Catch ex As Exception
+                                    DeletePost(tid)
+                                    message = FormatHTMLMessage(errorStr, ex.Message, "default.aspx", "10", True)
+                                    Exit Select
+                                End Try
+                                
                                 message = FormatHTMLMessage(SuccessfulPostString, SuccessfulPostString, "default.aspx?id=" & tid, "1", False)
-                            End If
-                        End If
+
+                            End If 'File size check
+                        End If 'File count check
 
                     Case "reply"
 
@@ -758,13 +758,13 @@ Public Module GlobalFunctions
                             End If
                         Next
                       
-                        Dim totalFiles As Integer = properFiles.Count
+
 
                         'postId is partially global here since
                         'when a user post multiple files to each post, I want to redirect him the last reply id he made (typically default.aspx?id=threadid#pPostID).
                         Dim postId As Integer
 
-                        If request.Item("finp") = "yes" And totalFiles > 1 Then ' Add each file to a seperate post, and dump the files.
+                        If request.Item("finp") = "yes" And properFiles.Count > 1 Then ' Add each file to a seperate post, and dump the files.
 
                             Dim pos As Integer = 1
                             Dim countFiles As Boolean = (request.Item("countf") = "yes")
@@ -774,10 +774,10 @@ Public Module GlobalFunctions
 
                                 If Not advanced Then
                                     er.Comment = ProcessInputs(request.Item("comment"))
-                                    If countFiles Then er.Comment = er.Comment & CStr(vbNewLine & pos & "/" & totalFiles)
+                                    If countFiles Then er.Comment = er.Comment & CStr(vbNewLine & pos & "/" & properFiles.Count)
                                     advanced = True
                                 Else
-                                    If countFiles Then er.Comment = pos & "/" & totalFiles Else er.Comment = String.Empty
+                                    If countFiles Then er.Comment = pos & "/" & properFiles.Count Else er.Comment = String.Empty
                                 End If
 
                                 er.email = ProcessInputs(request.Item("email"))
@@ -827,11 +827,17 @@ Public Module GlobalFunctions
                                 postId = ReplyTo(threadid, er)
 
                                 If er.HasFile Then
-                                    SaveAllFilesToSinglePost(properFiles, postid)
+                                    Try
+                                        SaveAllFilesToSinglePost(properFiles, postId)
+                                    Catch ex As Exception
+                                        DeletePost(postId) ' To prevent posts marked as having files but no files was saved.
+                                        message = FormatHTMLMessage(errorStr, ex.Message, "default.aspx", "10", True)
+                                        Exit Select
+                                    End Try
                                 End If
 
                                 message = FormatHTMLMessage(SuccessfulPostString, SuccessfulPostString, "default.aspx?id=" & threadid & "#p" & postId, "1", False)
-                                End If
+                            End If
                         End If
                         properFiles.Clear()
                         'Check if to bump thread or not
@@ -1075,8 +1081,7 @@ Public Module GlobalFunctions
     Function GetThreadHTML(ByVal threadID As Integer, ByVal p As HTMLParameters) As String
         Dim sb As New StringBuilder
         Dim data As WPost() = GetThreadData(threadID, Not p.isCurrentThread)
-        sb.Append(GetPostHTML(data(0), p))
-        For i = 1 To data.Length - 1 Step 1
+        For i = 0 To data.Length - 1 Step 1
             sb.Append(GetPostHTML(data(i), p))
         Next
         Return sb.ToString
@@ -1312,9 +1317,12 @@ Public Module GlobalFunctions
     Public Sub PermaDeleteAllPosts(ByVal deletefiles As Boolean)
         DatabaseEngine.ExecuteNonQuery("TRUNCATE TABLE board")
         If deletefiles Then
-            For Each x As IO.FileInfo In FileIO.FileSystem.GetDirectoryInfo(StorageFolder).GetFiles()
-                x.Delete()
+            Dim files As IO.FileInfo() = FileIO.FileSystem.GetDirectoryInfo(StorageFolder).GetFiles()
+            For i As Integer = 0 To files.Length - 1 Step 1
+                files(i).Delete()
             Next
+            files = Nothing
+            DatabaseEngine.ExecuteNonQuery("TRUNCATE TABLE files")
         End If
     End Sub
 
@@ -1389,13 +1397,15 @@ Public Module GlobalFunctions
                 If FileExistInDB(ima.MD5, po.PostID) = False Then ' I exclude this post from file checking so we don't delete another post file that is using the same file.
                     Dim realPath As String = StorageFolder & "\" & ima.ChanbName
                     Dim thumbPath As String = StorageFolderThumbs & "\th" & ima.ChanbName
-                    IO.File.Delete(realPath)
+                    Delete_File_Fromdisk(realPath)
                     'Don't delete thumbs when archive is enabled.
-                    If Not EnableArchive Then IO.File.Delete(thumbPath)
+                    If Not EnableArchive Then Delete_File_Fromdisk(thumbPath)
                 End If
             Next
         End If
     End Sub
+
+
 
     Public Function GeneratePageHTML(ByVal isArchive As Boolean, ByVal session As HttpSessionState, ByVal Request As HttpRequest, ByVal Response As HttpResponse) As String
         If Not CanIPBrowse(Request.UserHostAddress) Then
@@ -1610,11 +1620,8 @@ Public Module GlobalFunctions
 
 
         '####################################### BODY PROCESSING CODE #######################################
-        Dim body As New StringBuilder
-
-        body.Append(GenerateCatalogItems(GetThreads(0, GetThreadsCount(False), False, False)))
-
-        pageHTML = pageHTML.Replace("%BODY%", body.ToString)
+        'GenerateCatalogItems(GetThreads(0, GetThreadsCount(False), False, False))
+        pageHTML = pageHTML.Replace("%BODY%", GenerateCatalogItems(GetThreads(0, (ThreadPerPage * MaximumPages) - 1, False, False)) & "<hr/>")
 
         pageHTML = pageHTML.Replace("%PAGES LIST%", "")
 
@@ -1790,9 +1797,7 @@ Public Module GlobalFunctions
     End Function
 
     Sub GenerateModEditPostPage(ByVal context As HttpContext)
-
         Dim postId As Integer
-
         Try
             postId = CInt(context.Request.Item("id"))
         Catch ex As Exception
@@ -1819,9 +1824,7 @@ Public Module GlobalFunctions
         Dim a As String = ""
         For Each x In modBanReasons
             Dim b As String() = x.Split(CChar("$"))
-            If b(0) = e Then
-                a = b(4)
-            End If
+            If b(0) = e Then a = b(4)
         Next
         Return a
     End Function
@@ -2176,12 +2179,19 @@ Public Module GlobalFunctions
 
         query.Reader.Close()
 
-        For Each po As WPost In il
-            If po.HasFile Then
-                po.files = GetPostFiles(po.PostID, query.Connection)
+        'OP post is at index 0.
+
+        '  Dim a As New ThreadReplies
+
+        For i As Integer = 0 To il.Count - 1 Step 1
+            If il(i).HasFile Then
+                il(i).files = GetPostFiles(il(i).PostID, query.Connection)
+                '      a.ImageReplies += 1
+            Else
+                '     a.TextReplies += 1
             End If
         Next
-
+        ' il(0).replyCount = a
         query.Connection.Close()
         Return il.ToArray
     End Function
@@ -2190,7 +2200,7 @@ Public Module GlobalFunctions
         If Not arhive Then
             Dim ila As New List(Of Integer)
 
-            Dim query As ChanbQuery
+            Dim query As New ChanbQuery
 
             If Not ignoreStickies Then
                 Dim stickiesQueryStr As String = "SELECT ID FROM board  WHERE (type = 0) AND (sticky = 1) AND (mta = 0) ORDER BY ID DESC"
@@ -2207,7 +2217,7 @@ Public Module GlobalFunctions
 
             Dim queryString As String = "SELECT ID FROM board  WHERE (type = 0) AND (sticky = 0) AND (mta = 0) ORDER BY bumplevel DESC"
 
-            If query Is Nothing Then query = DatabaseEngine.ExecuteQueryReader(queryString) Else query = DatabaseEngine.ExecuteQueryReader(queryString, query.Connection)
+            If query.Connection Is Nothing Then query = DatabaseEngine.ExecuteQueryReader(queryString) Else query = DatabaseEngine.ExecuteQueryReader(queryString, query.Connection)
 
             While query.Reader.Read
                 ila.Add(CInt(query.Reader.Item(0)))
@@ -2573,6 +2583,37 @@ Public Module GlobalFunctions
 
 #Region "Misc Functions"
 
+    Public Function GetMimeType(ByVal fileExtension As String) As String
+        Select Case fileExtension.ToUpper
+            Case "JPG"
+                Return "image/jpeg"
+            Case "JPEG"
+                Return "image/jpeg"
+            Case "BMP"
+                Return "image/bmp"
+            Case "GIF"
+                Return "image/gif"
+            Case "PNG"
+                Return "image/png"
+            Case "SVG"
+                Return "image/svg+xml"
+            Case "PDF"
+                Return "application/acrobat"
+            Case "WEBM"
+                Return "video/webm"
+            Case "OGG"
+                Return "audio/ogg"
+            Case "MP3"
+                Return "audio/mpeg"
+            Case Else
+                Return "application/octet-stream"
+        End Select
+    End Function
+
+    Private Sub Delete_File_Fromdisk(ByVal path As String)
+        If IO.File.Exists(path) Then IO.File.Delete(path)
+    End Sub
+
     Private Function ConvertNoNull(ByVal x As Object) As Object
         If TypeOf x Is DBNull Then Return Nothing Else Return x
     End Function
@@ -2590,6 +2631,8 @@ Public Module GlobalFunctions
             Case "О" 'cyrillic 
                 Return "O"
             Case "о" 'cyrillic
+                Return "o"
+            Case "ס" 'hebrew, sometimes this looks like latin o
                 Return "o"
             Case "А" 'cyr
                 Return "A"

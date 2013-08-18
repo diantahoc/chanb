@@ -13,5 +13,5 @@ Option Explicit On
 
 
 
-Partial Public Class banned
+Partial Public Class _banned
 End Class

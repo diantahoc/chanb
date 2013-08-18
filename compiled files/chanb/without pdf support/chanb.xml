@@ -32,22 +32,6 @@ To modify move field declaration from designer file to code-behind file.
  Project: Novelli Torrent
  </summary>
 	<remarks></remarks>
-</member><member name="F:chanb.captcha.form1">
-	<summary>
-form1 control.
-</summary>
-	<remarks>
-Auto-generated field.
-To modify move field declaration from designer file to code-behind file.
-</remarks>
-</member><member name="F:chanb.catalog.form1">
-	<summary>
-form1 control.
-</summary>
-	<remarks>
-Auto-generated field.
-To modify move field declaration from designer file to code-behind file.
-</remarks>
 </member><member name="P:chanb.My.MyWebExtension.Computer">
 	<summary>
  Returns information about the host computer.
@@ -176,14 +160,6 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 	<summary>
   A strongly-typed resource class, for looking up localized strings, etc.
 </summary>
-</member><member name="F:chanb._default.form1">
-	<summary>
-form1 control.
-</summary>
-	<remarks>
-Auto-generated field.
-To modify move field declaration from designer file to code-behind file.
-</remarks>
 </member><member name="M:chanb.UnixCrypt.IntToFourBytes(System.UInt32,System.Byte[],System.UInt32)">
 	<summary>
  Converts an uint into 4 seperate bytes.
@@ -321,14 +297,6 @@ To modify move field declaration from designer file to code-behind file.
 	<param name="i"></param>
 	<returns>ChanbQuery</returns>
 	<remarks></remarks>
-</member><member name="F:chanb.deletepost.form1">
-	<summary>
-form1 control.
-</summary>
-	<remarks>
-Auto-generated field.
-To modify move field declaration from designer file to code-behind file.
-</remarks>
 </member><member name="F:chanb.installer.form1">
 	<summary>
 form1 control.
@@ -393,38 +361,6 @@ To modify move field declaration from designer file to code-behind file.
 	<param name="bbcode"></param>
 	<returns></returns>
 	<remarks></remarks>
-</member><member name="F:chanb.modaction.form1">
-	<summary>
-form1 control.
-</summary>
-	<remarks>
-Auto-generated field.
-To modify move field declaration from designer file to code-behind file.
-</remarks>
-</member><member name="F:chanb.img.form1">
-	<summary>
-form1 control.
-</summary>
-	<remarks>
-Auto-generated field.
-To modify move field declaration from designer file to code-behind file.
-</remarks>
-</member><member name="F:chanb.api.form1">
-	<summary>
-form1 control.
-</summary>
-	<remarks>
-Auto-generated field.
-To modify move field declaration from designer file to code-behind file.
-</remarks>
-</member><member name="F:chanb.arhive.form1">
-	<summary>
-form1 control.
-</summary>
-	<remarks>
-Auto-generated field.
-To modify move field declaration from designer file to code-behind file.
-</remarks>
 </member><member name="F:chanb._mod.Head1">
 	<summary>
 Head1 control.

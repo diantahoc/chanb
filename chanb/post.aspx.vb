@@ -1,8 +1,9 @@
-﻿Public Partial Class post
+﻿Partial Public Class _post
     Inherits System.Web.UI.Page
 
     Protected Sub Page_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
-
+        Session("chanb") = "chanb"
+        Response.Write(ProcessPost(Request, Session))
     End Sub
 
 End Class

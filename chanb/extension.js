@@ -8,6 +8,7 @@ function extension_init() {
     wdLinks();
     beautifiesNames();
     format_page_title();
+    initImageAE();
 }
 
 var isCurrentlyFetchingReplies = false;
@@ -18,13 +19,14 @@ var pagetitle = document.title;
 
 function ext_timer() {
     //thread updater stuffs
-    if ( (! isCurrentlyFetchingReplies) && is_a_thread_opened() ) {
+    if ((!isCurrentlyFetchingReplies) && is_a_thread_opened()) {
         noNewRepliesIncrem -= 1
         if (noNewRepliesIncrem < 0) {
-            noNewRepliesIncrem = delay + 20; 
+            noNewRepliesIncrem = delay + 20;
             fetchnewreplies();
+            console.log("Update request sent");
         }
-       console.log("Updating in " + noNewRepliesIncrem);
+       console.log("Updating in " + noNewRepliesIncrem + " sec");
     }
 }
 
@@ -47,7 +49,8 @@ function format_page_title() {
 }
 
 function is_a_thread_opened() {
-    if (document.getElementsByName("threadid")[0].value == "") { return false; } else {return true;}
+    //if (document.getElementsByName("threadid")[0].value == "") { return false; } else {return true;}
+    return (  ! document.getElementsByName("threadid")[0].value == "")
  }
 
 function fetchnewreplies() {
@@ -59,7 +62,7 @@ function fetchnewreplies() {
         mode: "fetchrepliesafter",
         tid: threadID,
         lp: lastpostID
-    }, function(data) { format_reply_div(data); if (data.length == 0) { delay += 15 } else { delay = 0 } }, "json");
+    }, function(data) { format_reply_div(data); if (data.length == 0) { delay += 15; console.log("No new replies"); } else { delay = 0; console.log("Thread updated."); } }, "json");
     isCurrentlyFetchingReplies = false;
 }
 
@@ -442,6 +445,52 @@ function fts(d) { if (!(d == null)) { return d.getFullYear() + "-" + (d.getMonth
 //c = value to replace
 function repl(a, b, c) { var d = new RegExp("%" + b + "%", "g"); return a.replace(d, c); }
 
+function initImageAE() {
+
+    var thumbs = document.getElementsByClassName("fileThumb");
+    var isImage = /\.(jpe?g|a?png|gif|svg|bmp)$/
+    for (i = 0; i < thumbs.length; i++) {
+        if (isImage.test(thumbs[i].getAttribute("href").toString())) {
+            var item = thumbs[i];
+            var imgItem = item.children[0];
+            var imgItemID = imgItem.getAttribute("id").toString();
+
+            var newBigImage = document.createElement("img");
+            
+            newBigImage.setAttribute("id", "big" + imgItemID);
+            newBigImage.setAttribute("asrc", item.href);
+            newBigImage.setAttribute("class", "hide");
+            
+            item.appendChild(newBigImage);
+        
+            item.setAttribute("href","javascript:showFull('" + imgItemID + "' )");
+            item.removeAttribute("target");
+           
+        
+        }
+    }
+    
+ }
+
+ function showFull(id) {
+     var ab = document.getElementById("big" + id);
+     var thumbImg = document.getElementById(id);
+
+     if (ab.getAttribute("asrc") == "") {
+         //hide or show
+         $(ab).toggleClass("hide");
+         $(thumbImg).toggleClass("hide");
+
+     } else {
+
+         ab.setAttribute("src", ab.getAttribute("asrc"));
+         ab.setAttribute("asrc", "");
+
+         $(ab).removeClass("hide");
+         $(thumbImg).addClass("hide");
+     }
+ 
+ }
 
 // StringBuilder class
 // Initializes a new instance of the StringBuilder class

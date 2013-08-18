@@ -13,5 +13,5 @@ Option Explicit On
 
 
 
-Partial Public Class modSelectBanReason
+Partial Public Class _modSelectBanReason
 End Class

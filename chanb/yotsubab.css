@@ -183,8 +183,6 @@ div.reply input {
 }
 
 div.reply div.postInfo {
-    /*background-image: url('res/bgdark.png');
-    background-color: #cbcbcb;*/
     display: block;
     width: 100%;
 }
@@ -661,11 +659,6 @@ max-height: 250px;
 max-width: 250px;
 }
 
-/*.cimage:hover {
-    -webkit-box-shadow: 0px 0px 9px #3592bd;
-    box-shadow: 0px 0px 9px #3592bd;
-}*/
-
 .form-text {
     background-color: #FFFFFF;
     border: 2px solid rgb(230, 228, 222) !important;
@@ -861,7 +854,7 @@ img.blur:hover {
 	border-color: #3f3f3f;
 	top: -1px;
 	z-index: 99999;
-	color: #3fa3c1 !important;
+	
 }
 
 .cssmenu ul li.has-sub:hover>ul,#cssmenu ul li.has-sub:hover>div
@@ -915,18 +908,19 @@ img.blur:hover {
 
 .cssmenu ul li>ul li a:hover
 {
-color:#FFFFFF!important;
+color:#000000!important;
 }
 
 .cssmenu,.cssmenu>ul>li>ul>li a:hover
 {
-	background: #4fbdf0;
+	/*background: #4fbdf0;
 	background: -moz-linear-gradient(top,#4fbdf0 0%,#45b2d2 100%);
 	background: -webkit-gradient(linear,left top,left bottom,color-stop(0%,#4fbdf0),color-stop(100%,#45b2d2));
 	background: -webkit-linear-gradient(top,#4fbdf0 0%,#45b2d2 100%);
 	background: -o-linear-gradient(top,#4fbdf0 0%,#45b2d2 100%);
 	background: -ms-linear-gradient(top,#4fbdf0 0%,#45b2d2 100%);
-	background: linear-gradient(top,#4fbdf0 0%,#45b2d2 100%);
+	background: linear-gradient(top,#4fbdf0 0%,#45b2d2 100%);*/
+	background-image: linear-gradient(#e7e7e7, #e7e7e7 38%, #d7d7d7);
 }
 
 .cssmenu>ul>li>a:after

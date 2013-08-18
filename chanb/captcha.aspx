@@ -1,2 +1,1 @@
-﻿<%@ Import Namespace = "chanb.CaptchaModule" %>
-<%  GenerateCAPTCHA(Request, Session, Response)%>
+﻿<%@ Page Language="vb" AutoEventWireup="false" CodeBehind="captcha.aspx.vb" Inherits="chanb._captcha" %>

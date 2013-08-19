@@ -37,24 +37,34 @@ Public Module JSONApi
     End Function
 
     Public Function GetThreadPageNumber(ByVal tid As Integer) As Integer
-
         Dim currentThread As Integer() = GetThreads(0, (MaximumPages * ThreadPerPage) - 1, True, False)
-
-        Dim pageNt As Integer = -1
-
-        For Page As Integer = 1 To MaximumPages Step 1
-
-            For threadN As Integer = 1 To ThreadPerPage Step 1
-
-                If currentThread(threadN) = tid Then pageNt = Page + 1
-
-
+        Dim p As Integer = -1
+        If Array.IndexOf(currentThread, tid) = -1 Then
+            Return -1
+        Else
+            Dim pagei As Integer = Array.IndexOf(currentThread, tid) + 1
+            For i As Integer = 1 To MaximumPages Step 1
+                If ((1 * i) <= pagei) And (pagei <= i * ThreadPerPage) Then
+                    p = i
+                    Exit For
+                End If
             Next
+        End If
+        Return p
+    End Function
 
-            Page = pageNt
-        Next
-
-        Return pageNt
+    Public Function GetThreadPosts(ByVal id As Integer) As String
+        Dim command As Common.DbCommand = DatabaseEngine.GenerateDbCommand("SELECT ID FROM board WHERE (parentT = @id) AND (mta = @mta)")
+        command.Parameters.Add(MakeParameter("@id", id, Data.DbType.Int32))
+        command.Parameters.Add(MakeParameter("@mta", False, Data.DbType.Boolean))
+        Dim q As ChanbQuery = DatabaseEngine.ExecuteQueryReader(command)
+        Dim il As New List(Of Integer)
+        While q.Reader.Read
+            il.Add(q.Reader.GetInt32(0))
+        End While
+        q.Reader.Close()
+        q.Connection.Close()
+        Return JsonConvert.SerializeObject(il, Formatting.None)
     End Function
 
     Private Class PublicWpost
@@ -76,4 +86,5 @@ Public Module JSONApi
     Public Function GetSELinks() As String
         Return JsonConvert.SerializeObject(searchEngineLinkList, Formatting.None)
     End Function
+
 End Module

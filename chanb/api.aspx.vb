@@ -15,19 +15,29 @@
                     pa.CredPowers = CStr(Session("credpower"))
                     pa.CredMenu = CStr(Session("credmenu"))
                     pa.replyButton = False
+
                     Response.ContentType = "application/json"
                     Response.ContentEncoding = Text.Encoding.UTF8
                     Response.Write(WpostsToJsonList(GetThreadRepliesAfter(threadid, lastpost, False), pa))
+
                 Case "getfileslist" ' tid = thread id , ft = file types jpg,bmp, list ... , ar = boolean include archived
                     Dim tid As Integer = CInt(Request.Item("tid"))
                     Dim allowedfiles As New List(Of String)
                     For Each x In Request.Item("ft").Split(CChar(","))
                         allowedfiles.Add(x)
                     Next
+                    Response.ContentType = "application/json"
+                    Response.ContentEncoding = Text.Encoding.UTF8
                     Response.Write(GetFileList(tid, allowedfiles.ToArray, CBool(Request.Item("ar"))))
                 Case "getthreadpagenumber" 'tid = thread id
                     Dim i As Integer = CInt(Request.Item("tid"))
+                    Response.ContentType = "application/javascript"
                     Response.Write(GetThreadPageNumber(i))
+                Case "getthreadposts" ' tid = thread id
+                    Dim i As Integer = CInt(Request.Item("tid"))
+                    Response.ContentType = "application/json"
+                    Response.ContentEncoding = Text.Encoding.UTF8
+                    Response.Write(GetThreadPosts(i))
                 Case Else
                     Response.Write("Invalid mode")
             End Select

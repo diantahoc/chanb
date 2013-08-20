@@ -717,7 +717,7 @@ Public Module GlobalFunctions
                                     message = FormatHTMLMessage(errorStr, ex.Message, "default.aspx", "10", True)
                                     Exit Select
                                 End Try
-                                
+
                                 message = FormatHTMLMessage(SuccessfulPostString, SuccessfulPostString, "default.aspx?id=" & tid, "1", False)
 
                             End If 'File size check
@@ -757,12 +757,13 @@ Public Module GlobalFunctions
                                 'Maybe an empty file field.
                             End If
                         Next
-                      
+
 
 
                         'postId is partially global here since
                         'when a user post multiple files to each post, I want to redirect him the last reply id he made (typically default.aspx?id=threadid#pPostID).
                         Dim postId As Integer
+                        Dim sage As Boolean = False
 
                         If request.Item("finp") = "yes" And properFiles.Count > 1 Then ' Add each file to a seperate post, and dump the files.
 
@@ -780,7 +781,13 @@ Public Module GlobalFunctions
                                     If countFiles Then er.Comment = pos & "/" & properFiles.Count Else er.Comment = String.Empty
                                 End If
 
-                                er.email = ProcessInputs(request.Item("email"))
+                                If ProcessInputs(request.Item("email")).Trim() = "sage" Then
+                                    er.email = ""
+                                    sage = True
+                                Else
+                                    er.email = ProcessInputs(request.Item("email"))
+                                End If
+
                                 er.HasFile = True
                                 If request.Item("postername").Trim() = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(request.Item("postername"))
 
@@ -811,7 +818,14 @@ Public Module GlobalFunctions
                             Else
 
                                 er.Comment = ProcessInputs(request.Item("comment"))
-                                er.email = ProcessInputs(request.Item("email"))
+
+                                If ProcessInputs(request.Item("email")).Trim() = "sage" Then
+                                    er.email = ""
+                                    sage = True
+                                Else
+                                    er.email = ProcessInputs(request.Item("email"))
+                                End If
+
                                 If request.Item("postername").Trim() = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(request.Item("postername"))
 
                                 If CBool(Session("admin")) Then er.name = adminPostName
@@ -841,7 +855,8 @@ Public Module GlobalFunctions
                         End If
                         properFiles.Clear()
                         'Check if to bump thread or not
-                        If Not ProcessInputs(request.Item("email")) = "sage" Or (GetRepliesCount(threadid, True).TotalReplies < BumpLimit) Then BumpThread(threadid)
+
+                        If Not (sage Or GetRepliesCount(threadid, True).TotalReplies >= BumpLimit) Then BumpThread(threadid)
 
                         If StaticHTML Then UpdateThreadHtml(threadid)
 

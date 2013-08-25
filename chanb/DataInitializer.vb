@@ -543,22 +543,6 @@
         End Set
     End Property
 
-    Public Property BoardLanguage() As String
-        Get
-            If DataDB.KeyExist("BoardLanguage") = False Then
-                DataDB.AddKey("BoardLanguage", "en-US")
-                DataDB.Save()
-                Return "en-US"
-            Else
-                Return CStr(DataDB.GetKey("BoardLanguage"))
-            End If
-        End Get
-        Set(ByVal value As String)
-            DataDB.AddKey("BoardLanguage", value)
-            DataDB.Save()
-        End Set
-    End Property
-
     Public Property DatabaseType() As String
         Get
             If DataDB.KeyExist("dbType") = False Then

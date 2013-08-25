@@ -35,6 +35,20 @@
             sb.Append("var selinks = " & JSONApi.GetSELinks & ";")
 
 
+            Dim additionalFiles As New List(Of String)
+
+            For i As Integer = 0 To cfhl.Length - 1 Step 1
+
+                sb.Append(cfhl(i).GetJSHandler)
+
+                For Each x As String In cfhl(i).Get_Supported_Files
+                    additionalFiles.Add(x)
+                Next
+
+            Next
+
+            sb.Append("var additionalFiles = " & Newtonsoft.Json.JsonConvert.SerializeObject(additionalFiles, Newtonsoft.Json.Formatting.None) & ";")
+
             .Response.Write(sb.ToString)
         End With
     End Sub

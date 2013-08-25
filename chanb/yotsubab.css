@@ -253,6 +253,12 @@ div.replyContainer div.post div.file div.fileInfo {
     margin-left: 20px;
 }
 
+div.postDeleted{
+    background: #000000 !important;
+    opacity: 0.7;
+}
+
+
 div.post div.file .fileThumb {
     float: left;
     margin-left: 20px;

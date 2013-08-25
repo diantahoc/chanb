@@ -2,7 +2,7 @@
 Imports MySql.Data.MySqlClient
 Imports System.Data.Common
 
-Public Module DatabaseEngine
+Friend Module DatabaseEngine
 
     Dim dbi As New DBInitializer
 
@@ -98,7 +98,7 @@ Public Module DatabaseEngine
     ''' <remarks></remarks>
     Public Function ExecuteNonQuery(ByVal Query As DbCommand, ByVal i As DbConnection) As Integer
         Select Case dbType
-            Case "mssql"   
+            Case "mssql"
                 Query.Connection = i
                 Dim d As Integer = Query.ExecuteNonQuery
                 Return d
@@ -224,7 +224,7 @@ Public Module DatabaseEngine
                 c.Connection = i
                 c.Reader = reader
                 Return c
-            Case Else          
+            Case Else
                 Return Nothing
         End Select
     End Function
@@ -306,7 +306,7 @@ Public Module DatabaseEngine
                 End Select
                 Return p
             Case Else
-               Return Nothing
+                Return Nothing
         End Select
     End Function
 

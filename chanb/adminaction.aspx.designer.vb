@@ -13,5 +13,5 @@ Option Explicit On
 
 
 
-Partial Public Class adminaction
+Partial Public Class _adminaction
 End Class

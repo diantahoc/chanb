@@ -1,6 +1,6 @@
 ﻿Imports Microsoft.VisualBasic.FileIO
 
-Public Module GlobalVariables
+Friend Module GlobalVariables
 
     Private DI As New DataInitializer
 
@@ -49,7 +49,6 @@ Public Module GlobalVariables
     Public ConvertArchivedThreadToHTML As Boolean = DI.ConvertArchivedThreadToHTML
     Public CheckEXIFOrientation As Boolean = DI.CheckExifOrientation
     Public ShowThreadRepliesCount As Boolean = DI.ShowThreadRepliesCount
-    Public BoardLanguage As String = DI.BoardLanguage
 
     ''' <summary>
     ''' Get application web root.
@@ -103,7 +102,7 @@ Public Module GlobalVariables
         End Get
     End Property
 
-    Private ReadOnly Property dataFileDir() As String
+    Friend ReadOnly Property dataFileDir() As String
         Get
             Return chanb.My.Request.PhysicalApplicationPath & "\bin\datafiles\"
         End Get
@@ -168,7 +167,7 @@ Public Module GlobalVariables
     Public ReadOnly archiveNotice As String = "<div class=""postingMode""><span>" & archiveNoticeStr & "</span></div>"
 
     Public ReadOnly captchaTableEntryHtml As String = "<tr><th>" & verificationStr & "</th><td><img alt='" & CaptchaChallengeStr & "' id='captchaImage' src=""%ROOT%captcha.aspx"" /><a onclick='refreshcaptcha();'><img alt=""refresh"" src=""%ROOT%res/refresh.png"" /></a><br /><input id='usercaptcha' autocomplete='off' class='form-text' type='text' size ='30' name='usercaptcha' /></td></tr>".Replace("%ROOT%", WebRoot)
-    Public ReadOnly addNewFileButtonHTML As String = "<input type=""checkbox"" name=""finp"" value=""yes"">" & addEachFileInNewPostStr & "</input><br/><input type=""checkbox"" name=""countf"" value=""yes"">" & countFilesStr & "</input><br/><input type='button' onclick='javascript:createUf();' class='button' value='" & addAnotherFStr & "'/>"
+    Public ReadOnly addNewFileButtonHTML As String = "<input type=""checkbox"" name=""finp"" value=""yes"">" & addEachFileInNewPostStr & "</input><br/><input type=""checkbox"" name=""countf"" value=""yes"">" & countFilesStr & "</input><br/><input type='button' onclick='javascript:addUf();' class='button' value='" & addAnotherFStr & "'/>"
 
     Public ReadOnly postingRulesHTML As String = "<li><span>Blank posts are not allowed.</span></li><li>Please <a href=""%ROOT%faq.aspx"" target=""_blank"">visit</a> the FAQ page for info about tags supported.</li>".Replace("%ROOT%", WebRoot)
     Public ReadOnly threadCountHTMLli As String = "<li><span>Currently there is % thread(s).</span></li>"

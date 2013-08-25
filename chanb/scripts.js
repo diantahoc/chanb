@@ -19,7 +19,7 @@ function insert(textarea, text) {
     textarea.focus();
 }
 
-function createUf() {
+function addUf() {
     var divTag = document.createElement("input");
 
     var idstr = "d" + Math.random().toString(10);

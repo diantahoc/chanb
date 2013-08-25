@@ -1,6 +1,23 @@
-﻿Public Module Language
+﻿Friend Module Language
 
-    Private langDic As New LangEngine("en-US")
+    Dim langFile As String = dataFileDir & "boardLanguage.conf"
+
+    Public Property BoardLanguage() As String
+        Get
+            If FileIO.FileSystem.FileExists(langFile) Then
+                Return IO.File.ReadAllText(langFile)
+            Else
+                IO.File.WriteAllText(langFile, "en-US")
+                Return "en-US"
+            End If
+        End Get
+        Set(ByVal value As String)
+            IO.File.WriteAllText(langFile, value)
+        End Set
+    End Property
+
+
+    Private langDic As New LangEngine(BoardLanguage)
 
     Public ReadOnly nameStr As String = langDic.Retrive("nameStr")
     Public ReadOnly subjectStr As String = langDic.Retrive("subjectStr")
@@ -33,7 +50,7 @@
     Public ReadOnly summaryClickToViewStr As String = langDic.Retrive("summaryClickToViewStr")
 
     Public ReadOnly banuserStr As String = langDic.Retrive("banuserStr")
-    Public modSilentBanStr As String = langDic.Retrive("modSilentBanStr")
+    Public ReadOnly modSilentBanStr As String = langDic.Retrive("modSilentBanStr")
     Public ReadOnly deletePostStr As String = langDic.Retrive("deletePostStr")
     Public ReadOnly tgstickStr As String = langDic.Retrive("tgstickStr")
     Public ReadOnly tglockStr As String = langDic.Retrive("tglockStr")
@@ -49,6 +66,7 @@
     Public ReadOnly sucessStr As String = langDic.Retrive("sucessStr")
     Public ReadOnly reportReasonStr As String = langDic.Retrive("reportReasonStr")
     Public ReadOnly invalidIdStr As String = langDic.Retrive("invalidIdStr")
+    Public ReadOnly thread404Str As String = langDic.Retrive("thread404Str")
 
     Public ReadOnly errorStr As String = langDic.Retrive("errorStr")
 

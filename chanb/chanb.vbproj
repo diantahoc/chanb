@@ -168,7 +168,6 @@
       <DependentUpon>captcha.aspx</DependentUpon>
       <SubType>ASPXCodebehind</SubType>
     </Compile>
-    <Compile Include="CaptchaModule.vb" />
     <Compile Include="catalog.aspx.designer.vb">
       <DependentUpon>catalog.aspx</DependentUpon>
     </Compile>
@@ -176,6 +175,7 @@
       <DependentUpon>catalog.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="CustomFileHandler.vb" />
     <Compile Include="DatabaseEngine.vb" />
     <Compile Include="DataInitializer.vb" />
     <Compile Include="DBInitializer.vb" />
@@ -200,6 +200,13 @@
       <DependentUpon>dscripts.aspx</DependentUpon>
       <SubType>ASPXCodebehind</SubType>
     </Compile>
+    <Compile Include="error.aspx.designer.vb">
+      <DependentUpon>error.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="error.aspx.vb">
+      <DependentUpon>error.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="faq.aspx.designer.vb">
       <DependentUpon>faq.aspx</DependentUpon>
     </Compile>
@@ -209,6 +216,9 @@
     </Compile>
     <Compile Include="fileHandler.ashx.vb">
       <DependentUpon>fileHandler.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Global.asax.vb">
+      <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="GlobalFunctions.vb" />
     <Compile Include="GlobalVariables.vb" />
@@ -220,7 +230,6 @@
       <DependentUpon>img.aspx</DependentUpon>
       <SubType>ASPXCodebehind</SubType>
     </Compile>
-    <Compile Include="ImgPage.vb" />
     <Compile Include="InstallActions.vb" />
     <Compile Include="installer.aspx.designer.vb">
       <DependentUpon>installer.aspx</DependentUpon>
@@ -306,6 +315,7 @@
       <DependentUpon>report.aspx</DependentUpon>
       <SubType>ASPXCodebehind</SubType>
     </Compile>
+    <Compile Include="Report.vb" />
     <Compile Include="textParser.vb" />
     <Compile Include="ThreadReplies.vb" />
     <Compile Include="unixcrypt.vb" />
@@ -328,6 +338,7 @@
     <Content Include="css\panel\normalize.css" />
     <Content Include="css\panel\styles.css" />
     <Content Include="dscripts.aspx" />
+    <Content Include="error.aspx" />
     <Content Include="extension.js" />
     <Content Include="fileHandler.ashx" />
     <None Include="My Project\Application.myapp">
@@ -341,6 +352,7 @@
     </None>
     <Content Include="banned.aspx" />
     <Content Include="deletepost.aspx" />
+    <Content Include="Global.asax" />
     <Content Include="js\noworker.nude.min.js" />
     <Content Include="js\worker.nude.js" />
     <Content Include="modEditpost.aspx" />

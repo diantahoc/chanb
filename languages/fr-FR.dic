@@ -89,3 +89,4 @@ bannedOnStr ╝Interdit le
 banIpStr ╝Votre adresse IP a été
 banPostNoStr ╝Le poste vous avez été interdit pour
 banExpiryStr ╝Date d'expiration
+thread404Str╝Le sujet specifier n'existe pas.

@@ -11,7 +11,7 @@ function extension_init() {
     initImageAE();
 }
 
-var isCurrentlyFetchingReplies = false;
+var isUpdating = false;
 var noNewRepliesIncrem = 20;
 var delay = 0;
 
@@ -19,15 +19,59 @@ var pagetitle = document.title;
 
 function ext_timer() {
     //thread updater stuffs
-    if ((!isCurrentlyFetchingReplies) && is_a_thread_opened()) {
+    if ((!isUpdating) && is_a_thread_opened()) {
         noNewRepliesIncrem -= 1
         if (noNewRepliesIncrem < 0) {
             noNewRepliesIncrem = delay + 20;
-            fetchnewreplies();
+            updateThread();
             console.log("Update request sent");
         }
        console.log("Updating in " + noNewRepliesIncrem + " sec");
     }
+}
+
+function updateThread() {
+    isUpdating = true;
+    var threadID = $(".thread:first").attr("id").replace("t", "");
+    fetchnewreplies(threadID);
+    check_for_deleted_posts(threadID);
+    isUpdating = false;
+}
+
+function check_for_deleted_posts(threadID) {
+    $.get(webroot + "api.aspx", {
+        mode: "getthreadposts",
+        tid: threadID
+    }, function(data) {
+        var posts = $(".post.reply");
+        for (i = 0; i < posts.length; i++) {
+            var currentPostID = parseInt(posts[i].id.slice(1));
+            if (data.indexOf(currentPostID) == -1) {
+                //post is deleted.
+                if (document.getElementById("del" + currentPostID.toString()) == undefined) {
+                    var deletedSpan = document.createElement("span");
+                    deletedSpan.textContent = "[404]";
+                    deletedSpan.setAttribute("style", "color: red");
+                    deletedSpan.setAttribute("id", "del" + currentPostID.toString());
+                    
+                    posts[i].children[1].appendChild(deletedSpan);
+                }
+              
+            }
+
+        }
+    }, "json");
+
+
+}
+
+function fetchnewreplies(threadID) {
+    var lastpostID = $(".postContainer:last").attr("id").replace("pc", "");
+    $.get(webroot + "api.aspx", {
+        mode: "fetchrepliesafter",
+        tid: threadID,
+        lp: lastpostID
+    }, function(data) { format_reply_div(data); if (data.length == 0) { delay += 15; console.log("No new replies"); } else { delay = 0; console.log("New replies added"); } }, "json");
 }
 
 function format_page_title() {
@@ -53,18 +97,7 @@ function is_a_thread_opened() {
     return (  ! document.getElementsByName("threadid")[0].value == "")
  }
 
-function fetchnewreplies() {
-    isCurrentlyFetchingReplies = true;
-    var $threadDiv = $(".thread:first");
-    var threadID = $threadDiv.attr("id").replace("t", "");
-    var lastpostID = $(".postContainer:last").attr("id").replace("pc", "");
-    $.get(webroot + "api.aspx", {
-        mode: "fetchrepliesafter",
-        tid: threadID,
-        lp: lastpostID
-    }, function(data) { format_reply_div(data); if (data.length == 0) { delay += 15; console.log("No new replies"); } else { delay = 0; console.log("Thread updated."); } }, "json");
-    isCurrentlyFetchingReplies = false;
-}
+
 
 function format_reply_div(jsondata) {
 
@@ -110,8 +143,10 @@ function format_reply_div(jsondata) {
         q = repl(q, "POST TEXT", postData.Comment);
         var threadDiv = $("#t" + postData.ParentThread.toString());
         threadDiv.append(q);
-        //process wdlinks
+        //process the new posts.
         wdLinks();
+        beautifiesNames();
+        backlink();
     }
 }
 
@@ -134,8 +169,8 @@ function format_post_files(files, id) {
             var wpi = files[i];
 
             var item = "";
-
-            switch (wpi.Extension.toLowerCase()) {
+            var extension = wpi.Extension.toLowerCase();
+            switch (extension) {
                 case "jpg":
                 case "jpeg":
                 case "png":
@@ -154,7 +189,15 @@ function format_post_files(files, id) {
                     item = get_audio_html(wpi);
                     break;
                 default:
-                    break;
+                    if (additionalFiles.indexOf(extension) >= 0) {
+                        var func = eval("get_" + extension + "_html");
+                        if (func) {
+                            item = func(wpi);
+                            break;
+                        }
+                    } else {
+                        break;
+                    }
             } //switch block
 
             //Mark the first item as active
@@ -180,8 +223,8 @@ function format_post_files(files, id) {
 
         var wpi = files[0];
         var item = "";
-
-        switch (wpi.Extension.toLowerCase()) {
+        var extension = wpi.Extension.toLowerCase();
+        switch (extension) {
             case "jpg":
             case "jpeg":
             case "png":
@@ -200,7 +243,15 @@ function format_post_files(files, id) {
                 item = get_audio_html(wpi);
                 break;
             default:
-                break;
+                if (additionalFiles.indexOf(extension) >= 0) {
+                    var func = eval("get_" + extension + "_html");
+                    if (!(func == null)) {
+                        item = func(wpi);
+                        break;
+                    }
+                } else {
+                    break;
+                }
         } //switch block
 
         item = repl(item, "filec", "file");
@@ -328,17 +379,23 @@ function backlink() {
             if (linklist[tid[1]]) {
                 continue;
             }
-            bl = document.createElement('a');
-            bl.className = 'backlink';
-            bl.href = '#' + replies[i].id;
-            bl.textContent = '>>' + replies[i].id.slice(1);
-            if (!(qb = t.getElementsByClassName('quoted-by')[0])) {
-                linklist[tid[1]] = true;
-                qb = document.createElement('div');
-                qb.className = 'quoted-by';
-                qb.textContent = '';
-                qb.appendChild(bl);
-                t.insertBefore(qb, t.getElementsByTagName('blockquote')[0]);
+            var bl = null;
+            var blID = "blq" + tid + replies[i].id;
+            if (document.getElementById(blID) == undefined) {
+                bl = document.createElement('a');
+                //bl.className = 'backlink';
+                bl.setAttribute("id", blID);
+                bl.href = '#' + replies[i].id;
+                bl.textContent = '->' + replies[i].id.slice(1);
+            } else {continue;}
+            if (!(qb = t.children[1].getElementsByClassName('nameBlock')[0])) {
+                continue;
+               // linklist[tid[1]] = true;   
+              //  qb = document.createElement('div');
+             //   qb.className = 'quoted-by';
+              //  qb.textContent = '';
+              //  qb.appendChild(bl);
+               // t.insertBefore(qb, t.getElementsByTagName('blockquote')[0]);
             }
             else {
                 linklist[tid[1]] = true;
@@ -353,12 +410,13 @@ function backlink() {
 function beautifiesName(anch) {
     var fullnameAnchor = $(anch);
     if (fullnameAnchor.text().length > 20) {
+        fullnameAnchor.removeClass("fn");
         var shortnameAnchor = document.createElement("a");
         var realId = fullnameAnchor.attr("id").toString().substr(3).toString();
         //setup the short name anchor
         shortnameAnchor.setAttribute("href", fullnameAnchor.attr("href").toString());
         shortnameAnchor.setAttribute("id", "fsn" + realId);
-        shortnameAnchor.setAttribute("class", "fn");
+        //shortnameAnchor.setAttribute("class", "fn");
         shortnameAnchor.text = fullnameAnchor.text().substr(0, 17) + "...";
         //hide the full name 
         fullnameAnchor.addClass("hide");
@@ -412,19 +470,19 @@ function openWindow(link, title) {
     }
 }
 
-function openNav() {
+//function openNav() {
 
-    if ($("#effecktNav").length == 0) {
-        var nav = document.createElement("nav");
-        nav.setAttribute("id", "effecktNav");
-        nav.setAttribute("class", "effeckt-off-screen-nav effeckt-off-screen-nav-right-squeeze effeckt-off-screen-nav-show");
-        document.appendChild(nav);
-        openNav();
-    } else { 
-        //
-    
-    }
-}
+//    if ($("#effecktNav").length == 0) {
+//        var nav = document.createElement("nav");
+//        nav.setAttribute("id", "effecktNav");
+//        nav.setAttribute("class", "effeckt-off-screen-nav effeckt-off-screen-nav-right-squeeze effeckt-off-screen-nav-show");
+//        document.appendChild(nav);
+//        openNav();
+//    } else { 
+//        //
+//    
+//    }
+//}
 
 function get_selinks(v) {
     var sb = new StringBuilder();
@@ -448,7 +506,7 @@ function repl(a, b, c) { var d = new RegExp("%" + b + "%", "g"); return a.replac
 function initImageAE() {
 
     var thumbs = document.getElementsByClassName("fileThumb");
-    var isImage = /\.(jpe?g|a?png|gif|svg|bmp)$/
+    var isImage = /\.(jpe?g|a?png|gif|bmp)$/
     for (i = 0; i < thumbs.length; i++) {
         if (isImage.test(thumbs[i].getAttribute("href").toString())) {
             var item = thumbs[i];

@@ -1,4 +1,4 @@
-﻿Public Class LangEngine
+﻿Friend Class LangEngine
 
     Dim dictObj As ValuesStore
     Dim languageDirectory As String = chanb.My.Request.PhysicalApplicationPath & "\bin\langs\"

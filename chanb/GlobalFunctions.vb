@@ -4,9 +4,10 @@
 ' Require TallComponent PDFRasterizer
 #Const EnablePDF = True
 
-Public Module GlobalFunctions
+Friend Module GlobalFunctions
 
     Private dbi As New DBInitializer
+    Public cfhl As CustomFileHandler() = GetCFHPlugins()
 
 #Region "Board Functions"
 
@@ -100,7 +101,7 @@ Public Module GlobalFunctions
 
             'Save the image.
             f.SaveAs(p)
-            
+
             ' f.InputStream.Seek(0, IO.SeekOrigin.Begin)
             Dim fs As New IO.FileStream(p, IO.FileMode.Open)
             Dim md5string As String = MD5(fs)
@@ -414,12 +415,121 @@ Public Module GlobalFunctions
                 Case "" ' A case of "" may occure when no file is uploaded. Simply return nothing.
                     Return
                 Case Else
-                    Throw New ArgumentException("Unsupported file type")
+                    Dim fileHandled As Boolean = False
+                    For i As Integer = 0 To cfhl.Count - 1 Step 1
+                        Dim cfh As CustomFileHandler = cfhl(i)
+                        If cfh.Is_FileSupported(fileextension) Then
+                            fileHandled = True
+                            Dim dd As String = CStr(Date.UtcNow.ToFileTime)
+                            Dim p As String = StorageFolder & "\" & dd & "." & fileextension
+                            f.SaveAs(p)
+
+
+                            'Let's check the thumbnail
+
+                            Dim thumb As String = ""
+
+                            Dim thumbData As CFHThumbData = cfh.GetHTTPFileThumb(f.InputStream)
+
+                            If thumbData.thumbRequired Then
+
+                                'If thumbData.thumbData.RawFormat Is Drawing.Imaging.ImageFormat.Png Then
+                                '    thumb = StorageFolderThumbs & "\th" & dd & ".png"
+                                'Else
+                                '    thumb = StorageFolderThumbs & "\th" & dd & ".jpg"
+                                'End If
+
+                                If thumbData.thumbExtension.ToLower() = "png" Then
+                                    thumb = StorageFolderThumbs & "\th" & dd & ".png"
+                                Else
+                                    thumb = StorageFolderThumbs & "\th" & dd & ".jpg"
+                                End If
+
+                                If (thumbData.thumbData.Width * thumbData.thumbData.Height) < 62500 Then
+                                    If fileextension = "png" Then
+                                        thumbData.thumbData.Save(thumb, Drawing.Imaging.ImageFormat.Png)
+                                    Else
+                                        thumbData.thumbData.Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
+                                    End If
+                                Else
+                                    If fileextension = "png" Then
+                                        ResizeImage(thumbData.thumbData, 250).Save(thumb, Drawing.Imaging.ImageFormat.Png)
+                                    Else
+                                        ResizeImage(thumbData.thumbData, 250).Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
+                                    End If
+                                End If
+                            End If
+
+                            Dim fs As New IO.FileStream(p, IO.FileMode.Open)
+                            Dim md5string As String = MD5(fs)
+                            fs.Close()
+
+                            If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection) Then
+                                If SmartLinkDuplicateImages = False Then
+
+                                    Delete_File_Fromdisk(p)
+                                    If thumbData.thumbRequired Then Delete_File_Fromdisk(thumb)
+
+                                    Throw New ArgumentException(duplicateFile)
+                                Else
+                                    Dim wpi As WPostImage = GetFileDataByMD5(md5string, Connection)
+                                    Delete_File_Fromdisk(p)
+                                    If thumbData.thumbRequired Then Delete_File_Fromdisk(thumb)
+                                    wpi.RealName = f.FileName
+                                    wpi.PostID = postId
+                                    AddFileToDatabase(wpi, postId, Connection)
+                                End If
+                            Else
+
+                                Dim wpi As New WPostImage
+                                wpi.ChanbName = dd & "." & fileextension
+                                wpi.Size = f.ContentLength
+                                wpi.Dimensions = thumbData.thumbDimensions
+                                wpi.Extension = fileextension.ToUpper
+                                wpi.RealName = f.FileName
+                                wpi.MD5 = md5string
+                                wpi.PostID = postId
+                                wpi.MimeType = thumbData.mimeType
+                                AddFileToDatabase(wpi, postId, Connection)
+
+                            End If
+
+                            Exit For
+                        End If
+                    Next
+                    If Not fileHandled Then Throw New Exception("Unsupported file type")
             End Select
         End If
     End Sub
 
+    Private Function GetCFHPlugins() As CustomFileHandler()
+        Dim ila As New List(Of CustomFileHandler)
+        For Each x As IO.FileInfo In FileIO.FileSystem.GetDirectoryInfo(chanb.My.Request.PhysicalApplicationPath & "\bin").GetFiles("*.dll", IO.SearchOption.TopDirectoryOnly)
+            If Not (x.Name = "chanb.dll") Then
+                Try
+                    Dim assembly As Reflection.Assembly = Reflection.Assembly.LoadFrom(x.FullName)
 
+                    Dim type As Type
+                    Dim found As Boolean = False
+
+                    For Each type In assembly.GetTypes()
+                        If GetType(CustomFileHandler).IsAssignableFrom(type) Then
+                            found = True
+                            Exit For
+                        End If
+                    Next
+
+                    If found Then
+                        Dim instance As CustomFileHandler
+                        instance = CType(Activator.CreateInstance(type), CustomFileHandler)
+                        ila.Add(instance)
+                    End If
+                Catch ex As Exception
+                End Try
+            End If
+        Next
+        Return ila.ToArray
+    End Function
 
 
     'Private Sub SaveThumbnail(ByVal chanbName As String, ByVal i As Drawing.Image, ByVal fileextension As String)
@@ -727,15 +837,23 @@ Public Module GlobalFunctions
 
                         Dim threadid As Integer = CInt(request.Item("threadid"))
 
-                        If IsLocked(threadid) Then
+                        Dim brd As beforeReplyData = _get_beforeReplyData(threadid)
+
+                        If brd.isGone Then
+                            message = FormatHTMLMessage("error", thread404Str, "default.aspx", "5", True)
+                            Exit Select
+                        End If
+
+                        If brd.isLocked Then
                             message = FormatHTMLMessage("error", lockedMessage, "default.aspx?id=" & threadid, "5", True)
                             Exit Select
                         End If
 
-                        If IsArchived(threadid) Then
+                        If brd.isArchived Then
                             message = FormatHTMLMessage("error", arhivedMessage, "archive.aspx?id=" & threadid, "5", True)
                             Exit Select
                         End If
+
 
                         If EnableImpresonationProtection Then
                             If IsPosterNameAlreadyTaken(request.UserHostAddress, request.Item("postername"), threadid) Then
@@ -955,6 +1073,29 @@ Public Module GlobalFunctions
         Return message
     End Function
 
+    Private Function _get_beforeReplyData(ByVal threadid As Integer) As beforeReplyData
+        Dim command As ChanbQuery = DatabaseEngine.ExecuteQueryReader("SELECT ID, locked, mta FROM board WHERE ID = " & CStr(threadid))
+        Dim a As New beforeReplyData
+        While command.Reader.Read
+            If IsDBNull(command.Reader(0)) Then
+                a.isGone = True
+            Else
+                a.isGone = False
+                a.isLocked = command.Reader.GetBoolean(1)
+                a.isArchived = command.Reader.GetBoolean(2)
+            End If
+        End While
+        command.Reader.Close()
+        command.Connection.Close()
+        Return a
+    End Function
+
+    Private Class beforeReplyData
+        Public isArchived As Boolean
+        Public isLocked As Boolean
+        Public isGone As Boolean
+    End Class
+
     Dim wf As New WordFilter
     Friend Function ProcessComment(ByVal po As WPost, ByVal pageHandlerName As String, ByVal para As HTMLParameters) As String
         If po.comment = String.Empty Then
@@ -1080,7 +1221,7 @@ Public Module GlobalFunctions
                 postHtml = postHtml.Replace("%SUMMARY%", summary & summaryClickToViewStr)
                 postHtml = postHtml.Replace("%MOBILESUMMARY%", summary)
             End If
-          
+
         End If
         If para.isCurrentThread Then
             If StaticHTML Then postHtml = postHtml.Replace("%POSTLINK%", ThreadHTMLWebPath & threadID & ".html") Else postHtml = postHtml.Replace("%POSTLINK%", "default.aspx?id=" & threadID)
@@ -1207,6 +1348,34 @@ Public Module GlobalFunctions
                                 scriptItem = scriptItem.Replace("%filec%", "")
                                 items.Append(scriptItem)
                                 noscriptItems.Append(GetAudioFileHTMLNoScript(wpi))
+                            Case Else
+                                Dim fileHandled As Boolean = False
+                                Dim scriptItem As String = ""
+                                Dim noscriptItem As String = ""
+
+                                For i As Int32 = 0 To cfhl.Length - 1 Step 1
+                                    Dim cfh As CustomFileHandler = cfhl(i)
+                                    If cfh.Is_FileSupported(wpi.Extension) Then
+                                        fileHandled = True
+                                        scriptItem = cfh.GetFileHTML(wpi) _
+                                        .Replace("%IMAGE TEXT DL%", WebRoot & "img.aspx?cn=" & wpi.ChanbName & "&rn=" & wpi.RealName) _
+                                        .Replace("%FILE SIZE%", chanb.FormatSizeString(wpi.Size)) _
+                                        .Replace("%Search Engine Links%", GetSearchEngineLinks(GetImageWEBPATHRE(wpi.ChanbName))) _
+                                        .Replace("%filec%", "")
+                                        If Not isNext Then scriptItem = scriptItem.Replace("%AN%", "active") Else scriptItem = scriptItem.Replace("%AN%", "notactive")
+
+                                        noscriptItem = cfh.GetFileHTML_NoScript(wpi)
+
+                                        Exit For
+                                    End If
+
+                                Next
+
+                                If fileHandled Then
+                                    items.Append(scriptItem)
+                                    noscriptItems.Append(noscriptItem)
+                                End If
+
                         End Select
 
                     End If
@@ -1245,6 +1414,28 @@ Public Module GlobalFunctions
                             item = item.Replace("%filec%", "file")
                             item = item.Replace("%AN%", "")
                             sb.Append(item)
+                        Case Else
+
+                            Dim fileHandled As Boolean = False
+                            Dim result As String = ""
+
+                            For i As Int32 = 0 To cfhl.Length - 1 Step 1
+                                Dim cfh As CustomFileHandler = cfhl(i)
+                                If cfh.Is_FileSupported(wpi.Extension) Then
+                                    fileHandled = True
+                                    result = cfh.GetFileHTML(wpi) _
+                                    .Replace("%IMAGE TEXT DL%", WebRoot & "img.aspx?cn=" & wpi.ChanbName & "&rn=" & wpi.RealName) _
+                                    .Replace("%FILE SIZE%", chanb.FormatSizeString(wpi.Size)) _
+                                    .Replace("%Search Engine Links%", GetSearchEngineLinks(GetImageWEBPATHRE(wpi.ChanbName))) _
+                                    .Replace("%AN%", "").Replace("%filec%", "file")
+                                    Exit For
+                                End If
+
+                            Next
+
+                            If fileHandled Then
+                                sb.Append(result)
+                            End If
                     End Select
 
                 End If ' File extension check block
@@ -1448,7 +1639,7 @@ Public Module GlobalFunctions
 
         pageHTML = pageHTML.Replace("%POST FORM TID%", Request.Item("id"))
 
-        
+
         If EnableCaptcha And Not isArchive Then
             pageHTML = pageHTML.Replace("%CAPTCHA PHOLDER%", captchaTableEntryHtml)
         Else
@@ -2594,6 +2785,37 @@ Public Module GlobalFunctions
         DatabaseEngine.ExecuteNonQuery(command)
     End Sub
 
+    Friend Function GetReports(ByVal start As Integer, ByVal endo As Integer) As Report()
+        Dim il As New List(Of Report)
+
+        '    Dim command As ChanbQuery = DatabaseEngine.ExecuteQueryReader("SELECT reporterIP, ID, postID, time, comment FROM reports")
+
+        Dim commandText As String = ""
+
+        Select Case dbType
+            Case "mssql"
+                commandText = "SELECT * FROM ( SELECT TOP " & CStr(endo) & " reporterIP, ID, postID, time, comment FROM ( SELECT TOP " & CStr(start + endo) & " reporterIP, ID, postID, time, comment FROM reports ORDER BY ID Asc) as newtbl order by ID desc) as newtbl2 order by ID asc"
+            Case "mysql"
+                commandText = "SELECT reporterIP, ID, postID, time, comment FROM reports LIMIT " & CStr(start) & "," & CStr(endo)
+        End Select
+        Dim command As ChanbQuery = DatabaseEngine.ExecuteQueryReader(commandText)
+
+
+
+        While command.Reader.Read
+            Dim a As New Report(command.Reader.GetString(0), command.Reader.GetInt32(1))
+            a.PostID = command.Reader.GetInt32(2)
+            a.Time = command.Reader.GetDateTime(3)
+            a.ReportComment = command.Reader.GetString(4)
+            il.Add(a)
+        End While
+
+        command.Reader.Close()
+        command.Connection.Close()
+        Return il.ToArray
+
+    End Function
+
 #End Region
 
 #Region "Misc Functions"
@@ -2783,7 +3005,7 @@ Public Module GlobalFunctions
         Return New String(CType(MD5(CStr(parentPost) & IP), Char()), 0, 8)
     End Function
 
-    Private Function GetTimeString(ByVal d As Date) As String
+    Friend Function GetTimeString(ByVal d As Date) As String
         'ISO 8601 date time format
         Return d.Year & "-" & d.Month & "-" & d.Day & " " & d.Hour & ":" & d.Minute & ":" & d.Second
     End Function
@@ -3281,7 +3503,9 @@ Public Module GlobalFunctions
     End Function
 
     Public Function GetChanbVersion() As String
-        Return "0.5.0.153"
+        ' Return "0.5.0.153"
+        Dim a As Reflection.Assembly = Reflection.Assembly.GetExecutingAssembly()
+        Return a.FullName.Replace(", Culture=neutral, PublicKeyToken=null", "")
     End Function
 
 #End Region

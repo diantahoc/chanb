@@ -57,14 +57,6 @@ To modify move field declaration from designer file to code-behind file.
  Module used to define the properties that are available in the My Namespace for Web projects.
  </summary>
 	<remarks></remarks>
-</member><member name="F:chanb.panel.form1">
-	<summary>
-form1 control.
-</summary>
-	<remarks>
-Auto-generated field.
-To modify move field declaration from designer file to code-behind file.
-</remarks>
 </member><member name="F:chanb.MakeAllStatic.form1">
 	<summary>
 form1 control.
@@ -73,6 +65,39 @@ form1 control.
 Auto-generated field.
 To modify move field declaration from designer file to code-behind file.
 </remarks>
+</member><member name="M:chanb.CustomFileHandler.GetHTTPFileThumb(System.IO.Stream)">
+	<summary>
+ Called when a user upload a file.
+ </summary>
+	<param name="f"></param>
+	<returns></returns>
+	<remarks>If no thumbnail is required for the file, please return a CFHThumbData class with thumbRequired = False.</remarks>
+</member><member name="M:chanb.CustomFileHandler.GetFileHTML(chanb.WPostImage)">
+	<summary>
+ Called when ChanB need to display a file.
+ </summary>
+	<param name="wpi"></param>
+	<returns></returns>
+	<remarks></remarks>
+</member><member name="M:chanb.CustomFileHandler.GetFileHTML_NoScript(chanb.WPostImage)">
+	<summary>
+ Called when ChanB need to display a file when JavaScript is disabled.
+ </summary>
+	<param name="wpi"></param>
+	<returns></returns>
+	<remarks></remarks>
+</member><member name="M:chanb.CustomFileHandler.GetJSHandler">
+	<summary>
+ Called by ChanB JS extension when updating a thread.
+ </summary>
+	<returns></returns>
+	<remarks></remarks>
+</member><member name="M:chanb.CustomFileHandler.Get_Supported_Files">
+	<summary>
+ Needs to return an array containing all the supported files extension.
+ </summary>
+	<returns></returns>
+	<remarks></remarks>
 </member><member name="F:chanb.faq.form1">
 	<summary>
 form1 control.
@@ -297,14 +322,6 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 	<param name="i"></param>
 	<returns>ChanbQuery</returns>
 	<remarks></remarks>
-</member><member name="F:chanb.installer.form1">
-	<summary>
-form1 control.
-</summary>
-	<remarks>
-Auto-generated field.
-To modify move field declaration from designer file to code-behind file.
-</remarks>
 </member><member name="M:chanb.GlobalFunctions.GetImageWEBPATH(System.String)">
 	<summary>
  For full image
@@ -361,22 +378,6 @@ To modify move field declaration from designer file to code-behind file.
 	<param name="bbcode"></param>
 	<returns></returns>
 	<remarks></remarks>
-</member><member name="F:chanb._mod.Head1">
-	<summary>
-Head1 control.
-</summary>
-	<remarks>
-Auto-generated field.
-To modify move field declaration from designer file to code-behind file.
-</remarks>
-</member><member name="F:chanb.report.form1">
-	<summary>
-form1 control.
-</summary>
-	<remarks>
-Auto-generated field.
-To modify move field declaration from designer file to code-behind file.
-</remarks>
 </member>
 </members>
 </doc>

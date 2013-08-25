@@ -30,17 +30,22 @@ Current Features
 * Multiple files per post.
 * Poster ID support.
 * Smart Linking of duplicate images to the same real file, therefore reducing the consumed disk space.
-* Support the following tags: `code`, `spoiler`.
+* Support the following tags: 
+	* `code` for code highlighting
+	* `spoiler` for spoilers
+	* `md` for markdown
+	* `q` for a quote
 
 -File support:
 * JPEG, PNG, APNG, GIF, BMP support.
 * PDF Support (proper thumbnail generation require TallComponent PDFRasterizer library, not enabled by default).
 * SVG documents support.
 * Video (WEBM) and audio (MP3, AAC) support.
+* You can add more file support by using plugins.
 
 -Server related:
 * Dual MS SQL or MySQL support. (Each one alone, not together)
-* Static mode.
+* Static mode (Means threads are saved to HTML files).
 
 Planned features
 =================

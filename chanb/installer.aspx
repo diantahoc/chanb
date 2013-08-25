@@ -1,17 +1,4 @@
-﻿<%@ Import Namespace = "chanb" %>
-<%@ Import Namespace = "chanb.GlobalFunctions" %>
-<%@ Import Namespace = "chanb.GlobalVariables" %>
-<%@ Page Language="VB" %>
-<%  
-    If isInstalled Then
-        Response.StatusCode = 403
-        Response.Write("Forbidden")
-        Response.End()
-    Else
-        Session("admin") = CStr(True)
-    End If
-    
-    %>
+﻿<%@ Page Language="VB" AutoEventWireup="false" CodeBehind="installer.aspx.vb" Inherits="chanb._installer" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml" >
@@ -92,8 +79,8 @@
 <br />
 
 <div class='whitebox'>           
-            <h2 style="text-align: center !important;">
-           <span style="text-align: center !important;">Configure database structure</span>
+            <h2 style="text-align: center !important">
+           <span style="text-align: center !important">Configure database structure</span>
            <br />
            </h2>
            
@@ -109,8 +96,6 @@
 
 <br />
 <br />
-
-
 
 <div class='whitebox'>  
             <h2 style="text-align: center !important;">
@@ -143,8 +128,6 @@
 
 <br />
 <br />
-
-
 
 <div class='whitebox'>  
            
@@ -250,8 +233,6 @@
 <br />
 <br />
 
-
-
 <div class='whitebox'>  
   <h2 style="text-align: center !important;">
            <span style="text-align: center !important; ">Administration credentials</span>
@@ -263,13 +244,11 @@
            
            <span>- Admin password:</span>
            <input type="text" name="adminpass" size="30px" class="form-text" /> 
-           <br /><br />
-           
+           <br /><br />          
 </div>
 
 <br />
 <br />
-
 
 <input type="submit" value="Install" name="action" />
 </div>

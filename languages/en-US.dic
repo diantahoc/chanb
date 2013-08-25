@@ -89,3 +89,4 @@ bannedOnStr╝Banned on
 banIpStr╝Your IP was
 banPostNoStr╝The post you were banned for
 banExpiryStr╝Expiration date
+thread404Str╝The specified thread does not exist.

@@ -47,110 +47,6 @@ Public Module InstallActions
                     Response.Write(FormatHTMLMessage(errorStr, errorOccuredStr.Replace("%", ex.Message), "", "8888", True))
                 End Try
 
-            Case "Upload and run script"
-
-                'Check if the dbType is specified
-                If Request.Item("db") = "" Then
-                    Response.Write(FormatHTMLMessage(errorStr, installerDbTypeNotSpecified, "", "8888", True))
-                    Response.End()
-                End If
-
-                'Check if the database connection string is specified
-                If Request.Item("dbconnectionstring") = "" Then
-                    Response.Write(FormatHTMLMessage(errorStr, installerDbConnectionStringNotSpecified, "", "8888", True))
-                    Response.End()
-                End If
-
-                'We try to upload the sql script and excute it 
-                Try
-
-                    Dim tempfilename As String = Request.PhysicalApplicationPath & "\sqlt"
-                    Request.Files("customdbfile").SaveAs(tempfilename) ' Save the file so we can read it later with IO.File.ReadAllText
-
-                    Select Case Request.Item("db").ToLower
-
-                        Case "mssql"
-
-                            Dim sq As New Data.SqlClient.SqlConnection(Request.Item("dbconnectionstring"))
-                            sq.Open()
-                            Dim q As New Data.SqlClient.SqlCommand(IO.File.ReadAllText(tempfilename), sq)
-                            q.ExecuteNonQuery()
-                            sq.Close()
-                            IO.File.Delete(tempfilename)
-
-                            Response.Write(FormatHTMLMessage("OK", "File executed sucessfully", "", "8887", False))
-
-
-                        Case "mysql"
-
-                            Dim sq As New MySql.Data.MySqlClient.MySqlConnection(Request.Item("dbconnectionstring"))
-                            sq.Open()
-                            Dim q As New MySql.Data.MySqlClient.MySqlCommand(IO.File.ReadAllText(tempfilename), sq)
-                            q.ExecuteNonQuery()
-                            sq.Close()
-                            IO.File.Delete(tempfilename)
-
-                            Response.Write(FormatHTMLMessage("OK", "File executed sucessfully", "", "8887", False))
-
-                        Case Else
-
-                            Response.Write(FormatHTMLMessage(errorStr, dbTypeInvalid, "", "8888", True))
-                            Response.End()
-                    End Select
-
-                Catch ex As Exception
-                    Response.Write(FormatHTMLMessage(errorStr, errorOccuredStr.Replace("%", ex.Message), "", "8888", True))
-                End Try
-
-
-            Case "automatically configure the database structure"
-
-                'Check if the dbType is specified
-                If Request.Item("db") = "" Then
-                    Response.Write(FormatHTMLMessage(errorStr, installerDbTypeNotSpecified, "", "8888", True))
-                    Response.End()
-                End If
-
-                'Check if the database connection string is specified
-                If Request.Item("dbconnectionstring") = "" Then
-                    Response.Write(FormatHTMLMessage(errorStr, installerDbConnectionStringNotSpecified, "", "8888", True))
-                    Response.End()
-                End If
-
-                Try
-                    Select Case Request.Item("db").ToLower
-
-                        Case "mssql"
-
-                          
-                            Dim sq As New Data.SqlClient.SqlConnection(Request.Item("dbconnectionstring"))
-                            sq.Open()
-                            Dim q As New Data.SqlClient.SqlCommand(My.Resources.mssqlDatabaseSetup, sq)
-                            q.ExecuteNonQuery()
-                            sq.Close()
-                            Response.Write(FormatHTMLMessage("OK", "Database updated sucessfully", "", "8887", False))
-
-                        Case "mysql"
-
-                            Dim sq As New MySql.Data.MySqlClient.MySqlConnection(Request.Item("dbconnectionstring"))
-                            sq.Open()
-                            Dim q As New MySql.Data.MySqlClient.MySqlCommand(My.Resources.mysqlDatabaseSetup, sq)
-                            q.ExecuteNonQuery()
-                            sq.Close()
-                            Response.Write(FormatHTMLMessage("OK", "Database updated sucessfully", "", "8887", False))
-
-
-                        Case Else
-
-                            Response.Write(FormatHTMLMessage(errorStr, dbTypeInvalid, "", "8888", True))
-                            Response.End()
-
-                    End Select
-
-                Catch ex As Exception
-                    Response.Write(FormatHTMLMessage(errorStr, errorOccuredStr.Replace("%", ex.Message), "", "8888", True))
-                End Try
-
             Case "Install"
 
                 'Check if the dbType is specified
@@ -162,6 +58,12 @@ Public Module InstallActions
                 'Check if the database connection string is specified
                 If Request.Item("dbconnectionstring") = "" Then
                     Response.Write(FormatHTMLMessage(errorStr, installerDbConnectionStringNotSpecified, "", "8888", True))
+                    Response.End()
+                End If
+
+                'Check if there is admin creds.
+                If Request.Item("adminname") = "" Or Request.Item("adminpass") = "" Then
+                    Response.Write(FormatHTMLMessage(errorStr, "Invalid admin credentials", "", "8888", True))
                     Response.End()
                 End If
 
@@ -263,12 +165,6 @@ Public Module InstallActions
 
                 End Select
 
-                'Now that we have checked that the database is ok, along with the connection string is stored, lets update the board settings.
-                'But first, we check if there is admin creds.
-                If Request.Item("adminname") = "" Or Request.Item("adminpass") = "" Then
-                    Response.Write(FormatHTMLMessage(errorStr, "Invalid admin credentials", "", "8888", True))
-                    Response.End()
-                End If
 
                 Dim di As New DataInitializer
 
@@ -317,7 +213,54 @@ Public Module InstallActions
                 End If
 
                 'Make the admin
-                NewMod(Request.Item("adminname"), Request.Item("adminpass"), "admin")
+                Select Case Request.Item("db").ToLower()
+                    Case "mssql"
+                        Dim i As New SqlClient.SqlConnection(Request.Item("dbconnectionstring"))
+                        i.Open()
+                        Dim command As New SqlClient.SqlCommand
+                        command.Connection = i
+                        command.CommandText = "INSERT INTO mods (username, password, power) VALUES (@username, @pass, @powers)"
+
+                        Dim nameA As New SqlParameter("@username", Data.DbType.String)
+                        nameA.Value = Request.Item("adminname")
+
+                        Dim passA As New SqlParameter("@pass", Data.DbType.String)
+                        passA.Value = MD5(Request.Item("adminpass"))
+
+                        Dim powerP As New SqlParameter("@powers", Data.DbType.String)
+                        powerP.Value = "admin"
+
+
+                        command.Parameters.Add(nameA)
+                        command.Parameters.Add(passA)
+                        command.Parameters.Add(powerP)
+
+                        command.ExecuteNonQuery()
+                        i.Close()
+                    Case "mysql"
+                        Dim i As New MySqlConnection(Request.Item("dbconnectionstring"))
+                        i.Open()
+                        Dim command As New MySqlCommand()
+                        command.Connection = i
+                        command.CommandText = "INSERT INTO mods (username, password, power) VALUES (@username, @pass, @powers)"
+
+                        Dim nameA As New MySqlParameter("@username", MySqlDbType.Text)
+                        nameA.Value = Request.Item("adminname")
+
+                        Dim passA As New MySqlParameter("@pass", MySqlDbType.Text)
+                        passA.Value = MD5(Request.Item("adminpass"))
+
+                        Dim powerP As New MySqlParameter("@powers", MySqlDbType.Text)
+                        powerP.Value = "admin"
+
+
+                        command.Parameters.Add(nameA)
+                        command.Parameters.Add(passA)
+                        command.Parameters.Add(powerP)
+
+                        command.ExecuteNonQuery()
+                        i.Close()
+                End Select
 
                 'Finally, mark the board as installed.
 

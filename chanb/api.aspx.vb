@@ -2,6 +2,7 @@
     Inherits System.Web.UI.Page
 
     Protected Sub Page_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
+        Session("chanb") = "chanb"
         Try
             Select Case Request.Item("mode")
                 Case "fetchrepliesafter" ' tid = thread id , lp = last post 
@@ -20,7 +21,7 @@
                     Response.ContentEncoding = Text.Encoding.UTF8
                     Response.Write(WpostsToJsonList(GetThreadRepliesAfter(threadid, lastpost, False), pa))
 
-                Case "getfileslist" ' tid = thread id , ft = file types jpg,bmp, list ... , ar = boolean include archived
+                Case "getfileslist" ' tid = thread id , ft = file types jpg,bmp,list ...
                     Dim tid As Integer = CInt(Request.Item("tid"))
                     Dim allowedfiles As New List(Of String)
                     For Each x In Request.Item("ft").Split(CChar(","))
@@ -28,7 +29,7 @@
                     Next
                     Response.ContentType = "application/json"
                     Response.ContentEncoding = Text.Encoding.UTF8
-                    Response.Write(GetFileList(tid, allowedfiles.ToArray, CBool(Request.Item("ar"))))
+                    Response.Write(GetFileList(tid, allowedfiles.ToArray, False))
                 Case "getthreadpagenumber" 'tid = thread id
                     Dim i As Integer = CInt(Request.Item("tid"))
                     Response.ContentType = "application/javascript"
@@ -38,11 +39,14 @@
                     Response.ContentType = "application/json"
                     Response.ContentEncoding = Text.Encoding.UTF8
                     Response.Write(GetThreadPosts(i))
+                Case "qrpost"
+                    Response.ContentType = "application/json"
+                    Response.Write(Newtonsoft.Json.JsonConvert.SerializeObject(ProcessPostAPI(Context), Newtonsoft.Json.Formatting.None))
                 Case Else
                     Response.Write("Invalid mode")
             End Select
         Catch ex As Exception
-            Response.Write("Server or syntax error")
+            Response.Write("Server or syntax error" & vbNewLine & ex.Message)
         End Try
     End Sub
 

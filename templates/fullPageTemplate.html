@@ -1,16 +1,14 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+﻿<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" >
 <head>
 <title>%BTITLE%</title>
-%META NO CACHE%
+%EXTRA META%
 <link rel="Stylesheet" href="%ROOT%yotsubab.css" />
 <link rel="Stylesheet" href="%ROOT%mobile.css" />
+<link  rel="stylesheet" href="%ROOT%js/pr/prettify.css" />
 <!--<link rel="Stylesheet" href="%ROOT%css/effeckt/captions.css" />
 <link rel="Stylesheet" href="%ROOT%css/effeckt/effeckt.css" />
-<link type="text/css" rel="stylesheet" href="%ROOT%js/sh/styles/shCoreDefault.css"/>
 <script src="%ROOT%js/xregexp-min.js"></script>
-<script src="%ROOT%js/sh/shCore.js"></script>
-<script src="%ROOT%js/sh/shAutoloader.js"></script>
 -->
 <script src="%ROOT%scripts.js"></script>
 <script src="%ROOT%extension.js"></script>
@@ -18,7 +16,8 @@
 <script src="%ROOT%js/jquery-ui.min.js"></script>
 <script src="%ROOT%js/worker.nude.js"></script>
 <script src="%ROOT%dscripts.aspx"></script>
-<script>$(document).ready(function() { extension_init(); checkforNSFWImages(); /*SyntaxHighlighter.all()*/ });</script>
+<script src="%ROOT%js/pr/prettify.js"></script>
+<script>    $(document).ready(function() { extension_init(); show_hide_pbox();  /*checkforNSFWImages();*/ });</script>
 </head> 
 <body>
 <div class="boardBanner"> 
@@ -65,7 +64,7 @@
 </tr>
 <tr>
 <th>%LANG passwordStr%</th>
-<td><input class="form-text" name="password" id='formps' size="12" autocomplete="off" type="password" value="%SESSION PASSWORD%"  onfocus="showPassword('formps')" onunload="hidePassword('formps')" />
+<td><input class="form-text" name="password" size="12" autocomplete="off" type="password" value="%SESSION PASSWORD%" />
 <span>(%LANG FOR PD%)</span>
 </td>
 </tr>
@@ -121,5 +120,78 @@
 %PAGES LIST%
 <div id="bottom"></div>
 <div id="absbot" class="absBotText"><span>%FOOTER TEXT%</span></div>
+<div id="extension_log">
+<span></span><br />
+<a onclick="noNewRepliesIncrem = 0">Update</a>
+</div>
+<div id="qrbox" class="qr hide">
+	<div id="qrtitle" class="qrtitle">
+		<span class="qrmove">Quick reply</span><a style="float:right;" class="buttonBlue bbf" href="javascript:qr('hide')">X</a>
+	</div>
+	<div id="qrbody" class="qrbody">
+		<form enctype="multipart/form-data" id="qr_form" action="%ROOT%post.aspx" target="qr_upload_frame" method="post">
+		<input type="hidden" id="qr_mode" name="postmode" value="%POST FORM MODE%" />
+		<input type="hidden" name="mode" value ="qrpost" />
+        <input type="hidden" name="threadid" value="%POST FORM TID%" />
+        	<input id="qr_pass" type="hidden" value="0" name="password"/>
+        	<script>
+        	    document.getElementById("qr_pass").setAttribute("value", document.getElementById("formps").getAttribute("value"));
+        	    if (document.getElementById("qr_mode").getAttribute("value") == "thread") {
+        	        document.getElementById("qr_addfile").setAttribute("style", "display: none");
+        	     }
+        	</script>
+        	<table style="background-color: #FF0000; color:#FFFFFF" id="qr_message" class="hide">
+        	<tr><td><span id="qr_message_content"></span><a onclick="$('#qr_message').addClass('hide')">[Hide]</a></td></tr>
+        	</table>
+			<table>
+					<tr>
+				<td>
+					<input id="qr_name" class="form-text" type="text" name="postername" /></td>
+				<td>	<input id="qr_email" class="form-text" type="text" name="email" /></td>
+				<td>	<input id="qr_subject" class="form-text" type="text" name="subject" />
+				</td>
+			</tr>
+			</table>
+			<table>
+	
+			<tr>
+				<td>
+					<textarea id="qr_comment" cols="50" rows="10" name="comment" class="form-textarea"></textarea>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<input type="button" id="qr_send" class="buttonBlue" onclick="qr('submit')" value="Send"/>
+					<input id="qr_reset" type="reset" class="buttonBlue" value="Reset"/>
+					<input type="checkbox" name="finp" value="yes">Dump ?</input>
+	     			<input type="checkbox" name="countf" value="yes">Count files ?</input>	
+			    </td>     
+			</tr>                    
+            
+			<tr>
+			<td>
+			<div id="qr_files" >
+            <input type="file" name="ufile"/>
+            </div>        
+            </td>
+			
+			<td><a id="qr_addfile" class="form-button" onclick="addUf('qr_files')">+</a>
+			</td>
+			</tr>
+			
+			<tr>
+			<td>
+			<div class="progress-block" id="progress-block" >
+                  <div class="progressbar-percents" id="download_perc"></div>
+                  <div class="progressbar"><div class="progressbarfill" style="width: 0%;" id="download_progress"></div></div>
+            </div>
+			</td>
+			</tr>
+			</table>
+		</form>
+	</div>
+	<iframe class="hide" name="qr_upload_frame" id="qr_upload_frame"></iframe>
+</div>
+<script>qr_init();</script>
 </body>
 </html>

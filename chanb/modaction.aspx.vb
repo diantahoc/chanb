@@ -2,7 +2,7 @@
     Inherits System.Web.UI.Page
 
     Protected Sub Page_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
-        If Session.Item("mod") Is "" Or Session.Item("mod") Is Nothing Then Session("mod") = CStr(False)
+        If CStr(Session("mod")) = "" Or Session("mod") Is Nothing Then Session("mod") = CStr(False)
 
         If CBool(Session("mod")) = False Then
             Response.StatusCode = 403
@@ -55,14 +55,17 @@
                     If powers(4) = "0" Then
                         Response.Write(FormatHTMLMessage(ForbiddenStr, modNoPower, "", "8888", True))
                     Else
-                        If Request.Item("new_data") = String.Empty Then
+                        If Request.Item("new_data") Is Nothing Or Request.Item("new_data") = String.Empty Then
                             Response.Redirect(WebRoot & "modEditpost.aspx?id=" & id)
                         Else
-
+                            Dim newData As String = Request.Item("new_data")
+                            GlobalFunctions.UpdatePostText(id, newData, False)
+                            Response.Write(FormatHTMLMessage(sucessStr, modRequetComplete, "", "8888", False))
                         End If
                     End If
                 Case Else
-                    Response.Write(forbiddenPage)
+                    Response.StatusCode = 403
+                    Response.End()
             End Select
         End If
     End Sub

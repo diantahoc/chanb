@@ -13,6 +13,8 @@ Partial Public Class _installer
     Public TrailPosts As Integer = GlobalVariables.TrailPosts
     Public BumpLimit As Integer = GlobalVariables.BumpLimit
 
+    Public WB As String = WebRoot
+
     Protected Sub Page_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
         If isInstalled Then
             Response.StatusCode = 403

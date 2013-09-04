@@ -15,10 +15,9 @@
                 End Select
                 Session("credpower") = lgi.Powers
                 Session("credmenu") = GetModeratorHTMLMenu(lgi.Powers) ' I don't know if it is a good idea to store html in the session, but I don't see a reason to not do it.
-                Response.Write(FormatHTMLMessage(chanb.Language.modLoginSucess, chanb.Language.modLoginSucess, "default.aspx", "2", False))
-                Response.End()
+                Response.Redirect(WebRoot & "default.aspx", False)
             Else
-                Response.Write(FormatHTMLMessage(chanb.Language.ForbiddenStr, chanb.Language.modLoginFailed, "", "8888", False))
+                Response.Write(FormatHTMLMessage(Language.ForbiddenStr, Language.modLoginFailed, "", "8888", False))
                 Response.End()
             End If
         End If

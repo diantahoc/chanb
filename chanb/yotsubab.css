@@ -68,9 +68,11 @@ img.bottomad,.bottomad>div,.bottomad a img {
 }
 
 hr {
-    border: none;
-    border-top: 1px solid #3fa3c1;
-    height: 0;
+background: url("res/hr.png") repeat-x scroll 0px 0px transparent;
+border: 0px none;
+color: rgb(204, 204, 204);
+height: 4px;
+padding: 0px;
 }
 
 div.board>hr {
@@ -79,10 +81,6 @@ div.board>hr {
 
 span.x-small {
     font-size: x-small;
-}
-
-.backlink {
-    font-size: smaller!important;
 }
 
 .mobile {
@@ -213,15 +211,8 @@ div.post div.postInfo span.nameBlock span.postertrip {
     font-weight: normal!important;
 }
 
-div.post div.postInfo span.date {
-}
-
-div.post div.postInfo span.time {
-}
-
 span.subject {
     color: rgb(100, 100, 100);
-    text-shadow: 0px 0px 19px rgba(220, 220, 220, 0.8);
 }
 
 div.post blockquote.postMessage {
@@ -252,12 +243,6 @@ div.post div.file div.fileInfo {
 div.replyContainer div.post div.file div.fileInfo {
     margin-left: 20px;
 }
-
-div.postDeleted{
-    background: #000000 !important;
-    opacity: 0.7;
-}
-
 
 div.post div.file .fileThumb {
     float: left;
@@ -295,8 +280,8 @@ div.postingMode {
     color: #FFFFFF;
     font-weight: bold;
     font-size: larger;
-    background-image: url(res/bgdark.png);
-    border-radius: 10px 10px 10px 10px;
+    background-image: url("res/bgdark.png");
+    border-radius: 5px 5px 5px 5px;
 }
 
 div.navLinks {
@@ -361,10 +346,6 @@ input[type=password] {
     text-align: center;
 }
 
-div.deleteform input[type=checkbox] {
-    margin: 1px 2px 1px 2px;
-}
-
 div.stylechanger {
     float: right;
     font-size: 10pt;
@@ -388,10 +369,6 @@ div#boardNavDesktopFoot a {
     padding: 1px;
     text-decoration: none;
     color: #34345C;
-}
-
-div.homelink {
-    float: right;
 }
 
 div#absbot {
@@ -429,7 +406,7 @@ td {
     font-size: 10pt;
 }
 
-input[type=text],input[type=password],table.postForm>tbody textarea,#recaptcha_response_field {
+input[type=text],input[type=password],table.postForm>tbody textarea{
     margin: 0px;
     margin-right: 2px;
     padding: 2px 4px 3px 4px;
@@ -508,33 +485,12 @@ table.postForm>tbody>tr>td>input[name="subject"] {
     cursor: pointer;
 }
 
-.nameBlock.capcodeAdmin span.name,span.capcodeAdmin a span.name,span.capcodeAdmin span.postertrip,span.capcodeAdmin strong.capcode {
-    color: #F00!important;
-}
-
-.nameBlock.capcodeMod span.name,span.capcodeMod a span.name,span.capcodeMod span.postertrip,span.capcodeMod strong.capcode {
-    color: #800080!important;
-}
-
-.nameBlock.capcodeDeveloper span.name,span.capcodeDeveloper a span.name,span.capcodeDeveloper span.postertrip,span.capcodeDeveloper strong.capcode {
-    color: #0000F0!important;
-}
-
 .useremail *:hover,.useremail:hover * {
     color: #0058c1!important;
 }
 
 .omittedposts,.abbr {
     color: #707070;
-}
-
-span.spoiler {
-    color: #000!important;
-    background: #000!important;
-}
-
-span.spoiler:hover,span.spoiler:focus {
-    color: #fff!important;
 }
 
 s,s a:not(:hover) {
@@ -551,78 +507,8 @@ s:hover a {
     text-decoration: underline;
 }
 
-table.exif {
-    min-width: 450px;
-}
-
-table.exif td {
-    color: #070707;
-    min-width: 150px;
-    font-size: 8pt;
-}
-
-table.exif td b {
-    text-decoration: underline;
-}
-
-#navtopright,#navbotright {
-    float: right;
-}
-
-div.posthover {
-    max-width: 400px;
-    margin-left: 20px;
-}
-
-div.posthover {
-    padding: 5px;
-    padding-left: 10px;
-    padding-right: 10px;
-}
-
-div.posthover a.fileThumb {
-    margin-left: 5px!important;
-    margin-right: 10px!important;
-}
-
-div.posthover blockquote {
-    margin: 5px;
-}
-
-div.posthover img[data-md5] {
-    max-width: 80px;
-    max-height: 80px;
-    width: auto!important;
-    height: auto!important;
-}
-
-div.posthover div.fileThumb {
-    margin-left: 0px!important;
-    margin-right: 10px!important;
-}
-
-div.boardSelect {
-    float: left;
-}
-
-div.pageJump {
-    float: right;
-    padding-right: 5px;
-    padding-top: 3px;
-}
-
-.pageJump a {
-    text-decoration: none;
-    padding-right: 5px;
-}
-
 .op .backlinkHr {
     width: 55%;
-}
-
-.countryFlag {
-    padding-top: 1px;
-    margin-bottom: -1px;
 }
 
 .deadlink {
@@ -658,6 +544,26 @@ div.pageJump {
 .goleft, .goright {
     cursor: pointer;
     max-width: 50px;
+}
+
+div.qp{
+border-radius: 2px 2px 2px 2px;
+background: #e6e6e6!important;
+padding: 5px 5px 5px 5px;
+border: dotted 3px #FF0000;
+display:table!important;
+position:fixed;
+z-index: 1000;
+}
+
+.qphl{
+border: dotted 3px #FF0000;
+}
+
+div.qpInserted{
+background: #f6f6f6!important;
+padding: 5px 5px 5px 5px;
+border: dotted 3px #000000;
 }
 
 .cimage {
@@ -698,7 +604,7 @@ max-width: 250px;
     padding: 4px;
     border-radius: 3px 3px 3px 3px;
 }
-
+/*
 .form-button {
     display: inline-block;
     border-radius: 5px 5px 5px 5px;
@@ -737,7 +643,7 @@ max-width: 250px;
 .form-button-disabled:hover {
     color: #000000 !important;
     cursor: pointer;
-}
+}*/
 
 .form-select {
 font-family: inherit;
@@ -939,30 +845,7 @@ color:#000000!important;
 	background: #36acd2
 }
 
-.qr {   
-    z-index: 50;
-    width:500px!important;
-    max-width:500px!important;   
-    min-width:500px!important;   
-    
-}
 
-.qrtitle{
-    
-    border-radius: 5px 5px 0px 0px;
-    background: #000000 url(res/bgdark.png);
-    color: #FFFFFF;
-    height: 30px;
-    cursor: move;
-}
-
-.qrbody{
-    padding: 10px 0px 20px 20px;
-    background: #e6e6e6;
-    border-radius: 0px 0px 5px 5px;
-    box-shadow: 0px 0px 5px rgba(169, 169, 169, 0.5);
-    text-align: left; 
-}
 
 .tt{
 border-left: 4px solid rgb(0, 0, 0);
@@ -1047,4 +930,128 @@ cursor:default;
   -moz-padding-end: 0px!important;
   padding: 0px 0px!important;
   margin: 0px 0px!important;
+}
+
+.qr {   
+    z-index: 1000;
+    /*min-width:500px!important;*/   
+    position:fixed;
+    top:0px;
+    left: 0px;
+    box-shadow: 0px 0px 10px rgb(0, 0, 0);
+    
+}
+
+.qrtitle{
+    border-radius: 5px 5px 0px 0px;
+    background: #000000 url(res/bgdark.png);
+    color: #FFFFFF;
+    height: 30px;
+    cursor: move;
+    text-align:center;
+}
+
+.qrbody{
+    background: #e6e6e6;
+    border-radius: 0px 0px 5px 5px;
+    text-align: left; 
+}
+
+.download-mid-block .progress-block {
+    margin: 24px 0px 25px !important;
+}
+
+.progressbar-percents {
+background-color: rgb(207, 36, 21);
+border-bottom-left-radius: 15px;
+border-bottom-right-radius: 15px;
+border-top-left-radius: 15px;
+border-top-right-radius: 15px;
+color: rgb(255, 255, 255);
+float: right;
+font-family: 'Open Sans',Arial,Helvetica,sans-serif;
+font-size: 14px;
+height: 26px;
+line-height: 22px;
+outline-color: rgb(255, 255, 255);
+outline-style: none;
+outline-width: 0px;
+padding-bottom: 0px;
+padding-left: 0px;
+padding-right: 0px;
+padding-top: 4px;
+text-align: center;
+width: 60px;
+}
+.progressbar{
+background-color: rgb(184, 188, 191);
+border-bottom-color: rgb(184, 188, 191);
+border-bottom-left-radius: 15px;
+border-bottom-right-radius: 15px;
+border-bottom-style: solid;
+border-bottom-width: 7px;
+border-image-outset: 0 0 0 0;
+border-image-repeat: stretch stretch;
+border-image-slice: 100% 100% 100% 100%;
+border-image-source: none;
+border-image-width: 1 1 1 1;
+border-left-color: rgb(184, 188, 191);
+border-left-style: solid;
+border-left-width: 7px;
+border-right-color: rgb(184, 188, 191);
+border-right-style: solid;
+border-right-width: 7px;
+border-top-color: rgb(184, 188, 191);
+border-top-left-radius: 15px;
+border-top-right-radius: 15px;
+border-top-style: solid;
+border-top-width: 7px;
+color: rgb(51, 51, 51);
+font-family: 'Open Sans',Arial,Helvetica,sans-serif;
+font-size: 13px;
+height: 16px;
+line-height: 15px;
+margin-bottom: 0px;
+margin-left: 0px;
+margin-right: 70px;
+margin-top: 0px;
+outline-color: rgb(51, 51, 51);
+outline-style: none;
+outline-width: 0px;
+overflow: hidden;
+overflow-x: hidden;
+overflow-y: hidden;
+text-align: center;
+}
+
+.progressbarfill{
+background-color: rgb(255, 255, 255);
+border-bottom-left-radius: 2.58333px;
+border-bottom-right-radius: 2.58333px;
+border-top-left-radius: 2.58333px;
+border-top-right-radius: 2.58333px;
+color: rgb(51, 51, 51);
+font-family: 'Open Sans',Arial,Helvetica,sans-serif;
+font-size: 13px;
+height: 16px;
+line-height: 15px;
+margin-bottom: 0px;
+margin-left: 0px;
+margin-right: 0px;
+margin-top: 0px;
+outline-color: rgb(51, 51, 51);
+outline-style: none;
+outline-width: 0px;
+padding-bottom: 0px;
+padding-left: 0px;
+padding-right: 0px;
+padding-top: 0px;
+text-align: center;
+width: 5.16667px;
+}
+
+#extension_log{
+position:fixed;
+    top:0px;
+    right: 0px;
 }

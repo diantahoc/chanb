@@ -1,7 +1,7 @@
 ﻿//Channel Board JavaScript extension.
 function extension_init() {
     $(document).ready(function() {
-    window.setInterval("ext_timer()", 1000);
+    window.setInterval(ext_timer, 1000);
 });
     backlink();
     snas();
@@ -9,6 +9,8 @@ function extension_init() {
     beautifiesNames();
     format_page_title();
     initImageAE();
+    if (prettyPrint) { prettyPrint(); }
+    quotePreview();
 }
 
 var isUpdating = false;
@@ -23,19 +25,22 @@ function ext_timer() {
         noNewRepliesIncrem -= 1
         if (noNewRepliesIncrem < 0) {
             noNewRepliesIncrem = delay + 20;
+            if (noNewRepliesIncrem > 100) {noNewRepliesIncrem = 100; }
             updateThread();
-            console.log("Update request sent");
+            displayMessage("Update request sent");
         }
-       console.log("Updating in " + noNewRepliesIncrem + " sec");
+        displayMessage("Updating in " + noNewRepliesIncrem + " sec");
     }
 }
 
+function displayMessage(s) {
+    document.getElementById("extension_log").children[0].textContent = s;//console.log(s);
+ }
+
 function updateThread() {
-    isUpdating = true;
     var threadID = $(".thread:first").attr("id").replace("t", "");
     fetchnewreplies(threadID);
     check_for_deleted_posts(threadID);
-    isUpdating = false;
 }
 
 function check_for_deleted_posts(threadID) {
@@ -71,7 +76,7 @@ function fetchnewreplies(threadID) {
         mode: "fetchrepliesafter",
         tid: threadID,
         lp: lastpostID
-    }, function(data) { format_reply_div(data); if (data.length == 0) { delay += 15; console.log("No new replies"); } else { delay = 0; console.log("New replies added"); } }, "json");
+    }, function(data) { format_reply_div(data); if (data.length == 0) { delay += 15; displayMessage("No new replies"); } else { delay = 0; displayMessage("New replies added"); } }, "json");
 }
 
 function format_page_title() {
@@ -100,7 +105,7 @@ function is_a_thread_opened() {
 
 
 function format_reply_div(jsondata) {
-
+    isUpdating = true;
     for (i = 0; i < jsondata.length; i++){
         var q = replyTemplate;
         var postData = jsondata[i];
@@ -147,7 +152,10 @@ function format_reply_div(jsondata) {
         wdLinks();
         beautifiesNames();
         backlink();
+        if (prettyPrint) { prettyPrint(); }
+        initImageAE();
     }
+    isUpdating = false;
 }
 
 function get_post_link(id) {
@@ -164,12 +172,18 @@ function format_post_files(files, id) {
 
         var rotatorHTML = FilesRotatorTemplate;
 
-        for (i = 0; i < files.length; i++) {
+        var wpi, item, extension;
 
-            var wpi = files[i];
+        var i = 0;
+        
+        for (; i < files.length; i++) {
 
-            var item = "";
-            var extension = wpi.Extension.toLowerCase();
+            if (i > files.length) { break; }
+            
+             wpi = files[i];
+
+          //  item = "";
+            extension = wpi.Extension.toLowerCase();
             switch (extension) {
                 case "jpg":
                 case "jpeg":
@@ -199,24 +213,31 @@ function format_post_files(files, id) {
                         break;
                     }
             } //switch block
-
+            wpi = null;
+            
             //Mark the first item as active
             if (!isNext) {
                 item = repl(item, "AN", "active");
+                isNext = true;
             } else {
                 item = repl(item, "AN", "notactive");
             }
+            
             item = repl(item, "filec", "");
             items.append(item);
+            item = null;
 
-            isNext = true;
         } //for block
-
+        
+        wpi = null;
+        item = null;
+       
         rotatorHTML = repl(rotatorHTML, "ID", id);
-        rotatorHTML = repl(rotatorHTML, "IMAGECOUNT", files.length);
-        rotatorHTML = repl(rotatorHTML, "ITEMS", items.toString());
-        rotatorHTML = repl(rotatorHTML, "NOS", ""); //no need for no script items, since if this code was executing, JavaScript is enabled.
-        return rotatorHTML;
+        rotatorHTML = repl(rotatorHTML, "IMAGECOUNT", files.length.toString());     
+        return repl(rotatorHTML, "ITEMS", items.toString());
+       
+        items = null;
+   
     } else {
 
         //Single file
@@ -224,6 +245,7 @@ function format_post_files(files, id) {
         var wpi = files[0];
         var item = "";
         var extension = wpi.Extension.toLowerCase();
+        
         switch (extension) {
             case "jpg":
             case "jpeg":
@@ -262,8 +284,7 @@ function format_post_files(files, id) {
 }
 
 function get_image_html(file) {
-    var r = ImageTemplate;
-    r = repl(r, "ID", file.PostID);
+    var r = repl(ImageTemplate, "ID", file.PostID);
     r = repl(r, "FILE NAME", file.RealName);
     r = repl(r, "IMAGE TEXT DL", webroot + "img.aspx?cn=" + file.ChanbName + "&rn=" + file.RealName);
     r = repl(r, "IMAGE DL", file.ImageWebPath);
@@ -274,6 +295,7 @@ function get_image_html(file) {
     r = repl(r, "THUMB_LINK", file.ImageThumbailWebPath);
     r = repl(r, "IMAGE EXT", file.Extension);
     r = repl(r, "Search Engine Links", get_selinks(file.ImageThumbailWebPath));
+    file = null;
     return r;
 }
 
@@ -335,20 +357,19 @@ function higlightID(id) {
     if (selectedId == id) {
         var items = $(".post." + selectedId);
         for (i = 0; i < items.length; i++) {
-            var item = $("#" + items[i].getAttribute('id').toString());
-            item.removeClass("highlight");
+             $("#" + items[i].id).removeClass("highlight");
         }
         selectedId = "";
     } else {
-        var allitems = $(".post");
+    var allitems = $(".post");
+        //hide all
         for (i = 0; i < allitems.length; i++) {
-            var item = $("#" + allitems[i].getAttribute('id').toString());
-            item.removeClass("highlight");
+            $("#" + allitems[i].id).removeClass("highlight");;
         }
+        //highlight only posts with that id
         var items = $(".post." + id);
         for (i = 0; i < items.length; i++) {
-            var item = $("#" + items[i].getAttribute('id').toString());
-            item.addClass("highlight");
+            $("#" + items[i].id).addClass("highlight");
         }
         selectedId = id;
     }
@@ -356,7 +377,7 @@ function higlightID(id) {
 
 function backlink() {
     var i, j, ii, jj, tid, bl, qb, t, form, backlinks, linklist, replies;
-
+ 
     form = document.getElementById("delfrm");
 
     if (!(replies = form.getElementsByClassName('reply'))) {
@@ -385,6 +406,7 @@ function backlink() {
                 bl = document.createElement('a');
                 //bl.className = 'backlink';
                 bl.setAttribute("id", blID);
+                bl.setAttribute("class", "backlonk");
                 bl.href = '#' + replies[i].id;
                 bl.textContent = '->' + replies[i].id.slice(1);
             } else {continue;}
@@ -450,8 +472,6 @@ function wdLinks(){
     for (i = 0; i < WDLitems.length; i++) {
         var anchor = $(WDLitems[i]);
         var link = anchor.attr("href").toString();
-        //var newlink = "javascript:openWindow('" + link + "','" + anchor.text() + "')";
-        //anchor.attr("href", newlink);
         anchor.attr("href", "javascript:openWindow('" + link + "','" + anchor.text() + "')");
         anchor.removeAttr("target");
         anchor.removeClass("wdlink");
@@ -491,23 +511,27 @@ function get_selinks(v) {
         sb.append("&nbsp;");
     }
     return sb.toString();
+    sb = null;
 }
 
 //format time string
 // d = datetime object
-function fts(d) { if (!(d == null)) { return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + (d.getDate() + 1) + " " + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds() } else { return "" } }
+function fts(d) { if (d) { return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + (d.getDate() + 1) + " " + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds() } else { return "" } }
 
 //replace a string inside a string
 //a = string to process
 //b = chanb keyword
 //c = value to replace
-function repl(a, b, c) { var d = new RegExp("%" + b + "%", "g"); return a.replace(d, c); }
+function repl(a, b, c) {var re = new RegExp("%" + b + "%", "g");  return a.replace(re, c)}
 
+//------------- Image inline expansion region --------------------
 function initImageAE() {
 
     var thumbs = document.getElementsByClassName("fileThumb");
     var isImage = /\.(jpe?g|a?png|gif|bmp)$/
     for (i = 0; i < thumbs.length; i++) {
+        if (!(thumbs[i].hasAttribute("href"))) {continue;}
+        
         if (isImage.test(thumbs[i].getAttribute("href").toString())) {
             var item = thumbs[i];
             var imgItem = item.children[0];
@@ -521,7 +545,9 @@ function initImageAE() {
             
             item.appendChild(newBigImage);
         
-            item.setAttribute("href","javascript:showFull('" + imgItemID + "' )");
+            //item.setAttribute("href","javascript:showFull('" + imgItemID + "' )");
+          
+            item.addEventListener('click', showFull, false);
             item.removeAttribute("target");
            
         
@@ -530,8 +556,13 @@ function initImageAE() {
     
  }
 
- function showFull(id) {
+ function showFull(e) {
+     e.preventDefault();
+
+     var id = e.target.getAttribute("id").toString().replace("big","");
+
      var ab = document.getElementById("big" + id);
+     
      var thumbImg = document.getElementById(id);
 
      if (ab.getAttribute("asrc") == "") {
@@ -549,6 +580,128 @@ function initImageAE() {
      }
  
  }
+// -----------------------------------------------------------
+
+// ----------- Quote Preview Region---------------------------
+
+ function quotePreview() {
+     var quotes = document.forms.delfrm.getElementsByClassName('backlink');
+     for (i = 0, j = quotes.length; i < j; i++) {
+         quotes[i].addEventListener('mousemove', display_post_preview, false);
+         quotes[i].addEventListener('mouseout', remove_post_preview, false);
+     }
+     var quotes = document.forms.delfrm.getElementsByClassName('backlonk');
+     for (i = 0, j = quotes.length; i < j; i++) {
+         quotes[i].addEventListener('mousemove', display_post_preview, false);
+         quotes[i].addEventListener('mouseout', remove_post_preview, false);
+         quotes[i].addEventListener('click', embed_post, false);
+     }
+     
+ }
+
+ function embed_post(e) {
+     e.preventDefault();
+     var postID = e.target.getAttribute('href').split('#')[1];
+     var parentID = __get_parentID(e);
+     
+     var cn = document.getElementById("qp" + postID + parentID);
+     var t = document.getElementById(parentID);
+
+     if (t && cn) {
+         if (cn.getAttribute("isinserted") == "yep") {
+             cn.setAttribute("isinserted", "");
+         t.removeChild(cn);
+        }else{
+         cn.setAttribute("class", "qpInserted");
+         cn.setAttribute("isinserted", "yep");
+         t.insertBefore(cn, t.getElementsByTagName("blockquote")[0]);
+       }
+     }
+  }
+
+function display_post_preview(e) {
+    e.preventDefault();
+     var postID = e.target.getAttribute('href').split('#')[1];
+
+     var parentID = __get_parentID(e);
+
+     var qpID = "qp" + postID + parentID;
+     if (document.getElementById(qpID))
+     {
+         document.getElementById(qpID).setAttribute("style", get_relative_mouse_postion(e));
+     }
+     else 
+     {
+         var replyBox = $("#" + postID);
+         replyBox.addClass("qphl");
+
+         var newObject = replyBox.clone();
+       //  console.log(newObject);
+
+         newObject[0].setAttribute("id", qpID);
+
+         newObject[0].setAttribute("class", "qp");
+         newObject[0].setAttribute("style", get_relative_mouse_postion(e));
+
+         //dash the corresponding backlink
+       
+         var blk = newObject[0].getElementsByTagName("a");
+
+         for (i = 0; i < blk.length; i++) {
+
+             if (blk[i].getAttribute('href').indexOf(parentID) >=0) {
+                 blk[i].setAttribute("style", "text-decoration: overline underline;");
+             }
+         
+         }
+
+         document.getElementsByTagName("body")[0].appendChild(newObject[0]);
+     }
+
+ }
+
+ function get_relative_mouse_postion(e) {
+     var left = e.clientX;
+     var top = e.clientY;  
+     return "left: " + left + "px; top: " + top + "px;"
+ }
+
+ function __get_parentID(e) {
+     switch (e.target.getAttribute("class")) {
+         case "backlink":
+             return e.target.parentElement.parentElement.getAttribute("id");
+             break;
+         case "backlonk":
+             return e.target.parentElement.parentElement.parentElement.getAttribute("id");
+             break;
+         default:
+             return "";
+             break;
+     }
+ }
+
+ function remove_post_preview(e) {
+     e.preventDefault();
+     var postID = e.target.getAttribute('href').split('#')[1];
+     var parentID = __get_parentID(e);
+     
+     var cn = document.getElementById("qp" + postID+ parentID);
+     if (cn) 
+     {
+         if (cn.getAttribute("isinserted") == "yep")
+          {
+          } 
+         else 
+         {
+             document.getElementsByTagName("body")[0].removeChild(cn);
+         }
+     }
+     $("#" + postID).removeClass("qphl");
+ }
+
+ 
+//------------------------------------------------------
+
 
 // StringBuilder class
 // Initializes a new instance of the StringBuilder class

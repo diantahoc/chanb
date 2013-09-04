@@ -3,7 +3,6 @@
 
     Protected Sub Page_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
         Session("chanb") = "chanb"
-        ' Session("admin") = CStr(True)
         If Not isInstalled Then
             InstallActions.ProcessCommand(Request, Response)
         Else ' Process normal admin actions, since chanb is marked as installed.
@@ -27,6 +26,8 @@
                         Catch ex As Exception
                             Response.Write(ex.Message)
                         End Try
+                    Case "purgeall"
+                        PermaDeleteAllPosts(True)
                     Case "deletemod"
                     Case "updatemod"
                     Case "changepass"

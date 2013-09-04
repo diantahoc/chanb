@@ -6,8 +6,8 @@
 
 Friend Module GlobalFunctions
 
-    Private dbi As New DBInitializer
-    Public cfhl As CustomFileHandler() = GetCFHPlugins()
+    Private dbi As New DBInitializer()
+    Public CFH_Plugins As CustomFileHandler() = GetCFHPlugins()
 
 #Region "Board Functions"
 
@@ -47,243 +47,257 @@ Friend Module GlobalFunctions
     End Sub
 
     Private Sub SavePostFile(ByVal f As HttpPostedFile, ByVal isReply As Boolean, ByVal postId As Integer, Optional ByVal Connection As DbConnection = Nothing)
-        ' If f.ContentLength > MaximumFileSize Then Throw New Exception(FileToBig)
-        If FileIsImage(f) Then
+        'TODO: Fix this possible bug :Images are replaced if "it has to do with the way moot names images with the UNIX timestamp and only happens if someone uploads an image at the same time as you down to the exact second".
+        'Possible bug fix 
 
-            Dim w As Drawing.Image
-
-            Try
-                'Check if the file is a valid image
-                w = Drawing.Image.FromStream(f.InputStream)
-                'If RemoveEXIFData Then
-                '    w = RemoveEXIF(w)
-                'End If
-            Catch ex As Exception
-                'No image is required when replying
-                If f.ContentLength = 0 And isReply Then
-                    Exit Sub
-                Else
-                    Throw New ArgumentException(BadOrNoImage)
-                End If
-            End Try
+        'If FileIO.FileSystem.FileExists(p) Then
+        '    Do Until (Not FileIO.FileSystem.FileExists(p))
+        '        dd = CStr(Date.UtcNow.ToFileTime())
+        '        p = StorageFolder & "\" & dd & "." & fileextension
+        '    Loop
+        '    f.SaveAs(p)
+        'Else
+        '    f.SaveAs(p)
+        'End If
+        ' Or use a random number in addition to the unix time stamp.
+        ' This increase the number of collosion posibilities but does not get rid of the problem.
 
 
-            Dim fileextension As String = f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1).ToLower
+        Dim rand As New Random
+        
+        Dim fileextension As String = f.FileName.Split(CChar("."))(f.FileName.Split(CChar(".")).Length - 1).ToLower()
 
-            Dim dd As String = CStr(Date.UtcNow.ToFileTime)
-            'Full image path
-            Dim p As String = StorageFolder & "\" & dd & "." & fileextension
+        Select Case fileextension.ToUpper()
+            Case "JPG", "JPEG", "PNG", "BMP", "GIF", "APNG"
 
-            ''Thumb path
-            Dim thumb As String
-            If fileextension = "png" Then
-                thumb = StorageFolderThumbs & "\th" & dd & ".png"
-            Else
-                thumb = StorageFolderThumbs & "\th" & dd & ".jpg"
-            End If
+                Dim w As Drawing.Image
 
-            'Check if resize is needed.
-            If (w.Width * w.Height) < 62500 Then
+                Try
+                    'Check if the file is a valid image
+                    w = Drawing.Image.FromStream(f.InputStream)
+                    'If RemoveEXIFData Then
+                    '    w = RemoveEXIF(w)
+                    'End If
+                Catch ex As Exception
+                    'No image is required when replying
+                    If f.ContentLength = 0 And isReply Then
+                        Exit Sub
+                    Else
+                        Throw New ArgumentException(BadOrNoImage)
+                    End If
+                End Try
+
+
+
+
+                Dim ChanbName As String = CStr(Date.UtcNow.ToFileTime) & "r" & CStr(rand.Next(0, 1024))
+
+                'Full image path
+                Dim FullImagePath As String = StorageFolder & "\" & ChanbName & "." & fileextension
+
+
+                'Thumb path
+                Dim thumb As String
                 If fileextension = "png" Then
-                    w.Save(thumb, Drawing.Imaging.ImageFormat.Png)
+                    thumb = StorageFolderThumbs & "\th" & ChanbName & ".png"
                 Else
-                    w.Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
+                    thumb = StorageFolderThumbs & "\th" & ChanbName & ".jpg"
                 End If
-            Else
-                If fileextension = "png" Then
-                    ResizeImage(w, 250).Save(thumb, Drawing.Imaging.ImageFormat.Png)
+
+                'Check if resize is needed.
+                If (w.Width * w.Height) < 62500 Then
+                    If fileextension = "png" Then
+                        w.Save(thumb, Drawing.Imaging.ImageFormat.Png)
+                    Else
+                        w.Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
+                    End If
                 Else
-                    ResizeImage(w, 250).Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
+                    If fileextension = "png" Then
+                        ResizeImage(w, 250).Save(thumb, Drawing.Imaging.ImageFormat.Png)
+                    Else
+                        ResizeImage(w, 250).Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
+                    End If
                 End If
-            End If
 
-            'SaveThumbnail(dd, w, fileextension)
+                'Save the image.
+                f.SaveAs(FullImagePath)
 
-            'Save the image.
-            f.SaveAs(p)
+                ' f.InputStream.Seek(0, IO.SeekOrigin.Begin)
+                Dim fs As New IO.FileStream(FullImagePath, IO.FileMode.Open)
+                Dim md5string As String = MD5(fs)
+                fs.Close()
 
-            ' f.InputStream.Seek(0, IO.SeekOrigin.Begin)
-            Dim fs As New IO.FileStream(p, IO.FileMode.Open)
-            Dim md5string As String = MD5(fs)
-            fs.Close()
 
-            'fs.Close()
 
-            If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection) Then
-                'If image already exist, we fetch the matching image data from the database, and delete the saved files.
-                If SmartLinkDuplicateImages = False Then
-                    FileIO.FileSystem.DeleteFile(p)
-                    FileIO.FileSystem.DeleteFile(thumb)
-                    Throw New ArgumentException(duplicateFile)
+                If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection) Then
+                    'If image already exist, we fetch the matching image data from the database, and delete the saved files.
+                    If SmartLinkDuplicateImages = False Then
+                        FileIO.FileSystem.DeleteFile(FullImagePath)
+                        FileIO.FileSystem.DeleteFile(thumb)
+                        Throw New ArgumentException(duplicateFile)
+                    Else
+                        Dim wpi As WPostImage = GetFileDataByMD5(md5string, Connection)
+                        'Delete previously saved files.
+                        FileIO.FileSystem.DeleteFile(FullImagePath)
+                        FileIO.FileSystem.DeleteFile(thumb)
+                        'Change the necessary variables
+                        wpi.PostID = postId
+                        wpi.RealName = f.FileName
+
+                        AddFileToDatabase(wpi, postId, Connection)
+                    End If
                 Else
-                    Dim wpi As WPostImage = GetFileDataByMD5(md5string, Connection)
-                    'Delete previously saved files.
-                    FileIO.FileSystem.DeleteFile(p)
-                    FileIO.FileSystem.DeleteFile(thumb)
-                    'Change the necessary variables
-                    wpi.PostID = postId
+
+
+                    Dim wpi As New WPostImage
+                    wpi.ChanbName = ChanbName & "." & fileextension
+                    wpi.Size = f.ContentLength
+                    wpi.Dimensions = w.Size.Width & "x" & w.Size.Height
+                    wpi.Extension = fileextension.ToUpper
                     wpi.RealName = f.FileName
+                    wpi.MD5 = md5string
+                    wpi.PostID = postId
+                    wpi.MimeType = GetMimeType(fileextension)
+                    AddFileToDatabase(wpi, postId, Connection)
+
+                    w.Dispose()
+                End If
+
+            Case "SVG"
+                Dim dd As String = CStr(Date.UtcNow.ToFileTime) & "r" & CStr(rand.Next(0, 1024))
+                Dim p As String = StorageFolder & "\" & dd & "." & fileextension
+                'Thumb path
+                Dim thumb As String = StorageFolderThumbs & "\th" & dd & ".png"
+                f.SaveAs(p)
+
+                Dim fs As New IO.FileStream(p, IO.FileMode.Open)
+                Dim md5string As String = MD5(fs)
+                fs.Close()
+
+
+
+                If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection) Then
+
+                    If SmartLinkDuplicateImages = False Then
+                        FileIO.FileSystem.DeleteFile(p)
+                        FileIO.FileSystem.DeleteFile(thumb)
+                        Throw New ArgumentException(duplicateFile)
+                    Else
+                        Dim wpi As WPostImage = GetFileDataByMD5(md5string, Connection)
+                        FileIO.FileSystem.DeleteFile(p)
+
+                        wpi.RealName = f.FileName
+                        wpi.PostID = postId
+                        AddFileToDatabase(wpi, postId, Connection)
+
+                    End If
+
+                Else
+
+                    Dim svgBi As Drawing.Bitmap
+
+                    Try
+                        Dim svgDoc As Svg.SvgDocument = Svg.SvgDocument.Open(p)
+                        svgBi = svgDoc.Draw()
+                    Catch ex As Exception
+                        svgBi = New Drawing.Bitmap(150, 30)
+                        Dim g As Drawing.Graphics = Drawing.Graphics.FromImage(svgBi)
+                        g.Clear(Drawing.Color.White)
+                        g.DrawString("SVG", New Drawing.Font(Drawing.FontFamily.GenericMonospace, 20, Drawing.FontStyle.Regular, Drawing.GraphicsUnit.Pixel), Drawing.Brushes.Black, 0, 0)
+                        g.Dispose()
+                    End Try
+
+                    If (svgBi.Width * svgBi.Height) < 62500 Then
+                        svgBi.Save(thumb)
+                    Else
+                        ResizeImage(svgBi, 250).Save(thumb)
+                    End If
+
+                    Dim wpi As New WPostImage
+                    wpi.ChanbName = dd & "." & fileextension
+                    wpi.Size = f.ContentLength
+                    wpi.Dimensions = svgBi.Size.Width & "x" & svgBi.Size.Height
+                    wpi.Extension = fileextension.ToUpper
+                    wpi.RealName = f.FileName
+                    wpi.MD5 = md5string
+                    wpi.PostID = postId
+                    wpi.MimeType = GetMimeType(fileextension)
+                    svgBi.Dispose()
 
                     AddFileToDatabase(wpi, postId, Connection)
+
                 End If
-            Else
 
 
-                Dim wpi As New WPostImage
-                wpi.ChanbName = dd & "." & fileextension
-                wpi.Size = f.ContentLength
-                wpi.Dimensions = w.Size.Width & "x" & w.Size.Height
-                wpi.Extension = fileextension.ToUpper
-                wpi.RealName = f.FileName
-                wpi.MD5 = md5string
-                wpi.PostID = postId
-                wpi.MimeType = GetMimeType(fileextension)
-                AddFileToDatabase(wpi, postId, Connection)
-
-                w.Dispose()
-            End If
-
-
-
-        Else 'Maybe a PDF/SVG/WEBM/OGG/MP3 file or no file
-            Dim fileextension As String = f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1)
-
-            Select Case fileextension.ToUpper()
-                Case "SVG"
-                    Dim dd As String = CStr(Date.UtcNow.ToFileTime)
-                    Dim p As String = StorageFolder & "\" & dd & "." & fileextension
-                    'Thumb path
-                    Dim thumb As String = StorageFolderThumbs & "\th" & dd & ".png"
-                    f.SaveAs(p)
-
-                    Dim fs As New IO.FileStream(p, IO.FileMode.Open)
-                    Dim md5string As String = MD5(fs)
-                    fs.Close()
-
-
-
-                    If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection) Then
-
-                        If SmartLinkDuplicateImages = False Then
-                            FileIO.FileSystem.DeleteFile(p)
-                            FileIO.FileSystem.DeleteFile(thumb)
-                            Throw New ArgumentException(duplicateFile)
-                        Else
-                            Dim wpi As WPostImage = GetFileDataByMD5(md5string, Connection)
-                            FileIO.FileSystem.DeleteFile(p)
-
-                            wpi.RealName = f.FileName
-                            wpi.PostID = postId
-                            AddFileToDatabase(wpi, postId, Connection)
-
-                        End If
-
-                    Else
-
-                        Dim svgBi As Drawing.Bitmap
-
-                        Try
-                            Dim svgDoc As Svg.SvgDocument = Svg.SvgDocument.Open(p)
-                            svgBi = svgDoc.Draw()
-                        Catch ex As Exception
-                            svgBi = New Drawing.Bitmap(150, 30)
-                            Dim g As Drawing.Graphics = Drawing.Graphics.FromImage(svgBi)
-                            g.Clear(Drawing.Color.White)
-                            g.DrawString("SVG", New Drawing.Font(Drawing.FontFamily.GenericMonospace, 20, Drawing.FontStyle.Regular, Drawing.GraphicsUnit.Pixel), Drawing.Brushes.Black, 0, 0)
-                            g.Dispose()
-                        End Try
-
-                        If (svgBi.Width * svgBi.Height) < 62500 Then
-                            svgBi.Save(thumb)
-                        Else
-                            ResizeImage(svgBi, 250).Save(thumb)
-                        End If
-
-                        Dim wpi As New WPostImage
-                        wpi.ChanbName = dd & "." & fileextension
-                        wpi.Size = f.ContentLength
-                        wpi.Dimensions = svgBi.Size.Width & "x" & svgBi.Size.Height
-                        wpi.Extension = fileextension.ToUpper
-                        wpi.RealName = f.FileName
-                        wpi.MD5 = md5string
-                        wpi.PostID = postId
-                        wpi.MimeType = GetMimeType(fileextension)
-                        svgBi.Dispose()
-
-                        AddFileToDatabase(wpi, postId, Connection)
-
-                    End If
-
-
-                Case "PDF"
+            Case "PDF"
 
 #If EnablePDF Then
-                    Dim dd As String = CStr(Date.UtcNow.ToFileTime)
-                    Dim p As String = StorageFolder & "\" & dd & "." & fileextension
-                    'Thumb path
-                    Dim thumb As String = StorageFolderThumbs & "\th" & dd & ".jpg"
-                    f.SaveAs(p)
+                Dim dd As String = CStr(Date.UtcNow.ToFileTime) & "r" & CStr(rand.Next(0, 1024))
+                Dim p As String = StorageFolder & "\" & dd & "." & fileextension
+                'Thumb path
+                Dim thumb As String = StorageFolderThumbs & "\th" & dd & ".jpg"
+                f.SaveAs(p)
 
-                    Dim fs As New IO.FileStream(p, IO.FileMode.Open)
-                    Dim md5string As String = MD5(fs)
-                    fs.Close()
+                Dim fs As New IO.FileStream(p, IO.FileMode.Open)
+                Dim md5string As String = MD5(fs)
+                fs.Close()
 
 
 
-                    If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection) Then
-                        If SmartLinkDuplicateImages = False Then
-                            FileIO.FileSystem.DeleteFile(p)
-                            FileIO.FileSystem.DeleteFile(thumb)
-                            Throw New ArgumentException(duplicateFile)
-                        Else
-                            Dim wpi As WPostImage = GetFileDataByMD5(md5string, Connection)
-                            wpi.RealName = f.FileName
-                            wpi.PostID = postId
-                            AddFileToDatabase(wpi, postId, Connection)
-                        End If
+                If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection) Then
+                    If SmartLinkDuplicateImages = False Then
+                        FileIO.FileSystem.DeleteFile(p)
+                        FileIO.FileSystem.DeleteFile(thumb)
+                        Throw New ArgumentException(duplicateFile)
                     Else
-
-                        Dim fileS As New IO.FileStream(p, IO.FileMode.Open)
-
-                        Dim pd As New TallComponents.PDF.Rasterizer.Document(fileS)
-                        Dim page As TallComponents.PDF.Rasterizer.Page = pd.Pages(0)
-
-                        Dim scale As Double = 150 / 72
-
-                        Dim pdfBi As Drawing.Bitmap = New Drawing.Bitmap(CInt(scale * page.Width), CInt(scale * page.Height))
-
-                        Dim graph As Drawing.Graphics = Drawing.Graphics.FromImage(pdfBi)
-                        graph.SmoothingMode = Drawing.Drawing2D.SmoothingMode.AntiAlias
-                        graph.ScaleTransform(CSng(scale), CSng(scale))
-                        graph.Clear(Drawing.Color.White)
-                        page.Draw(graph)
-
-                        graph.Dispose()
-                        fileS.Close()
-
-                        If (pdfBi.Width * pdfBi.Height) < 62500 Then
-                            pdfBi.Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
-                        Else
-                            ResizeImage(pdfBi, 250).Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
-                        End If
-
-                        Dim wpi As New WPostImage
-                        wpi.ChanbName = dd & "." & fileextension
-                        wpi.Size = f.ContentLength
-                        wpi.Dimensions = pdfBi.Size.Width & "x" & pdfBi.Size.Height
-                        wpi.Extension = fileextension.ToUpper
+                        Dim wpi As WPostImage = GetFileDataByMD5(md5string, Connection)
                         wpi.RealName = f.FileName
-                        wpi.MD5 = md5string
                         wpi.PostID = postId
-                        wpi.MimeType = GetMimeType(fileextension)
-                        pdfBi.Dispose()
-
                         AddFileToDatabase(wpi, postId, Connection)
+                    End If
+                Else
 
+                    Dim fileS As New IO.FileStream(p, IO.FileMode.Open)
+
+                    Dim pd As New TallComponents.PDF.Rasterizer.Document(fileS)
+                    Dim page As TallComponents.PDF.Rasterizer.Page = pd.Pages(0)
+
+                    Dim scale As Double = 150 / 72
+
+                    Dim pdfBi As Drawing.Bitmap = New Drawing.Bitmap(CInt(scale * page.Width), CInt(scale * page.Height))
+
+                    Dim graph As Drawing.Graphics = Drawing.Graphics.FromImage(pdfBi)
+                    graph.SmoothingMode = Drawing.Drawing2D.SmoothingMode.AntiAlias
+                    graph.ScaleTransform(CSng(scale), CSng(scale))
+                    graph.Clear(Drawing.Color.White)
+                    page.Draw(graph)
+
+                    graph.Dispose()
+                    fileS.Close()
+
+                    If (pdfBi.Width * pdfBi.Height) < 62500 Then
+                        pdfBi.Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
+                    Else
+                        ResizeImage(pdfBi, 250).Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
                     End If
 
+                    Dim wpi As New WPostImage
+                    wpi.ChanbName = dd & "." & fileextension
+                    wpi.Size = f.ContentLength
+                    wpi.Dimensions = pdfBi.Size.Width & "x" & pdfBi.Size.Height
+                    wpi.Extension = fileextension.ToUpper
+                    wpi.RealName = f.FileName
+                    wpi.MD5 = md5string
+                    wpi.PostID = postId
+                    wpi.MimeType = GetMimeType(fileextension)
+                    pdfBi.Dispose()
+
+                    AddFileToDatabase(wpi, postId, Connection)
+
+                End If
+
 #Else
-                    Dim dd As String = CStr(Date.UtcNow.ToFileTime)
+                    Dim dd As String = CStr(Date.UtcNow.ToFileTime) & "r" & CStr(rand.Next(0, 1024))
                     Dim p As String = StorageFolder & "\" & dd & "." & fileextension
                     'Thumb path
                     Dim thumb As String = StorageFolderThumbs & "\th" & dd & ".jpg"
@@ -343,163 +357,162 @@ Friend Module GlobalFunctions
 
 #End If
 
-                Case "WEBM"
+            Case "WEBM"
 
-                    Dim dd As String = CStr(Date.UtcNow.ToFileTime)
-                    Dim p As String = StorageFolder & "\" & dd & "." & fileextension
-                    f.SaveAs(p)
+                Dim dd As String = CStr(Date.UtcNow.ToFileTime) & "r" & CStr(rand.Next(0, 1024))
+                Dim p As String = StorageFolder & "\" & dd & "." & fileextension
+                f.SaveAs(p)
 
-                    Dim fs As New IO.FileStream(p, IO.FileMode.Open)
-                    Dim md5string As String = MD5(fs)
-                    fs.Close()
+                Dim fs As New IO.FileStream(p, IO.FileMode.Open)
+                Dim md5string As String = MD5(fs)
+                fs.Close()
 
-                    If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection) Then
-                        If SmartLinkDuplicateImages = False Then
-                            FileIO.FileSystem.DeleteFile(p)
-                            Throw New ArgumentException(duplicateFile)
-                        Else
-                            Dim wpi As WPostImage = GetFileDataByMD5(md5string, Connection)
-                            FileIO.FileSystem.DeleteFile(p)
-                            wpi.RealName = f.FileName
-                            wpi.PostID = postId
-                            AddFileToDatabase(wpi, postId, Connection)
-                        End If
+                If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection) Then
+                    If SmartLinkDuplicateImages = False Then
+                        FileIO.FileSystem.DeleteFile(p)
+                        Throw New ArgumentException(duplicateFile)
                     Else
-
-                        Dim wpi As New WPostImage
-                        wpi.ChanbName = dd & "." & fileextension
-                        wpi.Size = f.ContentLength
-                        wpi.Dimensions = "video"
-                        wpi.Extension = fileextension.ToUpper
+                        Dim wpi As WPostImage = GetFileDataByMD5(md5string, Connection)
+                        FileIO.FileSystem.DeleteFile(p)
                         wpi.RealName = f.FileName
-                        wpi.MD5 = md5string
                         wpi.PostID = postId
-                        wpi.MimeType = GetMimeType(fileextension)
                         AddFileToDatabase(wpi, postId, Connection)
-
                     End If
+                Else
 
-                Case "MP3", "OGG"
-                    Dim dd As String = CStr(Date.UtcNow.ToFileTime)
-                    Dim p As String = StorageFolder & "\" & dd & "." & fileextension
-                    f.SaveAs(p)
-                    Dim fs As New IO.FileStream(p, IO.FileMode.Open)
-                    Dim md5string As String = MD5(fs)
-                    fs.Close()
+                    Dim wpi As New WPostImage
+                    wpi.ChanbName = dd & "." & fileextension
+                    wpi.Size = f.ContentLength
+                    wpi.Dimensions = "video"
+                    wpi.Extension = fileextension.ToUpper
+                    wpi.RealName = f.FileName
+                    wpi.MD5 = md5string
+                    wpi.PostID = postId
+                    wpi.MimeType = GetMimeType(fileextension)
+                    AddFileToDatabase(wpi, postId, Connection)
 
-                    If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection) Then
-                        If SmartLinkDuplicateImages = False Then
-                            FileIO.FileSystem.DeleteFile(p)
-                            Throw New ArgumentException(duplicateFile)
-                        Else
-                            Dim wpi As WPostImage = GetFileDataByMD5(md5string, Connection)
-                            FileIO.FileSystem.DeleteFile(p)
-                            wpi.RealName = f.FileName
-                            wpi.PostID = postId
-                            AddFileToDatabase(wpi, postId, Connection)
-                        End If
+                End If
+
+            Case "MP3", "OGG"
+                Dim dd As String = CStr(Date.UtcNow.ToFileTime) & "r" & CStr(rand.Next(0, 1024))
+                Dim p As String = StorageFolder & "\" & dd & "." & fileextension
+                f.SaveAs(p)
+                Dim fs As New IO.FileStream(p, IO.FileMode.Open)
+                Dim md5string As String = MD5(fs)
+                fs.Close()
+
+                If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection) Then
+                    If SmartLinkDuplicateImages = False Then
+                        FileIO.FileSystem.DeleteFile(p)
+                        Throw New ArgumentException(duplicateFile)
                     Else
-
-                        Dim wpi As New WPostImage
-                        wpi.ChanbName = dd & "." & fileextension
-                        wpi.Size = f.ContentLength
-                        wpi.Dimensions = "audio"
-                        wpi.Extension = fileextension.ToUpper
+                        Dim wpi As WPostImage = GetFileDataByMD5(md5string, Connection)
+                        FileIO.FileSystem.DeleteFile(p)
                         wpi.RealName = f.FileName
-                        wpi.MD5 = md5string
                         wpi.PostID = postId
-                        wpi.MimeType = GetMimeType(fileextension)
                         AddFileToDatabase(wpi, postId, Connection)
-
                     End If
-                Case "" ' A case of "" may occure when no file is uploaded. Simply return nothing.
-                    Return
-                Case Else
-                    Dim fileHandled As Boolean = False
-                    For i As Integer = 0 To cfhl.Count - 1 Step 1
-                        Dim cfh As CustomFileHandler = cfhl(i)
-                        If cfh.Is_FileSupported(fileextension) Then
-                            fileHandled = True
-                            Dim dd As String = CStr(Date.UtcNow.ToFileTime)
-                            Dim p As String = StorageFolder & "\" & dd & "." & fileextension
-                            f.SaveAs(p)
+                Else
+
+                    Dim wpi As New WPostImage
+                    wpi.ChanbName = dd & "." & fileextension
+                    wpi.Size = f.ContentLength
+                    wpi.Dimensions = "audio"
+                    wpi.Extension = fileextension.ToUpper
+                    wpi.RealName = f.FileName
+                    wpi.MD5 = md5string
+                    wpi.PostID = postId
+                    wpi.MimeType = GetMimeType(fileextension)
+                    AddFileToDatabase(wpi, postId, Connection)
+
+                End If
+            Case "" ' A case of "" may occure when no file is uploaded. Simply return nothing.
+                Return
+            Case Else
+                Dim fileHandled As Boolean = False
+                For i As Integer = 0 To CFH_Plugins.Count - 1 Step 1
+                    Dim cfh As CustomFileHandler = CFH_Plugins(i)
+                    If cfh.Is_FileSupported(fileextension) Then
+                        fileHandled = True
+                        Dim dd As String = CStr(Date.UtcNow.ToFileTime) & "r" & CStr(rand.Next(0, 1024))
+                        Dim p As String = StorageFolder & "\" & dd & "." & fileextension
+                        f.SaveAs(p)
 
 
-                            'Let's check the thumbnail
+                        'Let's check the thumbnail
 
-                            Dim thumb As String = ""
+                        Dim thumb As String = ""
 
-                            Dim thumbData As CFHThumbData = cfh.GetHTTPFileThumb(f.InputStream)
+                        Dim thumbData As CFHThumbData = cfh.GetHTTPFileThumb(f.InputStream)
 
-                            If thumbData.thumbRequired Then
+                        If thumbData.thumbRequired Then
 
-                                'If thumbData.thumbData.RawFormat Is Drawing.Imaging.ImageFormat.Png Then
-                                '    thumb = StorageFolderThumbs & "\th" & dd & ".png"
-                                'Else
-                                '    thumb = StorageFolderThumbs & "\th" & dd & ".jpg"
-                                'End If
+                            'If thumbData.thumbData.RawFormat Is Drawing.Imaging.ImageFormat.Png Then
+                            '    thumb = StorageFolderThumbs & "\th" & dd & ".png"
+                            'Else
+                            '    thumb = StorageFolderThumbs & "\th" & dd & ".jpg"
+                            'End If
 
-                                If thumbData.thumbExtension.ToLower() = "png" Then
-                                    thumb = StorageFolderThumbs & "\th" & dd & ".png"
-                                Else
-                                    thumb = StorageFolderThumbs & "\th" & dd & ".jpg"
-                                End If
-
-                                If (thumbData.thumbData.Width * thumbData.thumbData.Height) < 62500 Then
-                                    If fileextension = "png" Then
-                                        thumbData.thumbData.Save(thumb, Drawing.Imaging.ImageFormat.Png)
-                                    Else
-                                        thumbData.thumbData.Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
-                                    End If
-                                Else
-                                    If fileextension = "png" Then
-                                        ResizeImage(thumbData.thumbData, 250).Save(thumb, Drawing.Imaging.ImageFormat.Png)
-                                    Else
-                                        ResizeImage(thumbData.thumbData, 250).Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
-                                    End If
-                                End If
+                            If thumbData.thumbExtension.ToLower() = "png" Then
+                                thumb = StorageFolderThumbs & "\th" & dd & ".png"
+                            Else
+                                thumb = StorageFolderThumbs & "\th" & dd & ".jpg"
                             End If
 
-                            Dim fs As New IO.FileStream(p, IO.FileMode.Open)
-                            Dim md5string As String = MD5(fs)
-                            fs.Close()
-
-                            If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection) Then
-                                If SmartLinkDuplicateImages = False Then
-
-                                    Delete_File_Fromdisk(p)
-                                    If thumbData.thumbRequired Then Delete_File_Fromdisk(thumb)
-
-                                    Throw New ArgumentException(duplicateFile)
+                            If (thumbData.thumbData.Width * thumbData.thumbData.Height) < 62500 Then
+                                If fileextension = "png" Then
+                                    thumbData.thumbData.Save(thumb, Drawing.Imaging.ImageFormat.Png)
                                 Else
-                                    Dim wpi As WPostImage = GetFileDataByMD5(md5string, Connection)
-                                    Delete_File_Fromdisk(p)
-                                    If thumbData.thumbRequired Then Delete_File_Fromdisk(thumb)
-                                    wpi.RealName = f.FileName
-                                    wpi.PostID = postId
-                                    AddFileToDatabase(wpi, postId, Connection)
+                                    thumbData.thumbData.Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
                                 End If
                             Else
-
-                                Dim wpi As New WPostImage
-                                wpi.ChanbName = dd & "." & fileextension
-                                wpi.Size = f.ContentLength
-                                wpi.Dimensions = thumbData.thumbDimensions
-                                wpi.Extension = fileextension.ToUpper
-                                wpi.RealName = f.FileName
-                                wpi.MD5 = md5string
-                                wpi.PostID = postId
-                                wpi.MimeType = thumbData.mimeType
-                                AddFileToDatabase(wpi, postId, Connection)
-
+                                If fileextension = "png" Then
+                                    ResizeImage(thumbData.thumbData, 250).Save(thumb, Drawing.Imaging.ImageFormat.Png)
+                                Else
+                                    ResizeImage(thumbData.thumbData, 250).Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
+                                End If
                             End If
-
-                            Exit For
                         End If
-                    Next
-                    If Not fileHandled Then Throw New Exception("Unsupported file type")
-            End Select
-        End If
+
+                        Dim fs As New IO.FileStream(p, IO.FileMode.Open)
+                        Dim md5string As String = MD5(fs)
+                        fs.Close()
+
+                        If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection) Then
+                            If SmartLinkDuplicateImages = False Then
+
+                                Delete_File_Fromdisk(p)
+                                If thumbData.thumbRequired Then Delete_File_Fromdisk(thumb)
+
+                                Throw New ArgumentException(duplicateFile)
+                            Else
+                                Dim wpi As WPostImage = GetFileDataByMD5(md5string, Connection)
+                                Delete_File_Fromdisk(p)
+                                If thumbData.thumbRequired Then Delete_File_Fromdisk(thumb)
+                                wpi.RealName = f.FileName
+                                wpi.PostID = postId
+                                AddFileToDatabase(wpi, postId, Connection)
+                            End If
+                        Else
+
+                            Dim wpi As New WPostImage
+                            wpi.ChanbName = dd & "." & fileextension
+                            wpi.Size = f.ContentLength
+                            wpi.Dimensions = thumbData.thumbDimensions
+                            wpi.Extension = fileextension.ToUpper
+                            wpi.RealName = f.FileName
+                            wpi.MD5 = md5string
+                            wpi.PostID = postId
+                            wpi.MimeType = thumbData.mimeType
+                            AddFileToDatabase(wpi, postId, Connection)
+
+                        End If
+
+                        Exit For
+                    End If
+                Next
+                If Not fileHandled Then Throw New Exception("Unsupported file type")
+        End Select
     End Sub
 
     Private Function GetCFHPlugins() As CustomFileHandler()
@@ -531,7 +544,7 @@ Friend Module GlobalFunctions
         Return ila.ToArray
     End Function
 
-
+    ' This function save progressive thumbnails.
     'Private Sub SaveThumbnail(ByVal chanbName As String, ByVal i As Drawing.Image, ByVal fileextension As String)
 
     '    If fileextension = "png" Then
@@ -573,26 +586,22 @@ Friend Module GlobalFunctions
     '    Return Drawing.Image.FromStream(mem)
     'End Function
 
-    Private Function FileIsImage(ByVal f As HttpPostedFile) As Boolean
-        Dim extension As String = f.FileName.Split(CChar(".")).ElementAt(f.FileName.Split(CChar(".")).Length - 1).ToLower ' ToLower because string comparaison is case sensitive.
-        Dim supportedImages As String() = {"jpg", "jpeg", "png", "bmp", "gif", "apng"}
-        Dim bo As Boolean = False
-        For Each x In supportedImages
-            If extension = x Then
-                bo = True
-            End If
-        Next
-        Return bo
-    End Function
-
-    Private Function FileIsImage(ByVal fileExtension As String) As Boolean
+    Private Function FileHasThumb(ByVal fileExtension As String) As Boolean
         Dim supportedImages As String() = {"jpg", "jpeg", "png", "bmp", "gif", "apng", "svg", "pdf"}
         Dim bo As Boolean = False
         For Each x In supportedImages
-            If fileExtension.ToLower = x Then
+            If fileExtension.ToLower() = x Then
                 bo = True
             End If
         Next
+
+        If Not bo Then
+            'everything has failed. Let's check the custom files 
+            For i As Integer = 0 To CFH_Plugins.Length - 1 Step 1
+                If CFH_Plugins(i).FileHasThumb(fileExtension.ToLower()) Then bo = True
+            Next
+        End If
+
         Return bo
     End Function
 
@@ -796,41 +805,36 @@ Friend Module GlobalFunctions
                             message = FormatHTMLMessage("error", ImageRequired, "default.aspx", "60", True)
                         Else
 
-                            'Check file size before saving.
-                            If request.Files("ufile").ContentLength > MaximumFileSize Then
-                                message = FormatHTMLMessage("error", FileToBig, "default.aspx", "10", True)
-                            Else
-                                Dim er As New OPData
-                                er.Comment = ProcessInputs(request.Item("comment"))
-                                er.email = ProcessInputs(request.Item("email")).Trim
+                            Dim er As New OPData
+                            er.Comment = ProcessInputs(request.Item("comment"))
+                            er.email = ProcessInputs(request.Item("email")).Trim
 
-                                If request.Item("postername").Trim() = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(request.Item("postername"))
+                            If request.Item("postername").Trim() = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(request.Item("postername"))
 
-                                If isAdmin Then er.name = adminPostName
-                                If CBool(Session("mod")) Then er.name = modPostName
+                            If isAdmin Then er.name = adminPostName
+                            If CBool(Session("mod")) Then er.name = modPostName
 
-                                er.subject = ProcessInputs(request.Item("subject")).Trim
-                                er.time = Date.UtcNow
-                                er.password = ProcessInputs(request.Item("password"))
-                                er.IP = request.UserHostAddress
-                                er.HasFile = True
-                                er.UserAgent = request.UserAgent.Replace("<", String.Empty).Replace(">", String.Empty)
+                            er.subject = ProcessInputs(request.Item("subject")).Trim
+                            er.time = Date.UtcNow
+                            er.password = ProcessInputs(request.Item("password"))
+                            er.IP = request.UserHostAddress
+                            er.HasFile = True
+                            er.UserAgent = request.UserAgent.Replace("<", String.Empty).Replace(">", String.Empty)
 
-                                If request.Cookies("pass") IsNot Nothing Then request.Cookies("pass").Value = request.Item("password") Else request.Cookies.Add(New HttpCookie("pass", request.Item("password")))
+                            If request.Cookies("pass") IsNot Nothing Then request.Cookies("pass").Value = request.Item("password") Else request.Cookies.Add(New HttpCookie("pass", request.Item("password")))
 
-                                Dim tid As Integer = MakeThread(er)
+                            Dim tid As Integer = MakeThread(er)
 
-                                Try
-                                    SavePostFile(request.Files("ufile"), False, tid)
-                                Catch ex As Exception
-                                    DeletePost(tid)
-                                    message = FormatHTMLMessage(errorStr, ex.Message, "default.aspx", "10", True)
-                                    Exit Select
-                                End Try
+                            Try
+                                SavePostFile(request.Files("ufile"), False, tid)
+                            Catch ex As Exception
+                                DeletePost(tid)
+                                message = FormatHTMLMessage(errorStr, ex.Message, "default.aspx", "10", True)
+                                Exit Select
+                            End Try
 
-                                message = FormatHTMLMessage(SuccessfulPostString, SuccessfulPostString, "default.aspx?id=" & tid, "1", False)
+                            message = FormatHTMLMessage(SuccessfulPostString, SuccessfulPostString, "default.aspx?id=" & tid, "1", False)
 
-                            End If 'File size check
                         End If 'File count check
 
                     Case "reply"
@@ -1073,6 +1077,321 @@ Friend Module GlobalFunctions
         Return message
     End Function
 
+    Friend Function ProcessPostAPI(ByVal context As HttpContext) As ApiResponse
+        Dim resp As New ApiResponse
+
+        Dim request As HttpRequest = context.Request
+        Dim Session As HttpSessionState = context.Session
+
+        Dim mode As String = request.Item("postmode")
+
+        Dim isAdmin As Boolean = CBool(Session("admin"))
+        Dim ContinueProcessing As Boolean = True
+
+        'Flood detection check
+        If String.IsNullOrEmpty(CStr(Session.Item("lastpost"))) Then
+            Session.Item("lastpost") = Now.ToString
+        Else
+            Dim i As Date = Date.Parse(CStr(Session.Item("lastpost")))
+            If CInt((Now - i).TotalSeconds) <= TimeBetweenRequestes And (mode = "thread" Or mode = "reply") And Not (isAdmin) Then
+                resp.ErrorType = ApiResponse.ErrType.Spam
+                resp.ResponseType = ApiResponse.ResType.Err
+                ContinueProcessing = False
+            Else
+                Session.Item("lastpost") = Now.ToString
+            End If
+        End If
+
+        'Captcha check. Administrator does not need to enter captcha
+        If EnableCaptcha And (mode = "thread" Or mode = "reply") And (Not isAdmin) Then
+
+            If Not Session("captcha") Is Nothing Then
+                If Not Session("captcha").ToString = request.Item("usercaptcha") Then
+                    resp.ResponseType = ApiResponse.ResType.Err
+                    resp.ErrorType = ApiResponse.ErrType.Captcha
+                    ContinueProcessing = False
+                End If
+            Else
+
+                resp.ResponseType = ApiResponse.ResType.Err
+                resp.ErrorType = ApiResponse.ErrType.Captcha
+
+                ContinueProcessing = False
+            End If
+
+        End If
+
+
+        'Check for files bigger than the allowed limits.
+
+        For Each fileKey As String In request.Files.AllKeys
+            Dim f As HttpPostedFile = request.Files(fileKey)
+            If f.ContentLength > MaximumFileSize Then
+                resp.ErrorType = ApiResponse.ErrType.FileSize
+                resp.ResponseType = ApiResponse.ResType.Err
+                resp.ErrorMessage = f.FileName
+                ContinueProcessing = False
+            End If
+        Next
+
+
+        ''Post processing begin here 
+        If ContinueProcessing Then
+            If IsIPBanned(request.UserHostAddress) Then
+                resp.ResponseType = ApiResponse.ResType.Err
+                resp.ErrorType = ApiResponse.ErrType.Banned
+            Else
+
+                Select Case mode
+
+                    Case "thread"
+                        If request.Files.Count = 0 Or request.Files("ufile").ContentLength = 0 Then
+                            resp.ErrorType = ApiResponse.ErrType.FileRequired
+                            resp.ResponseType = ApiResponse.ResType.Err
+                        Else
+
+                            Dim er As New OPData
+                            er.Comment = ProcessInputs(request.Item("comment"))
+                            er.email = ProcessInputs(request.Item("email")).Trim
+
+                            If request.Item("postername").Trim() = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(request.Item("postername"))
+
+                            If isAdmin Then er.name = adminPostName
+                            If CBool(Session("mod")) Then er.name = modPostName
+
+                            er.subject = ProcessInputs(request.Item("subject")).Trim
+                            er.time = Date.UtcNow
+                            er.password = ProcessInputs(request.Item("password"))
+                            er.IP = request.UserHostAddress
+                            er.HasFile = True
+                            er.UserAgent = request.UserAgent.Replace("<", String.Empty).Replace(">", String.Empty)
+
+                            If request.Cookies("pass") IsNot Nothing Then request.Cookies("pass").Value = request.Item("password") Else request.Cookies.Add(New HttpCookie("pass", request.Item("password")))
+
+                            Dim tid As Integer = MakeThread(er)
+
+                            Try
+                                SavePostFile(request.Files("ufile"), False, tid)
+                            Catch ex As Exception
+                                DeletePost(tid)
+                                resp.ErrorType = ApiResponse.ErrType.ServerError
+                                resp.ResponseType = ApiResponse.ResType.Err
+                                resp.ErrorMessage = ex.Message
+                                Exit Select
+                            End Try
+
+                            resp.ResponseType = ApiResponse.ResType.NewThread
+                            resp.PostID = tid
+                            resp.ThreadID = tid
+
+                        End If 'File count check
+
+                    Case "reply"
+
+                        Dim threadid As Integer = CInt(request.Item("threadid"))
+
+                        Dim brd As beforeReplyData = _get_beforeReplyData(threadid)
+
+                        If brd.isGone Then
+
+
+                            resp.ResponseType = ApiResponse.ResType.Info
+                            resp.ErrorMessage = thread404Str
+
+                            Exit Select
+                        End If
+
+                        If brd.isLocked Then
+                            resp.ResponseType = ApiResponse.ResType.Info
+                            resp.ErrorMessage = lockedMessage
+                            Exit Select
+                        End If
+
+                        If brd.isArchived Then
+                            resp.ResponseType = ApiResponse.ResType.Info
+                            resp.ErrorMessage = arhivedMessage
+                            Exit Select
+                        End If
+
+
+                        If EnableImpresonationProtection Then
+                            If IsPosterNameAlreadyTaken(request.UserHostAddress, request.Item("postername"), threadid) Then
+                                resp.ResponseType = ApiResponse.ResType.Err
+                                resp.ErrorType = ApiResponse.ErrType.ImpersonationProtection
+                                resp.ErrorMessage = request.Item("postername")
+                                Exit Select
+                            End If
+                        End If
+
+
+                        If request.Cookies("pass") IsNot Nothing Then request.Cookies("pass").Value = request.Item("password") Else request.Cookies.Add(New HttpCookie("pass", request.Item("password")))
+
+                        Dim properFiles As New List(Of HttpPostedFile)
+
+                        For Each key As String In request.Files.AllKeys
+
+                            Dim f As HttpPostedFile = request.Files.Item(key)
+                            If (f.ContentLength > 0) Then
+                                properFiles.Add(f)
+                            Else
+                                'Maybe an empty file field.
+                            End If
+                        Next
+
+
+
+                        'postId is partially global here since
+                        'when a user post multiple files to each post, I want to redirect him the last reply id he made (typically default.aspx?id=threadid#pPostID).
+                        Dim postId As Integer
+                        Dim sage As Boolean = False
+
+                        If request.Item("finp") = "yes" And properFiles.Count > 1 Then ' Add each file to a seperate post, and dump the files.
+
+                            Dim pos As Integer = 1
+                            Dim countFiles As Boolean = (request.Item("countf") = "yes")
+                            Dim advanced As Boolean = False
+
+                            For Each file As HttpPostedFile In properFiles
+                                Dim er As New OPData
+
+                                If Not advanced Then
+                                    er.Comment = ProcessInputs(request.Item("comment"))
+                                    If countFiles Then er.Comment = er.Comment & CStr(vbNewLine & pos & "/" & properFiles.Count)
+                                    advanced = True
+                                Else
+                                    If countFiles Then er.Comment = pos & "/" & properFiles.Count Else er.Comment = String.Empty
+                                End If
+
+                                If ProcessInputs(request.Item("email")).Trim() = "sage" Then
+                                    er.email = ""
+                                    sage = True
+                                Else
+                                    er.email = ProcessInputs(request.Item("email"))
+                                End If
+
+                                er.HasFile = True
+                                If request.Item("postername").Trim() = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(request.Item("postername"))
+
+                                If CBool(Session("admin")) Then er.name = adminPostName
+                                If CBool(Session("mod")) Then er.name = modPostName
+
+                                er.subject = ProcessInputs(request.Item("subject"))
+                                er.time = Date.UtcNow
+                                er.password = ProcessInputs(request.Item("password"))
+                                er.IP = request.UserHostAddress
+                                er.UserAgent = request.UserAgent.Replace("<", "").Replace(">", "")
+                                postId = ReplyTo(threadid, er)
+                                SavePostFile(file, True, postId)
+
+                                pos += 1
+                            Next
+
+                            resp.ResponseType = ApiResponse.ResType.Reply
+                            resp.ThreadID = threadid
+                            resp.PostID = postId
+
+                        Else
+                            'Single file, or multiple files post.
+                            Dim er As New OPData
+                            Dim comment As String = request.Item("comment").Trim()
+
+                            If comment.Length = 0 And properFiles.Count = 0 Then
+                                'no file and no text == blank post
+                                resp.ResponseType = ApiResponse.ResType.Err
+                                resp.ErrorType = ApiResponse.ErrType.BlankPost
+                                Exit Select
+                            Else
+
+                                er.Comment = ProcessInputs(comment)
+
+                                If ProcessInputs(request.Item("email")).Trim() = "sage" Then
+                                    er.email = ""
+                                    sage = True
+                                Else
+                                    er.email = ProcessInputs(request.Item("email"))
+                                End If
+
+                                If request.Item("postername").Trim() = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(request.Item("postername"))
+
+                                If CBool(Session("admin")) Then er.name = adminPostName
+                                If CBool(Session("mod")) Then er.name = modPostName
+
+                                er.subject = ProcessInputs(request.Item("subject"))
+                                er.time = Date.UtcNow
+
+                                er.password = ProcessInputs(request.Item("password"))
+                                er.IP = request.UserHostAddress
+                                er.UserAgent = request.UserAgent.Replace("<", "").Replace(">", "")
+                                er.HasFile = Not (properFiles.Count = 0)
+                                postId = ReplyTo(threadid, er)
+
+                                If er.HasFile Then
+                                    Try
+                                        SaveAllFilesToSinglePost(properFiles, postId)
+                                    Catch ex As Exception
+                                        DeletePost(postId) ' To prevent posts marked as having files but no files was saved.
+                                        resp.ResponseType = ApiResponse.ResType.Err
+                                        resp.ErrorType = ApiResponse.ErrType.ServerError
+                                        resp.ErrorMessage = ex.Message
+                                        Exit Select
+                                    End Try
+                                End If
+
+                                resp.ResponseType = ApiResponse.ResType.Reply
+                                resp.ThreadID = threadid
+                                resp.PostID = postId
+
+                            End If
+                        End If
+                        properFiles.Clear()
+                        'Check if to bump thread or not
+
+                        If Not (sage Or GetRepliesCount(threadid, True).TotalReplies >= BumpLimit) Then BumpThread(threadid)
+
+                        If StaticHTML Then UpdateThreadHtml(threadid)
+
+
+                    Case Else
+                        resp.ResponseType = ApiResponse.ResType.Err
+                        resp.ErrorType = ApiResponse.ErrType.InvalidRequest
+                End Select
+            End If
+        End If 'End of post processing.
+        Return resp
+    End Function
+
+    Public Class ApiResponse
+        Public ResponseType As ResType = ResType.Undefined
+        Public ErrorMessage As String
+        Public ErrorType As ErrType = ErrType.Undefined
+
+        Public ThreadID As Integer = -1
+        Public PostID As Integer = -1
+
+        Public Enum ResType As Integer
+            Undefined = -1
+            Info = 0
+            Err = 1
+            NewThread = 2
+            Reply = 3
+        End Enum
+
+        Public Enum ErrType As Integer
+            Undefined = -1
+            Captcha = 0
+            FileSize = 1
+            BlankPost = 2
+            Spam = 3
+            ImpersonationProtection = 4
+            FileRequired = 5
+            Banned = 6
+            ServerError = 7
+            InvalidRequest = 8
+        End Enum
+
+
+    End Class
+
     Private Function _get_beforeReplyData(ByVal threadid As Integer) As beforeReplyData
         Dim command As ChanbQuery = DatabaseEngine.ExecuteQueryReader("SELECT ID, locked, mta FROM board WHERE ID = " & CStr(threadid))
         Dim a As New beforeReplyData
@@ -1248,15 +1567,17 @@ Friend Module GlobalFunctions
             'adminMenuItems
             Dim sb As New StringBuilder
             For Each x In adminMenuItems
-                sb.Append(x.Replace("%WEBROOT%", WebRoot))
+                sb.Append(x)
             Next
+            sb.Append("<li<a>-----</a>li>")
             Return sb.ToString
         Else
             Dim power As String() = powers.Split(CChar("-"))
             Dim sb As New StringBuilder
             For i As Integer = 0 To power.Length - 1 Step 1
-                If power(i) = "1" Then sb.Append(modMenuItems(i).Replace("%WEBROOT%", WebRoot))
+                If power(i) = "1" Then sb.Append(modMenuItems(i))
             Next
+            sb.Append("<li><a>-----</a></li>")
             Return sb.ToString
         End If
     End Function
@@ -1318,7 +1639,7 @@ Friend Module GlobalFunctions
 
                 For Each wpi As WPostImage In po.files
 
-                    If FileIsImage(wpi.Extension) Then
+                    If FileHasThumb(wpi.Extension) Then
                         Dim scriptItem As String = GetImageHTML(wpi)
 
                         If Not isNext Then scriptItem = scriptItem.Replace("%AN%", "active") Else scriptItem = scriptItem.Replace("%AN%", "notactive")
@@ -1353,8 +1674,8 @@ Friend Module GlobalFunctions
                                 Dim scriptItem As String = ""
                                 Dim noscriptItem As String = ""
 
-                                For i As Int32 = 0 To cfhl.Length - 1 Step 1
-                                    Dim cfh As CustomFileHandler = cfhl(i)
+                                For i As Int32 = 0 To CFH_Plugins.Length - 1 Step 1
+                                    Dim cfh As CustomFileHandler = CFH_Plugins(i)
                                     If cfh.Is_FileSupported(wpi.Extension) Then
                                         fileHandled = True
                                         scriptItem = cfh.GetFileHTML(wpi) _
@@ -1392,7 +1713,7 @@ Friend Module GlobalFunctions
             Else
                 'Single file
                 Dim wpi As WPostImage = po.files(0)
-                If FileIsImage(wpi.Extension) Then
+                If FileHasThumb(wpi.Extension) Then
                     Dim item As String = GetImageHTML(wpi)
                     item = item.Replace("%filec%", "file") ' We need the 'file' html class in single image mode.
                     item = item.Replace("%AN%", "") ' No need for active/notactive html class since there is no rotator.
@@ -1419,8 +1740,8 @@ Friend Module GlobalFunctions
                             Dim fileHandled As Boolean = False
                             Dim result As String = ""
 
-                            For i As Int32 = 0 To cfhl.Length - 1 Step 1
-                                Dim cfh As CustomFileHandler = cfhl(i)
+                            For i As Int32 = 0 To CFH_Plugins.Length - 1 Step 1
+                                Dim cfh As CustomFileHandler = CFH_Plugins(i)
                                 If cfh.Is_FileSupported(wpi.Extension) Then
                                     fileHandled = True
                                     result = cfh.GetFileHTML(wpi) _
@@ -1679,7 +2000,7 @@ Friend Module GlobalFunctions
             pageHTML = pageHTML.Replace("%POST FORM BUTTON%", newThreadStr)
         End If
 
-        pageHTML = pageHTML.Replace("%META NO CACHE%", "")
+        pageHTML = pageHTML.Replace("%EXTRA META%", "")
         pageHTML = pageHTML.Replace("%MAXIMUM FILE SIZE%", FormatSizeString(MaximumFileSize))
         pageHTML = pageHTML.Replace("%SESSION PASSWORD%", GetSessionPassword(Request.Cookies, session))
 
@@ -1762,31 +2083,36 @@ Friend Module GlobalFunctions
             If pagesCount > (Fix(pagesCount)) Then
                 pagesCount = Fix(pagesCount) + 1
             End If
+
             Dim startIndexA As Integer
+
             Try
                 startIndexA = CInt(Request.Item("startindex"))
             Catch ex As Exception
                 startIndexA = 0
             End Try
-            If startIndexA = 0 Then
-                sb.Append("<div class='prev'><a class='form-button-disabled'>" & prevStr & "</a></div>")
-            Else
-                sb.Append("<div><a class='form-button' href='" & pageHandlerLink & ".aspx?startindex=" & CStr(startIndexA - 1) & "'>" & prevStr & "</a></div>")
+
+            If startIndexA > 0 Then
+                sb.Append("<div><a class='buttonBlue' href='" & pageHandlerLink & ".aspx?startindex=" & CStr(startIndexA - 1) & "'>" & prevStr & "</a></div>")
             End If
+
             sb.Append("<div class='pages'>")
+
             For i As Integer = 0 To CInt((pagesCount - 1)) Step 1
                 If i = startIndexA Then
-                    sb.Append("[<strong><a href='" & pageHandlerLink & ".aspx?startindex=" & i & "'>" & i + 1 & "</a></strong>]")
+                    sb.Append("<strong><a class='buttonBlue' href='" & pageHandlerLink & ".aspx?startindex=" & i & "'>" & i + 1 & "</a></strong>")
                 Else
-                    sb.Append("[<a href='" & pageHandlerLink & ".aspx?startindex=" & i & "'>" & i + 1 & "</a>]")
+                    sb.Append("<a class='buttonBlue' href='" & pageHandlerLink & ".aspx?startindex=" & i & "'>" & i + 1 & "</a>")
                 End If
             Next
+
             sb.Append("</div>")
-            If startIndexA = pagesCount - 1 Or threadCount = 0 Then ' last page
-                sb.Append("<div class='next'><a class='form-button-disabled'>" & nextStr & "</a></div></div>")
-            Else
-                sb.Append("<div><a class='form-button' href='" & pageHandlerLink & ".aspx?startindex=" & CStr(startIndexA + 1) & "'>" & nextStr & "</a></div></div>")
+
+            If Not (startIndexA = pagesCount - 1 Or threadCount = 0) Then ' last page
+                sb.Append("<div><a class='buttonBlue' href='" & pageHandlerLink & ".aspx?startindex=" & CStr(startIndexA + 1) & "'>" & nextStr & "</a></div>")
             End If
+
+            sb.Append("</div>")
 
             pageHTML = pageHTML.Replace("%PAGES LIST%", sb.ToString)
         Else
@@ -1820,7 +2146,7 @@ Friend Module GlobalFunctions
         pageHTML = pageHTML.Replace("%POSTING RULES%", "")
         pageHTML = pageHTML.Replace("%THREAD COUNT%", "")
 
-        pageHTML = pageHTML.Replace("%META NO CACHE%", "")
+        pageHTML = pageHTML.Replace("%EXTRA META%", "<link rel=""stylesheet"" href=""" & WebRoot & "catalog.css"">")
         pageHTML = pageHTML.Replace("%RETURN BUTTON DESKTOP%", DesktopReturnButtonHTML.Replace("%P%", "default.aspx"))
         pageHTML = pageHTML.Replace("%RETURN BUTTON MOBILE%", MobileReturnButtonHTML.Replace("%P%", "default.aspx"))
 
@@ -2018,7 +2344,7 @@ Friend Module GlobalFunctions
             .Replace("%BDESC%", BoardDesc).Replace("%ROOT%", WebRoot) _
             .Replace("%FOOTER TEXT%", footerText) _
             .Replace("%ID%", CStr(postId)) _
-            .Replace("%POST TEXT%", postData.comment)
+            .Replace("%POST TEXT%", HttpUtility.HtmlDecode(postData.comment))
             context.Response.Write(pageHTML)
         Else
             context.Response.Write(FormatHTMLMessage(errorStr, invalidIdStr, "", "888888", True))
@@ -2035,24 +2361,111 @@ Friend Module GlobalFunctions
         Return a
     End Function
 
+    'Private Function GenerateCatalogItems(ByVal ids As Integer()) As String
+    '    Dim sb As New StringBuilder
+    '    Dim data As WPost() = GetWpostList(ids)
+    '    sb.Append("<div align=""center"" id=""threads"">")
+    '    For Each thread As WPost In data
+    '        Dim t As String = CatalogItemTemplate
+    '        Dim i As WPostImage = thread.files(0)
+    '        Dim ci As ThreadReplies = GetRepliesCount(CInt(thread.PostID), False)
+    '        t = t.Replace("%ID%", CStr(thread.PostID))
+    '        t = t.Replace("%POST LINK%", "default.aspx?id=" & CStr(thread.PostID))
+    '        t = t.Replace("%THUMB SRC%", GetImageWEBPATHRE(i.ChanbName))
+    '        t = t.Replace("%IMAGE MD5%", i.MD5)
+    '        t = t.Replace("%TC%", CStr(ci.TextReplies))
+    '        t = t.Replace("%IC%", CStr(ci.ImageReplies))
+    '        t = t.Replace("%POST TEXT%", ProcessInputs(thread.comment))
+    '        sb.Append(t)
+    '    Next
+    '    sb.Append("</div>")
+    '    Return sb.ToString
+    'End Function
+
     Private Function GenerateCatalogItems(ByVal ids As Integer()) As String
         Dim sb As New StringBuilder
         Dim data As WPost() = GetWpostList(ids)
-        sb.Append("<div align=""center"" id=""threads"">")
+
+
+        '<li>
+        '				<a href="%POST LINK%" title="%SHORT TITLE%">
+        '					<div class="icon"><img class="t" src="%THUMB SRC%"/></div>
+        '					<h2>R: <strong>%TC%</strong> / I: <strong>%IC%</strong></h2>
+        '					<p class="info">%POST TEXT%</p>
+        '                	<p class="website">View thread</p></a>
+
+
+        '                	</li
+        sb.Append("<ul id=""browserlist"" class='wrap'>")
+
         For Each thread As WPost In data
-            Dim t As String = CatalogItemTemplate
-            Dim i As WPostImage = thread.files(0)
+            sb.Append("<li>")
+
+            Dim i As WPostImage = Nothing
+            If thread.FileCount > 0 Then
+                i = thread.files(0)
+            End If
+            
             Dim ci As ThreadReplies = GetRepliesCount(CInt(thread.PostID), False)
-            t = t.Replace("%ID%", CStr(thread.PostID))
-            t = t.Replace("%POST LINK%", "default.aspx?id=" & CStr(thread.PostID))
-            t = t.Replace("%THUMB SRC%", GetImageWEBPATHRE(i.ChanbName))
-            t = t.Replace("%IMAGE MD5%", i.MD5)
-            t = t.Replace("%TC%", CStr(ci.TextReplies))
-            t = t.Replace("%IC%", CStr(ci.ImageReplies))
-            t = t.Replace("%POST TEXT%", ProcessInputs(thread.comment))
-            sb.Append(t)
+
+            Dim postTitle As String = ""
+            If thread.subject = "" Then
+                If thread.comment = "" Then
+
+                Else
+                    If thread.comment.Length > 50 Then
+                        postTitle = New String(CType(ProcessInputs(thread.comment), Char()), 0, 50) & "..."
+                    Else
+                        postTitle = thread.comment
+                    End If
+                End If
+            Else
+                postTitle = thread.subject
+            End If
+
+            sb.Append("<a href=""%POST LINK%"">".Replace("%POST LINK%", WebRoot & "default.aspx?id=" & CStr(thread.PostID)))
+
+
+            If i IsNot Nothing Then
+                If FileHasThumb(i.Extension) Then
+                    sb.Append("<div class=""icon""><img class=""t"" src=""$""/></div>".Replace("$", i.ImageThumbailWebPath))
+                End If
+            End If
+           
+            If ci.TotalReplies > 0 Then
+
+                sb.Append("<h2>")
+
+                If ci.TextReplies > 0 Then
+                    sb.Append("R: <strong>" & CStr(ci.TextReplies) & "</strong>")
+                End If
+
+                If ci.TextReplies > 0 And ci.ImageReplies > 0 Then
+                    sb.Append("/")
+                End If
+
+
+                If ci.ImageReplies > 0 Then
+                    sb.Append("I: <strong>" & CStr(ci.ImageReplies) & "</strong>")
+                End If
+
+                sb.Append("</h2>")
+            Else
+
+                sb.Append("<h2>No replies</h2>")
+            End If
+
+          
+            If postTitle.Length > 0 Then
+                sb.Append("<p class=""info"">$</p>".Replace("$", postTitle))
+
+            End If
+         
+
+            sb.Append("<p class=""website"">View thread</p></a></li>")
+
         Next
-        sb.Append("</div>")
+        sb.Append("</ul>")
         Return sb.ToString
     End Function
 
@@ -2598,7 +3011,7 @@ Friend Module GlobalFunctions
         Return data
     End Function
 
-    Private Sub UpdatePostText(ByVal postID As Integer, ByVal newText As String, ByVal allowHTML As Boolean)
+    Friend Sub UpdatePostText(ByVal postID As Integer, ByVal newText As String, ByVal allowHTML As Boolean)
         Dim command As DbCommand = DatabaseEngine.GenerateDbCommand
         command.CommandText = "UPDATE board SET comment = @newtext WHERE (ID = @id)"
         command.Parameters.Add(DatabaseEngine.MakeParameter("@id", postID, Data.DbType.Int32))
@@ -2732,7 +3145,7 @@ Friend Module GlobalFunctions
     Public Sub ToggleLock(ByVal threadID As Integer)
         Dim lck As Boolean = Not IsLocked(threadID)
         Dim command As DbCommand = DatabaseEngine.GenerateDbCommand
-        command.CommandText = "UPDATE board SET sticky = @lck WHERE (ID = @id )"
+        command.CommandText = "UPDATE board SET locked = @lck WHERE (ID = @id )"
         command.Parameters.Add(MakeParameter("@lck", lck, Data.DbType.Boolean))
         command.Parameters.Add(MakeParameter("@id", threadID, Data.DbType.Int32))
         DatabaseEngine.ExecuteNonQuery(command)
@@ -3112,20 +3525,18 @@ Friend Module GlobalFunctions
                     Return data
                 End If
             Case "code"
-
-                'Server side code highlighting. 
                 If data.Contains("[code]") And data.Contains("[/code]") Then
                     Try
-                        Dim colorizer As New ColorCode.CodeColorizer()
                         For Each x In MatchBBCode(data, "code")
-                            Dim codeStr As String = HttpUtility.HtmlDecode(x)
-                            codeStr = codeStr.Replace("<br/>", String.Empty)
-
+                            Dim codeStr As String = x
                             Dim codeLang As String = GetCodeLang(codeStr)
-                            If Not (codeLang = "") Then
-                                codeStr = codeStr.Replace("[lang]" & codeLang & "[/lang]", String.Empty)
+                            Dim prC As String = get_pr_lang(codeLang)
+                            If Not (codeLang = "") Then codeStr = codeStr.Replace("[lang]" & codeLang & "[/lang]", String.Empty).Trim()
+                            If (prC = "") Then
+                                data = data.Replace("[code]" & x & "[/code]", "<pre class='prettyprint linenums'>" & codeStr & "</pre>")
+                            Else
+                                data = data.Replace("[code]" & x & "[/code]", "<script src='" & WebRoot & "js/pr/lang-" & prC & ".js'></script><pre class='prettyprint linenums lang-" & prC & "'>" & codeStr & "</pre>")
                             End If
-                            data = data.Replace("[code]" & x & "[/code]", colorizer.Colorize(codeStr, GetCCLI(codeLang)))
                         Next
                         Return data
                     Catch ex As Exception
@@ -3134,31 +3545,6 @@ Friend Module GlobalFunctions
                 Else
                     Return data
                 End If
-
-                ''Client side
-                'If data.Contains("[code]") And data.Contains("[/code]") Then
-                '    Try
-                '        Dim colorizer As New ColorCode.CodeColorizer()
-                '        For Each x In MatchBBCode(data, "code")
-                '            Dim codeStr As String = x
-
-                '            Dim codeLang As String = GetCodeLang(codeStr)
-
-                '            If Not (codeLang = "") Then
-                '                codeStr = codeStr.Replace("[lang]" & codeLang & "[/lang]", String.Empty)
-                '            End If
-
-                '            data = data.Replace("[code]" & x & "[/code]", "<code class='" & codeLang & "'>" & codeStr & "</code>")
-                '        Next
-                '        Return data
-                '    Catch ex As Exception
-                '        Return data
-                '    End Try
-                'Else
-                '    Return data
-                'End If
-
-
             Case "md"
                 If data.Contains("[md]") And data.Contains("[/md]") Then
                     Dim md As New MarkdownSharp.Markdown
@@ -3206,6 +3592,45 @@ Friend Module GlobalFunctions
         End Select
     End Function
 
+    Private Function get_pr_lang(ByVal l As String) As String
+        Select Case l.ToLower.Trim
+            Case "scheme", "scm"
+                Return "scm"
+            Case "lsp", "lisp"
+                Return "lisp"
+            Case "apollo", "agc", "aea"
+                Return "apollo"
+            Case "basic", "cbm"
+                Return "basic"
+            Case "scala"
+                Return "scala"
+            Case "pascal"
+                Return "pascal"
+            Case "vb", "vbs", "vb.net"
+                Return "vb"
+            Case "go"
+                Return "go"
+            Case "haskel", "hs"
+                Return "hs"
+            Case "erlang", "erl"
+                Return "erlang"
+            Case "clojure", "clj"
+                Return "clj"
+            Case "css"
+                Return "css"
+            Case "lua"
+                Return "lua"
+            Case "c", "cpp", "cplusplus"
+                Return ""
+            Case "ocaml", "SML", "F#"
+                Return "ml"
+            Case "sql"
+                Return "sql"
+            Case Else
+                Return ""
+        End Select
+    End Function
+
     ''' <summary>
     ''' Get a list of all matches for a given bb code.
     ''' </summary>
@@ -3228,6 +3653,7 @@ Friend Module GlobalFunctions
         Next
         Return il.ToArray
     End Function
+
 
     'Private Function MatchBBCode(ByVal text As String, ByVal Regexp As Regex) As String()
     '    Dim il As New List(Of String)
@@ -3259,54 +3685,54 @@ Friend Module GlobalFunctions
         Return codel
     End Function
 
-    Private Function GetCCLI(ByVal lang As String) As ColorCode.ILanguage
-        Select Case lang
-            Case "asax"
-                Return ColorCode.Languages.Asax
-            Case "ashx"
-                Return ColorCode.Languages.Ashx
-            Case "aspx"
-                Return ColorCode.Languages.Aspx
-            Case "aspxcs"
-                Return ColorCode.Languages.AspxCs
-            Case "aspxvb"
-                Return ColorCode.Languages.AspxVb
-            Case "cpp"
-                Return ColorCode.Languages.Cpp
-            Case "csharp"
-                Return ColorCode.Languages.CSharp
-            Case "css"
-                Return ColorCode.Languages.Css
-            Case "fsharp"
-                Return ColorCode.Languages.FSharp
-            Case "html"
-                Return ColorCode.Languages.Html
-            Case "java"
-                Return ColorCode.Languages.Java
-            Case "javascript"
-                Return ColorCode.Languages.JavaScript
-            Case "js"
-                Return ColorCode.Languages.JavaScript
-            Case "php"
-                Return ColorCode.Languages.Php
-            Case "ps"
-                Return ColorCode.Languages.PowerShell
-            Case "sql"
-                Return ColorCode.Languages.Sql
-            Case "typescript"
-                Return ColorCode.Languages.Typescript
-            Case "vbdotnet"
-                Return ColorCode.Languages.VbDotNet
-            Case "vb"
-                Return ColorCode.Languages.VbDotNet
-            Case "xml"
-                Return ColorCode.Languages.Xml
-            Case "c"
-                Return ColorCode.Languages.Cpp
-            Case Else
-                Return ColorCode.Languages.Cpp
-        End Select
-    End Function
+    'Private Function GetCCLI(ByVal lang As String) As ColorCode.ILanguage
+    '    Select Case lang
+    '        Case "asax"
+    '            Return ColorCode.Languages.Asax
+    '        Case "ashx"
+    '            Return ColorCode.Languages.Ashx
+    '        Case "aspx"
+    '            Return ColorCode.Languages.Aspx
+    '        Case "aspxcs"
+    '            Return ColorCode.Languages.AspxCs
+    '        Case "aspxvb"
+    '            Return ColorCode.Languages.AspxVb
+    '        Case "cpp"
+    '            Return ColorCode.Languages.Cpp
+    '        Case "csharp"
+    '            Return ColorCode.Languages.CSharp
+    '        Case "css"
+    '            Return ColorCode.Languages.Css
+    '        Case "fsharp"
+    '            Return ColorCode.Languages.FSharp
+    '        Case "html"
+    '            Return ColorCode.Languages.Html
+    '        Case "java"
+    '            Return ColorCode.Languages.Java
+    '        Case "javascript"
+    '            Return ColorCode.Languages.JavaScript
+    '        Case "js"
+    '            Return ColorCode.Languages.JavaScript
+    '        Case "php"
+    '            Return ColorCode.Languages.Php
+    '        Case "ps"
+    '            Return ColorCode.Languages.PowerShell
+    '        Case "sql"
+    '            Return ColorCode.Languages.Sql
+    '        Case "typescript"
+    '            Return ColorCode.Languages.Typescript
+    '        Case "vbdotnet"
+    '            Return ColorCode.Languages.VbDotNet
+    '        Case "vb"
+    '            Return ColorCode.Languages.VbDotNet
+    '        Case "xml"
+    '            Return ColorCode.Languages.Xml
+    '        Case "c"
+    '            Return ColorCode.Languages.Cpp
+    '        Case Else
+    '            Return ColorCode.Languages.Cpp
+    '    End Select
+    'End Function
 
 #End Region
 
@@ -3437,7 +3863,7 @@ Friend Module GlobalFunctions
 
         pageHTML = pageHTML.Replace("%THREAD COUNT%", "")
 
-        pageHTML = pageHTML.Replace("%META NO CACHE%", "<META HTTP-EQUIV=""pragma"" CONTENT=""no-cache"">")
+        pageHTML = pageHTML.Replace("%EXTRA META%", "<META HTTP-EQUIV=""pragma"" CONTENT=""no-cache"">")
 
         pageHTML = pageHTML.Replace("%RETURN BUTTON DESKTOP%", DesktopReturnButtonHTML.Replace("%P%", WebRoot & pageHandlerLink & ".aspx"))
         pageHTML = pageHTML.Replace("%RETURN BUTTON MOBILE%", MobileReturnButtonHTML.Replace("%P%", WebRoot & pageHandlerLink & ".aspx"))

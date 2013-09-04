@@ -107,6 +107,13 @@ Friend Module GlobalVariables
             Return chanb.My.Request.PhysicalApplicationPath & "\bin\datafiles\"
         End Get
     End Property
+
+    Friend ReadOnly Property chanbDir() As String
+        Get
+            Return chanb.My.Request.PhysicalApplicationPath & "\bin\"
+        End Get
+    End Property
+
 #End Region
 
 #Region "HTML Templates"
@@ -145,19 +152,20 @@ Friend Module GlobalVariables
     Public ReadOnly noscriptVideoHTML As String = "<a href='%VIDEO LINK%' target='_blank'>%FILE NAME%</a>"
     Public ReadOnly noscriptAudioHTML As String = "<a href='%LINK%' target='_blank'>%FILE NAME%</a>"
 
-    Public modMenuItems As String() = {"<li><a class=""wdlink"" href=""%WEBROOT%modSelectBanReason.aspx?id=%ID%&sib=false"" target=""_blank"">$</a></li>".Replace("$", banuserStr) & _
-                                       "<li><a class=""wdlink"" href=""%WEBROOT%modSelectBanReason.aspx?id=%ID%&sib=true"" target=""_blank"">$</a></li>".Replace("$", banuserStr & " (" & modSilentBanStr & ")"), _
-                            "<li><a href=""%WEBROOT%modaction.aspx?action=delpost&id=%ID%"" target=""_blank"">$</a></li>".Replace("$", deletePostStr), _
-                            "<li><a href=""%WEBROOT%modaction.aspx?action=tgsticky&id=%ID%"" target=""_blank"">$</a></li>".Replace("$", tgstickStr), _
-                            "<li><a href=""%WEBROOT%modaction.aspx?action=tglock&id=%ID%"" target=""_blank"">$</a></li>".Replace("$", tglockStr), _
-                            "<li><a href=""%WEBROOT%modaction.aspx?action=editpost&id=%ID%"" target=""_blank"">$</a></li>".Replace("$", EditpostStr)}
 
-    Public adminMenuItems As String() = {"<li><a href=""%WEBROOT%adminaction.aspx?action=banpost&id=%ID%&sib=false"" target=""_blank"">$</a></li>".Replace("$", banuserStr) & _
-                                   "<li><a href=""%WEBROOT%adminaction.aspx?action=banpost&id=%ID%&sib=true"" target=""_blank"">$</a></li>".Replace("$", banuserStr & " (" & modSilentBanStr & ")"), _
-                        "<li><a href=""%WEBROOT%adminaction.aspx?action=delpost&id=%ID%"" target=""_blank"">$</a></li>".Replace("$", deletePostStr), _
-                        "<li><a href=""%WEBROOT%adminaction.aspx?action=tgsticky&id=%ID%"" target=""_blank"">$</a></li>".Replace("$", tgstickStr), _
-                        "<li><a href=""%WEBROOT%adminaction.aspx?action=tglock&id=%ID%"" target=""_blank"">$</a></li>".Replace("$", tglockStr), _
-                        "<li><a href=""%WEBROOT%adminaction.aspx?action=editpost&id=%ID%"" target=""_blank"">$</a></li>".Replace("$", EditpostStr)}
+    Private _modLi As String = "<li><a class=""wdlink"" href=""%WEBROOT%modaction.aspx?action=%ACTION%&id=%ID%"" target=""_blank"">$</a></li>".Replace("%WEBROOT%", WebRoot)
+
+    Public modMenuItems As String() = {("<li><a class=""wdlink"" href=""%WEBROOT%modSelectBanReason.aspx?id=%ID%&sib=false"" target=""_blank"">$</a></li>".Replace("$", banuserStr) & _
+                                       "<li><a class=""wdlink"" href=""%WEBROOT%modSelectBanReason.aspx?id=%ID%&sib=true"" target=""_blank"">$</a></li>".Replace("$", banuserStr & " (" & modSilentBanStr & ")")).Replace("%WEBROOT%", WebRoot), _
+                                       _modLi.Replace("%ACTION%", "delpost").Replace("$", deletePostStr), _
+                                       _modLi.Replace("%ACTION%", "tgsticky").Replace("$", tgstickStr), _
+                                       _modLi.Replace("%ACTION%", "tglock").Replace("$", tglockStr), _
+                                       _modLi.Replace("%ACTION%", "editpost").Replace("$", EditpostStr)}
+
+    Private _adminLi As String = "<li><a href=""%WEBROOT%adminaction.aspx?action=%ACTION%&id=%ID%"" target=""_blank"">$</a></li>".Replace("%WEBROOT%", WebRoot)
+
+    Public adminMenuItems As String() = {"<li><a href=""%WEBROOT%adminaction.aspx?action=banpost&id=%ID%&sib=false"" target=""_blank"">$</a></li>".Replace("%WEBROOT%", WebRoot).Replace("$", banuserStr) & _
+                                   "<li><a href=""%WEBROOT%adminaction.aspx?action=banpost&id=%ID%&sib=true"" target=""_blank"">$</a></li>".Replace("%WEBROOT%", WebRoot).Replace("$", banuserStr & " (" & modSilentBanStr & ")")}
 
     Public ReadOnly bannedMessageHTML As String = "<br/><strong style=""color: red;"">%MES%</strong>".Replace("%MES%", banMsgStr)
 
@@ -167,9 +175,9 @@ Friend Module GlobalVariables
     Public ReadOnly archiveNotice As String = "<div class=""postingMode""><span>" & archiveNoticeStr & "</span></div>"
 
     Public ReadOnly captchaTableEntryHtml As String = "<tr><th>" & verificationStr & "</th><td><img alt='" & CaptchaChallengeStr & "' id='captchaImage' src=""%ROOT%captcha.aspx"" /><a onclick='refreshcaptcha();'><img alt=""refresh"" src=""%ROOT%res/refresh.png"" /></a><br /><input id='usercaptcha' autocomplete='off' class='form-text' type='text' size ='30' name='usercaptcha' /></td></tr>".Replace("%ROOT%", WebRoot)
-    Public ReadOnly addNewFileButtonHTML As String = "<input type=""checkbox"" name=""finp"" value=""yes"">" & addEachFileInNewPostStr & "</input><br/><input type=""checkbox"" name=""countf"" value=""yes"">" & countFilesStr & "</input><br/><input type='button' onclick='javascript:addUf();' class='button' value='" & addAnotherFStr & "'/>"
+    Public ReadOnly addNewFileButtonHTML As String = "<input type=""checkbox"" name=""finp"" value=""yes"">" & addEachFileInNewPostStr & "</input><br/><input type=""checkbox"" name=""countf"" value=""yes"">" & countFilesStr & "</input><br/><input type='button' onclick=""javascript:addUf('files');"" class='button' value='" & addAnotherFStr & "'/>"
 
-    Public ReadOnly postingRulesHTML As String = "<li><span>Blank posts are not allowed.</span></li><li>Please <a href=""%ROOT%faq.aspx"" target=""_blank"">visit</a> the FAQ page for info about tags supported.</li>".Replace("%ROOT%", WebRoot)
+    Public postingRulesHTML As String = "<li><span>Blank posts are not allowed.</span></li><li>Please <a href=""%ROOT%faq.aspx"" target=""_blank"">visit</a> the FAQ page for info about tags supported.</li>".Replace("%ROOT%", WebRoot)
     Public ReadOnly threadCountHTMLli As String = "<li><span>Currently there is % thread(s).</span></li>"
 
     Public ReadOnly DesktopReturnButtonHTML As String = "<a class=""buttonBlue"" href=""%P%"">" & returnStr & "</a>"
@@ -182,7 +190,7 @@ Friend Module GlobalVariables
     Public modPostName As String = "<span style=""color: blue"">Moderator</span>"
     Public adminPostName As String = "<span style=""color: red"">Administrator</span>"
 
-    Public ReadOnly forbiddenPage As String = "<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.0 Transitional//EN""> <html> <head> <title>403 Forbidden</title> </head> <body bottommargin=""0"" leftmargin=""0"" marginheight=""0"" marginwidth=""0"" rightmargin=""0"" topmargin=""0"" bgcolor=""#000000""> <table height=""75%"" width=""100%"" align=""center"" cellspacing=""0"" cellpadding=""0"" border=""0""> <tr> <td bgcolor=""#cccccc"" height=""67%"" width=""15%"">&nbsp;</td> <td bgcolor=""#ffff00"" height=""67%"" width=""14%"">&nbsp;</td> <td bgcolor=""#00ffff"" height=""67%"" width=""14%"">&nbsp;</td> <td bgcolor=""#00ff00"" height=""67%"" width=""14%"">&nbsp;</td> <td bgcolor=""#ff00ff"" height=""67%"" width=""14%"">&nbsp;</td> <td bgcolor=""#ff0000"" height=""67%"" width=""14%"">&nbsp;</td> <td bgcolor=""#0000ff"" height=""67%"" width=""15%"">&nbsp;</td> </tr> <tr> <td bgcolor=""#0000ff"" height=""8%"" width=""15%"">&nbsp;</td> <td bgcolor=""#131313"" height=""8%"" width=""14%"">&nbsp;</td> <td bgcolor=""#ff00ff"" height=""8%"" width=""14%"">&nbsp;</td> <td bgcolor=""#131313"" height=""8%"" width=""14%"">&nbsp;</td> <td bgcolor=""#00ffff"" height=""8%"" width=""14%"">&nbsp;</td> <td bgcolor=""#131313"" height=""8%"" width=""14%"">&nbsp;</td> <td bgcolor=""#cccccc"" height=""8%"" width=""15%"">&nbsp;</td> </tr> </table> <table height=""25%"" width=""100%"" align=""center"" cellspacing=""0"" cellpadding=""5"" border=""0""> <tr> <td bgcolor=""#083e59"" height=""25%"" width=""18%"">&nbsp;</td> <td bgcolor=""#ffffff"" height=""25%"" width=""18%"">&nbsp;</td> <td bgcolor=""#3a007e"" height=""25%"" width=""18%"">&nbsp;</td> <td bgcolor=""#131313"" height=""25%"" width=""20%"" align=""center"" valign=""middle"" style=""line-height:1.25""><font face=""verdana, san-serif"" color=""#00ff00""><font size=""+3"">403</font><br>Forbidden<br><font size=""-1"">STOP RIGHT THERE</font></font></td><td bgcolor=""#262626"" height=""25%"" width=""26%"" align=""right"" valign=""bottom""></td></tr></table></body></html>"
+    ' Public ReadOnly forbiddenPage As String = "<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.0 Transitional//EN""> <html> <head> <title>403 Forbidden</title> </head> <body bottommargin=""0"" leftmargin=""0"" marginheight=""0"" marginwidth=""0"" rightmargin=""0"" topmargin=""0"" bgcolor=""#000000""> <table height=""75%"" width=""100%"" align=""center"" cellspacing=""0"" cellpadding=""0"" border=""0""> <tr> <td bgcolor=""#cccccc"" height=""67%"" width=""15%"">&nbsp;</td> <td bgcolor=""#ffff00"" height=""67%"" width=""14%"">&nbsp;</td> <td bgcolor=""#00ffff"" height=""67%"" width=""14%"">&nbsp;</td> <td bgcolor=""#00ff00"" height=""67%"" width=""14%"">&nbsp;</td> <td bgcolor=""#ff00ff"" height=""67%"" width=""14%"">&nbsp;</td> <td bgcolor=""#ff0000"" height=""67%"" width=""14%"">&nbsp;</td> <td bgcolor=""#0000ff"" height=""67%"" width=""15%"">&nbsp;</td> </tr> <tr> <td bgcolor=""#0000ff"" height=""8%"" width=""15%"">&nbsp;</td> <td bgcolor=""#131313"" height=""8%"" width=""14%"">&nbsp;</td> <td bgcolor=""#ff00ff"" height=""8%"" width=""14%"">&nbsp;</td> <td bgcolor=""#131313"" height=""8%"" width=""14%"">&nbsp;</td> <td bgcolor=""#00ffff"" height=""8%"" width=""14%"">&nbsp;</td> <td bgcolor=""#131313"" height=""8%"" width=""14%"">&nbsp;</td> <td bgcolor=""#cccccc"" height=""8%"" width=""15%"">&nbsp;</td> </tr> </table> <table height=""25%"" width=""100%"" align=""center"" cellspacing=""0"" cellpadding=""5"" border=""0""> <tr> <td bgcolor=""#083e59"" height=""25%"" width=""18%"">&nbsp;</td> <td bgcolor=""#ffffff"" height=""25%"" width=""18%"">&nbsp;</td> <td bgcolor=""#3a007e"" height=""25%"" width=""18%"">&nbsp;</td> <td bgcolor=""#131313"" height=""25%"" width=""20%"" align=""center"" valign=""middle"" style=""line-height:1.25""><font face=""verdana, san-serif"" color=""#00ff00""><font size=""+3"">403</font><br>Forbidden<br><font size=""-1"">STOP RIGHT THERE</font></font></td><td bgcolor=""#262626"" height=""25%"" width=""26%"" align=""right"" valign=""bottom""></td></tr></table></body></html>"
 
     Public ReadOnly replyCountSpan As String = "<span>&nbsp;(<b>%REPLY COUNT%</b><span> " & replyStr & ".)</span></span>"
 
@@ -219,10 +227,27 @@ Friend Module GlobalVariables
         If FileSystem.FileExists(dataFileDir & "SELinks.txt") Then
             Dim il As New List(Of String)
             For Each line As String In IO.File.ReadAllLines(dataFileDir & "SELinks.txt")
-                If Not (line.StartsWith("#") Or line = String.Empty) Then il.Add(line)
+                If Not (line.StartsWith("#") Or line.Trim() = String.Empty) Then il.Add(line)
             Next
             searchEngineLinkList = il.ToArray
             il.Clear()
+        End If
+        'Ban file override
+        If FileSystem.FileExists(dataFileDir & "BanReasons.txt") Then
+            Dim il As New List(Of String)
+            For Each line As String In IO.File.ReadAllLines(dataFileDir & "BanReasons.txt")
+                If Not (line.StartsWith("#") Or line.Trim() = String.Empty) Then il.Add(line)
+            Next
+            modBanReasons = il.ToArray()
+            il.Clear()
+        End If
+        'Posting rules
+        If FileSystem.FileExists(dataFileDir & "postRules.txt") Then
+            Dim il As New StringBuilder
+            For Each line As String In IO.File.ReadAllLines(dataFileDir & "postRules.txt")
+                If Not (line.StartsWith("#") Or line.Trim() = String.Empty) Then il.Append("<li>" & line.Replace("%ROOT%", WebRoot) & "</li>")
+            Next
+            postingRulesHTML = il.ToString()
         End If
     End Sub
 

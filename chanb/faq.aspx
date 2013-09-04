@@ -1,19 +1,15 @@
-﻿<%@ Import Namespace="chanb" %>
-<%@ Import Namespace = "chanb.GlobalVariables" %>
-<%@ Import Namespace = "chanb.GlobalFunctions" %>
-<%@ Import Namespace = "chanb.Language" %>
-<%@ Page Language="VB" %>
+﻿<%@ Page Language="VB"  AutoEventWireup="false" CodeBehind="faq.aspx.vb" Inherits="chanb._faq" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" >
 <head>
-<title><% Response.Write(BoardTitle)%></title>
+<title>Channel Board</title>
 <link rel="Stylesheet" href='yotsubab.css' />
 <script src="scripts.js" type="text/javascript" language="javascript"></script>
 </head> 
 <body>
 <div class="boardBanner"> 
-<div class="boardTitle"><% Response.Write(BoardTitle)%></div>
-<div class="boardSubtitle"><% Response.Write(BoardDesc)%></div>
+<div class="boardTitle">Channel Board</div>
+<div class="boardSubtitle">---</div>
 </div>
 <hr />
 <div id="board">
@@ -44,29 +40,27 @@
 [/code]
 </pre>
 
-<span>This is a list of supported language identifiers (language id's are case-sensitive):</span>
+<span>This is a list of supported language identifiers:</span>
 <br />
 <ul>
-<il><span>• cpp for C++</span></il><br />
-<il><span>• c for C</span></il><br />
-<il><span>• vb or vbdotnet for VB.NET</span></il><br />
-<il><span>• csharp for C#</span></il><br />
-<il><span>• fsharp for F#</span></il><br />
-<il><span>• java for Java</span></il><br />
-<il><span>• js or javascript for Javascript</span></il><br />
-<il><span>• php for PHP</span></il><br />
-<il><span>• xml for XML</span></il><br />
-<il><span>• html for HTML</span></il><br />
-<il><span>• ps for PowerShell</span></il><br />
+<il><span>• scheme,scm for Scheme</span></il><br />
+<il><span>• lisp,lsp for Lisp and derivatives.</span></il><br />
+<il><span>• apollo,agc,aea for Apollo</span></il><br />
+<il><span>• vb,vbs,vb.net for Visual Basic</span></il><br />
+<il><span>• scala for Scala</span></il><br />
+<il><span>• pascal for Pascal</span></il><br />
+<il><span>• go for Go</span></il><br />
 <il><span>• sql for SQL</span></il><br />
-<il><span>• typescript for TypeScript</span></il><br />
+<il><span>• c,cpp,cplusplus for C/C++</span></il><br />
 <il><span>• css for CSS</span></il><br />
-<il><span>• asax, ashx, aspx, aspxcs, aspxvb for ASAX, ASHX, ASPX, ASP.NET C#, ASP.NET VB.NET respectively.</span></il><br />
+<il><span>• clojure,clj for Clojure</span></il><br />
+<il><span>• haskel,hs for Haskel</span></il><br />
+<il><span>• erlang,erl for Erlang</span></il><br />
+<il><span>• lua for Lua</span></il><br />
+<il><span>•  F# for F#</span></il><br />
 </ul>
-
 <br />
-<span>If you don't specify  a language, your code is treated as C/C++.</span>
-
+<span>If you don't specify  a language, prettify will guess it.</span>
 </div>
 </td>
 </tr>
@@ -80,6 +74,6 @@
 
 
 <div id="bottom"></div>
-<div id="absbot" class="absBotText"><% Response.Write(footerText)%></span></div>
+<div id="absbot" class="absBotText"><% Response.Write(foo)%></span></div>
 </body>
 </html>

@@ -1,4 +1,4 @@
-﻿Public Module Misc
+﻿Friend Module Misc
 
     Public Function FormatHTMLMessage(ByVal title As String, ByVal msg As String, ByVal redirectpage As String, ByVal timeout As String, ByVal critical As Boolean) As String
         Dim messageTemplate As String = GenericMessageTemplate
@@ -13,12 +13,5 @@
         End If
         Return messageTemplate
     End Function
-
-    Public Function FormatHTMLMessage(ByVal errorName As String, ByVal shortDesc As String, ByVal longDesc As String) As String
-
-        Return ""
-
-    End Function
-
 
 End Module

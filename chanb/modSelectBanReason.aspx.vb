@@ -8,7 +8,7 @@
                 Response.Write(chanb.GlobalFunctions.GenerateModSBR(Context))
             Else
                 Response.StatusCode = 403
-                Response.Write(chanb.forbiddenPage)
+                Response.End()
             End If
         Else
             Response.Redirect("installer.aspx")

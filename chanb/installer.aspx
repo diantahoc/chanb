@@ -4,13 +4,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" >
 <head runat="server">
     <title>Chanb Installer</title>
-    <link rel="Stylesheet" href='yotsubab.css' />
-    <script src="scripts.js" type="text/javascript" language="javascript"></script>
-    <script type="text/javascript" src="js/jquery.min.js"></script>
-    <script type="text/javascript" src="js/jquery-ui.min.js"></script>
+    <link rel="Stylesheet" href="yotsubab.css" />
+    <script src="<% Response.Write(WB) %>scripts.js" type="text/javascript" language="javascript"></script>
+    <script type="text/javascript" src="<% Response.Write(WB) %>js/jquery.min.js"></script>
 </head>
 <body>
-<form action="adminaction.aspx" method="post" enctype="multipart/form-data">
+<form action="<% Response.Write(WB) %>adminaction.aspx" method="get" enctype="application/x-www-form-urlencoded" defaultbutton="send">
 <div align="center">
 
          <h5>
@@ -22,8 +21,6 @@
          </h5>
 <br />
 <br />
-
-
 
 <div class='whitebox'>      
            <h2 style="text-align: center !important;">
@@ -75,31 +72,13 @@
                   
            <script>$('#mssqlExample').removeClass('hide'); $('#mysqlExample').addClass('hide');</script>
 </div> 
-<br />
-<br />
-
-<div class='whitebox'>           
-            <h2 style="text-align: center !important">
-           <span style="text-align: center !important">Configure database structure</span>
-           <br />
-           </h2>
-           
-
-           <span>- Click this button to <input type="submit" name="action" value="automatically configure the database structure"/></span>
-         
-           <br />
-           <br />
-           
-           <span>- Or upload your script.</span> <input name="customdbfile" type="file" class="form-text" /> <input type="submit" name="action" value="Upload and run script"/>
-            
-</div>
 
 <br />
 <br />
 
 <div class='whitebox'>  
             <h2 style="text-align: center !important;">
-           <span style="text-align: center !important; ">Server configuration</span>
+           <span style="text-align: center !important; ">File storage configuration</span>
            <br />
            </h2>     
            <span style="font-size:medium !important;">(Note: configuring this section is optional.)</span>
@@ -135,8 +114,8 @@
            <span style="text-align: center !important; ">Board configuration</span>
            <br />
            </h2>     
-           <span style="font-size:medium !important;">(Note: configuring this section is also optional, but it's recommended to edit the configurations.)</span>
-           
+          <!-- <span style="font-size:medium !important;">(Note: configuring this section is also optional, but it's recommended to edit the configurations.)</span>
+          -->
            <br />
            <br />
            
@@ -214,7 +193,7 @@
            <br /><br />
            
            <span>- Allow duplicates files:</span>
-           <select id="AllowDuplicatesFiles" name="AllowDuplicatesFiles" onchange="if (document.getElementById('AllowDuplicatesFiles').value == 'True' ) { document.getElementById('SmartLinkDuplicateImages').removeAttribute('disabled') } else { updateAttrb('SmartLinkDuplicateImages','disabled','disabled') } ">
+           <select id="AllowDuplicatesFiles" name="AllowDuplicatesFiles" onchange="if (document.getElementById('AllowDuplicatesFiles').value == 'False' ) { document.getElementById('SmartLinkDuplicateImages').removeAttribute('disabled') } else { updateAttrb('SmartLinkDuplicateImages','disabled','disabled') } ">
            <option>True</option>
            <option>False</option>
            </select> 
@@ -250,7 +229,7 @@
 <br />
 <br />
 
-<input type="submit" value="Install" name="action" />
+<input type="submit" value="Install" name="action" id="send" />
 </div>
     </form>
 </body>

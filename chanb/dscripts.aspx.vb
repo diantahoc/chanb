@@ -37,11 +37,11 @@
 
             Dim additionalFiles As New List(Of String)
 
-            For i As Integer = 0 To cfhl.Length - 1 Step 1
+            For i As Integer = 0 To CFH_Plugins.Length - 1 Step 1
 
-                sb.Append(cfhl(i).GetJSHandler)
+                sb.Append(CFH_Plugins(i).GetJSHandler)
 
-                For Each x As String In cfhl(i).Get_Supported_Files
+                For Each x As String In CFH_Plugins(i).Get_Supported_Files
                     additionalFiles.Add(x)
                 Next
 

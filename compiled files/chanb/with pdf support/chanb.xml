@@ -98,14 +98,13 @@ To modify move field declaration from designer file to code-behind file.
  </summary>
 	<returns></returns>
 	<remarks></remarks>
-</member><member name="F:chanb.faq.form1">
+</member><member name="M:chanb.CustomFileHandler.FileHasThumb(System.String)">
 	<summary>
-form1 control.
-</summary>
-	<remarks>
-Auto-generated field.
-To modify move field declaration from designer file to code-behind file.
-</remarks>
+ Need to return if the file associated with this extension has a thumnbail
+ </summary>
+	<param name="lower_case_fileExtension">The lowercase extension. It's only the extension part (for example 'jpg', not '.jpg')</param>
+	<returns></returns>
+	<remarks></remarks>
 </member><member name="P:chanb.My.Resources.Resources.ResourceManager">
 	<summary>
   Returns the cached ResourceManager instance used by this class.

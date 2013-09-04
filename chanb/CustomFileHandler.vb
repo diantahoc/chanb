@@ -42,6 +42,14 @@
     ''' <remarks></remarks>
     Function Get_Supported_Files() As String()
 
+    ''' <summary>
+    ''' Need to return if the file associated with this extension has a thumnbail
+    ''' </summary>
+    ''' <param name="lower_case_fileExtension">The lowercase extension. It's only the extension part (for example 'jpg', not '.jpg')</param>
+    ''' <returns></returns>
+    ''' <remarks></remarks>
+    Function FileHasThumb(ByVal lower_case_fileExtension As String) As Boolean
+
 End Interface
 
 Public Class CFHThumbData

@@ -1,5 +1,8 @@
 ﻿function quote(id) {
-    insert(document.getElementById("commentfield"), ">>" + id + "\n");
+    if (qr_isHidden) {
+        qr("show");
+    }
+    insert(document.getElementById("qr_comment"), ">>" + id + "\n");
 }
 
 function insert(textarea, text) {
@@ -19,7 +22,9 @@ function insert(textarea, text) {
     textarea.focus();
 }
 
-function addUf() {
+function addUf(id) {
+    var cont = document.getElementById(id);
+    
     var divTag = document.createElement("input");
 
     var idstr = "d" + Math.random().toString(10);
@@ -39,15 +44,16 @@ function addUf() {
     var br = document.createElement("br");
     br.setAttribute("id", "br" + idstr);
 
-    document.getElementById("files").appendChild(br);
-    document.getElementById("files").appendChild(divTag);
-    document.getElementById("files").appendChild(delbutton);
+    cont.appendChild(br);
+    cont.appendChild(divTag);
+    cont.appendChild(delbutton);
 
 }
 
 function delUf(id) {
 
-    var parent = document.getElementById("files");
+    var parent = document.getElementById("delb"+id).parentElement;
+    
     var a = document.getElementById("uf" + id);
     var b = document.getElementById("delb" + id);
     var c = document.getElementById("br" + id);
@@ -101,10 +107,10 @@ function golast(id) {
 function refreshcaptcha(level) {
     if (level == null) {
         var cap = document.getElementById("captchaImage");
-        cap.setAttribute("src", "/captcha.aspx?" + Math.random().toString(10));
+        cap.setAttribute("src", webroot + "captcha.aspx?" + Math.random().toString(10));
     } else {
         var cap = document.getElementById("captchaImage");
-        cap.setAttribute("src", "/captcha.aspx?l=" + level + "&y=" + Math.random().toString(10));
+        cap.setAttribute("src", webroot + "captcha.aspx?l=" + level + "&y=" + Math.random().toString(10));
     }
     document.getElementById("usercaptcha").value = "";
 }
@@ -127,12 +133,29 @@ function showShortName(id) {
     $("#fsn" + id).removeClass("hide");
 }
 
-function showPassword(id) {
-    document.getElementById(id).setAttribute("type", "text");
+
+
+function handle_pbox(e) {
+    switch (e.type) {
+        case "mouseover":
+            e.target.setAttribute("type", "text");
+            break;
+        case "mouseout":
+            e.target.setAttribute("type", "password");
+            break;
+        default:
+            break;
+    }
 }
 
-function hidePassword(id) {
-    document.getElementById(id).setAttribute("type", "password");
+function show_hide_pbox() {
+    var items = document.getElementsByTagName("input");
+    for (a = 0; a < items.length; a++) {
+        if (items[a].type == "password") {
+            items[a].addEventListener('mouseover', handle_pbox, false);
+            items[a].addEventListener('mouseout', handle_pbox, false);       
+        }
+    }
 }
 
 function checkforNSFWImages() {
@@ -271,108 +294,224 @@ function beforePost() {
     setCookie("posteremail", $("#pemail").val(), 3);
 }
 
+var qr_isHidden = false;
+function qr(command) {
+    var qbox = $("#qrbox");
+    switch (command) {
+        case "hide":
+            if (!qr_isHidden) {
+                qbox.hide();
+                qr_isHidden = true;
+            }
+            qr("clear");
+            break;
+        case "show":
+            if (qr_isHidden) {
+                qbox.show();
+                qr_isHidden = false;
+            }
+            break;
+        case "clear":
+            var oaw = ["qr_name", "qr_email", "qr_subject", "qr_comment"];
+            for (i = 0; i < oaw.length; i++) {
+                document.getElementById(oaw[i]).value = "";
+            }
+            var qr_fil = document.getElementById("qr_files");
+            var gee = qr_fil.children;
+            for (i = 0; i < gee.length; i++) {
+                if (!(gee[i].getAttribute("name") == "ufile")) {
+                    qr_fil.removeChild(gee[i]);
+                }
+            }
 
+            break;
+        case "submit":
+            qr_send(document.getElementById("qr_form"));
+            break;
+        default:
+            break;
+    }
+}
+function qr_init() {
+    var qbox = $("#qrbox");
+    qbox.draggable({ appendTo: "#qrtitle", containment: "document" });
+    qbox.removeClass("hide");
+    qbox.hide();
+    qr_isHidden = true;
+    $("#progress-block").hide();
+}
 
+var qr_isSending = false;
 
-
-//function initQR() { 
-
-///*<div id="qrbox" class="qr">
-//    <div id="qrtitle" class="qrtitle">
-//		<span class="qrmove">Quick reply</span><a style="float:right;" class="form-button form-button-red" href="javascript:qr('hide')">X</a>
-//	</div>
-//    <div id="qrbody" class="qrbody">
-//        <input class="form-text" id="qrname" type="text" style="max-width: 135px" />
-//        <input class="form-text" id="qremail" type="text" style="max-width: 135px" />
-//        <input class="form-text" id="qrsubject" type="text" style="max-width: 135px" />
-//        
-//        <br />
-//        
-//        <textarea id="qrtext" cols="50" rows="10" class="form-textarea"></textarea>
-//        
-//        <br />
-//        
-//        <a class="form-button" onclick="qr('sumbit')">Send</a>
-//	</div>
-//</div>*/
-
-
-//    var qrbox = document.createElement("div");
-//    qrbox.setAttribute("id", "qrbox");
-//    qrbox.setAttribute("class", "qr");
-
-//    var qrtitle = document.createElement("div");
-
-//    qrtitle.setAttribute("id", "qrtitle");
-//    qrtitle.setAttribute("class", "qrtitle");
-
-//    var spanqrmove = document.createElement("span");
-//    spanqrmove.setAttribute("class", "qrmove");
-//    spanqrmove.text = "Quick Reply";
-
-//    var qrhideB = document.createElement("a");
-//    qrhideB.setAttribute("class", "form-button form-button-red");
-//    qrhideB.setAttribute("style", "float:right;");
-//    qrhideB.setAttribute("href", "javascript:qr('hide')");
-//    qrhideB.text = "X";
-
-//    qrtitle.appendChild(spanqrmove);
-//    qrtitle.appendChild(qrhideB);
-
-//    var br = document.createElement("br");
-//    
-//    var qrbody = document.createElement("div");
-//    qrbody.setAttribute("id", "qrbody");
-//    qrbody.setAttribute("class", "qrbody");
-
-//    var qrname = document.createElement("input");
-//    qrname.setAttribute("id", "qrname");
-//    qrname.setAttribute("class", "form-text");
-//    qrname.setAttribute("type", "text");
-//    qrname.setAttribute("style", "max-width: 135px");
-//    qrbody.appendChild(qrname);
-//    
-//    var qremail = document.createElement("input");
-//    qremail.setAttribute("id", "qremail");
-//    qremail.setAttribute("class", "form-text");
-//    qremail.setAttribute("type", "text");
-//    qremail.setAttribute("style", "max-width: 135px");
-//    qrbody.appendChild(qremail);
-//    
-//    var qrsubject = document.createElement("input");
-//    qrsubject.setAttribute("id", "qrsubject");
-//    qrsubject.setAttribute("class", "form-text");
-//    qrsubject.setAttribute("type", "text");
-//    qrsubject.setAttribute("style", "max-width: 135px");
-//    qrbody.appendChild(qrsubject);
-
-//    qrbody.appendChild(br);
-//    
-//    
-//    var qrtext = document.createElement("textarea");
-//    qrtext.setAttribute("id", "qrtext");
-//    qrtext.setAttribute("cols", "50");
-//    qrtext.setAttribute("rows", "10");
-//    qrtext.setAttribute("class", "form-textarea");
-//    qrbody.appendChild(qrtext);
-//    
-//    qrbody.appendChild(br);
-
-//    var qrsendB = document.createElement("a");
-//    qrsendB.setAttribute("class", "form-button");
-//    qrsendB.setAttribute("href", "javascript:qr('send')");
-//    qrsendB.text = "Reply";
-//    qrbody.appendChild(qrsendB);
-//    
-//    qrbox.appendChild(qrtitle);
-//    qrbox.appendChild(qrbody);
-
-//    var body = $(".thread")[0];
-//    
-//    body.appendChild(qrbox);
-//    
-//    $("#qrbox").draggable({ handle: "#qrtitle" });
-//}
-
-//function qr(command) { }
+function qr_send(qrForm) {
+    if (qr_isSending) {
+        return null;
+    }
+    qr_isSending = true;
     
+    //UI Stuffs
+    if (qr_hasFiles()) { $("#progress-block").slideDown(); }
+   
+    
+    var req = new XMLHttpRequest();
+    req.open('POST', webroot + "api.aspx", true);
+    req.withCredentials = true;
+    req.upload.onprogress = function(e) { qr_updateProgress(e); }
+
+    req.onerror = function() { req = null; qr_enable_controls(); }
+
+    req.onloadend = function() {
+        if (req.getResponseHeader("Content-Type").split(";")[0] == "application/json") {
+
+            var a = JSON.parse(req.responseText);
+
+
+            switch (a.ResponseType) {
+
+
+                case -1: //undefined
+                    break;
+                case 0: //info
+                    break;
+                case 1: //error
+                    var e = "";
+                    switch (a.ErrorType) {
+                        case -1:
+                            e = "Undefined";
+                            break;
+                        case 0:
+                            e = "Captcha";
+                            break;
+                        case 1:
+                            e = "FileSize";
+                            break;
+                        case 2:
+                            e = "BlankPost";
+                            break;
+                        case 3:
+                            e = "Spam";
+                            break;
+                        case 4:
+                            e = "ImpersonationProtection";
+                            break;
+                        case 5:
+                            e = "FileRequired";
+                            break;
+                        case 6:
+                            e = "Banned";
+                            break;
+                        case 7:
+                            e = "ServerError";
+                            break;
+                        case 8:
+                            e = "InvalidRequest";
+                            break;
+                        default:
+                            e = "Undefined";
+                            break;       
+                    }
+                    qr_display_message("Cannot post: " + e, "error");
+                    break;
+                case 2: //newthread
+                    break;
+                case 3: //reply
+                    break;
+                default:
+                    break;
+            }
+
+             console.log(a);
+
+
+        } else {
+            console.log("resp: " + req.responseType);
+            console.log(req.responseText);
+        }
+
+        req = null;
+        //ui stuffs
+        $("#progress-block").slideUp();
+        qr_enable_controls();
+        //force new update
+        noNewRepliesIncrem = -1;
+        qr("clear");
+        //allow new quick reply submissions.
+        qr_isSending = false;
+
+
+
+
+    }
+   
+    var formdata = new FormData(qrForm);
+    req.send(formdata);
+    qr_disable_controls();
+}
+
+function qr_display_message(text, level) {
+    //
+
+    document.getElementById("qr_message_content").textContent = text;
+    var e = document.getElementById("qr_message");
+    switch (level) {
+        case "error":
+            e.setAttribute("style", "style=\"background-color: #FF0000!important; color:#FFFFFF\"");break;
+        case "info":
+            e.setAttribute("style", "style=\"background-color: #00FF00!important; color:#FFFFFF\""); break;
+        default:
+            e.setAttribute("style", "style=\"background-color: #0000FF!important; color:#FFFFFF\""); break;
+    }
+    e.setAttribute("class", "");
+ }
+
+function qr_updateProgress(e) {
+    if (e.loaded >= e.total) {
+        document.getElementById("download_perc").textContent = "100%";
+        document.getElementById("download_progress").setAttribute("style","width: 100%");      
+    }
+    else {
+        var pro = (0 | (e.loaded / e.total * 100)) + '%';
+        document.getElementById("download_perc").textContent = pro;
+        document.getElementById("download_progress").setAttribute("style", "width: " + pro); 
+    }
+}
+
+var qr_controls = ["qr_name", "qr_email", "qr_subject", "qr_comment", "qr_send", "qr_reset"]
+
+function qr_disable_controls() {
+    for (i = 0; i < qr_controls.length; i++) {
+        document.getElementById(qr_controls[i]).setAttribute("disabled", "disabled");
+     }
+ }
+
+ function qr_enable_controls() {
+     for (i = 0; i < qr_controls.length; i++) {
+         document.getElementById(qr_controls[i]).removeAttribute("disabled");
+     }
+ }
+
+ function qr_hasFiles() {
+
+     var qrF = document.getElementById("qr_files");
+     if (qrF.children.length = 0) { return false; } else {
+
+     var fileFound = false;
+         for (i = 0; i < qrF.children.length; i++) {
+             if (! (qrF.children[i].value == "")) {fileFound = true; }
+          }
+          return fileFound;
+      }
+
+  }
+
+//var c_pl= new Array();
+//  function lp(a) {
+//      if (c_pl.indexOf(a) == -1) {
+//          c_pl.push(a);
+//          var script = document.createElement('script');
+//          script.type = 'text/javascript';
+//          script.src = webroot + 'js/pr/lang-' + a +'.js';
+//          document.getElementsByTagName('head')[0].appendChild(script);   
+//      }
+//}
+//   

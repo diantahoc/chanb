@@ -1,7 +1,7 @@
 Chanb
 =====
 
-Chanb (Channel Board) is an ASP.NET Image board written in Visual Basic. 
+Chanb (Channel Board) is an ASP.NET Image board written in Visual Basic.
 Licensed legally under the GPLv2
 
 Live preview
@@ -11,7 +11,7 @@ http://www.chanb.somee.com
 
 The website gets cleaned each while.
 
-Current Features
+Current features
 ========
 
 -Administration related:
@@ -21,6 +21,7 @@ Current Features
 -Board related:
 * Auto updater.
 * Automatic set dumper (with file counting support).
+* Captcha.
 * Catalog.
 * Duplicate image checking support.
 * Integrated archive.
@@ -34,7 +35,7 @@ Current Features
 	* `code` for code highlighting
 	* `spoiler` for spoilers
 	* `md` for markdown
-	* `q` for a quote
+	* `q` for quote
 
 -File support:
 * JPEG, PNG, APNG, GIF, BMP support.
@@ -47,15 +48,13 @@ Current Features
 * Dual MS SQL or MySQL support. (Each one alone, not together)
 * Static mode (Means threads are saved to HTML files).
 
-Planned features
+Planned features (Todo)
 =================
 
-* Add Delphi syntax highlighting.
 * Add LaTeX support.
-* Admin panel.
+* Administration panel.
 * Online language adder and editor.
-* Read and write JSON API (partially done.).
-* Client-side code syntax highlighter.
+* Read and write JSON API (partially done).
 
 How to install
 ==============
@@ -66,13 +65,13 @@ How to install
 
 * Make a folder `langs` in the same directory as `chanb.dll`. Put the `en-US.dic` file in that directory (you can find it in the `languages` folder).
 
-* Copy all the .aspx files to your application root.
+* Copy all the `.aspx` files to your application root.
 
-* Point your browser to your website.
+* Point your browser to your website to begin installation.
 
 * Enjoy.
 
-PS: Currently, you can change settings by editing the `data.dic` file which is automatically made in the same folder as `chanb.dll`.
+Note: Currently, you can change settings by editing the `data.dic` file which is automatically made in the same folder as `chanb.dll`.
 
 Bugs reports
 ============

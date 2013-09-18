@@ -30,7 +30,7 @@
 
                             .Response.ContentType = GetMimeType(fileextension)
 
-                            .Response.AppendHeader("Content-Disposition", "attachment; filename=""" & RealName & """")
+                            .Response.AppendHeader("Content-Disposition", "attachment; filename=""" & RealName.Replace("""", "") & """")
 
                             .Response.AppendHeader("Content-Length", CStr(f.Length))
 

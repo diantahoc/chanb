@@ -6,7 +6,7 @@
 
 Friend Module GlobalFunctions
 
-    Private dbi As New DBInitializer()
+    Friend dbi As New DBInitializer()
     Public CFH_Plugins As CustomFileHandler() = GetCFHPlugins()
 
 #Region "Board Functions"
@@ -63,6 +63,7 @@ Friend Module GlobalFunctions
         ' This increase the number of collosion posibilities but does not get rid of the problem.
 
 
+
         Dim rand As New Random
         
         Dim fileextension As String = f.FileName.Split(CChar("."))(f.FileName.Split(CChar(".")).Length - 1).ToLower()
@@ -87,37 +88,10 @@ Friend Module GlobalFunctions
                     End If
                 End Try
 
-
-
-
                 Dim ChanbName As String = CStr(Date.UtcNow.ToFileTime) & "r" & CStr(rand.Next(0, 1024))
 
                 'Full image path
                 Dim FullImagePath As String = StorageFolder & "\" & ChanbName & "." & fileextension
-
-
-                'Thumb path
-                Dim thumb As String
-                If fileextension = "png" Then
-                    thumb = StorageFolderThumbs & "\th" & ChanbName & ".png"
-                Else
-                    thumb = StorageFolderThumbs & "\th" & ChanbName & ".jpg"
-                End If
-
-                'Check if resize is needed.
-                If (w.Width * w.Height) < 62500 Then
-                    If fileextension = "png" Then
-                        w.Save(thumb, Drawing.Imaging.ImageFormat.Png)
-                    Else
-                        w.Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
-                    End If
-                Else
-                    If fileextension = "png" Then
-                        ResizeImage(w, 250).Save(thumb, Drawing.Imaging.ImageFormat.Png)
-                    Else
-                        ResizeImage(w, 250).Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
-                    End If
-                End If
 
                 'Save the image.
                 f.SaveAs(FullImagePath)
@@ -127,19 +101,39 @@ Friend Module GlobalFunctions
                 Dim md5string As String = MD5(fs)
                 fs.Close()
 
+                Dim thumb As String
+
+                Dim isTransparant As Boolean = ImageHaveTransparentBits(CType(w, Drawing.Bitmap))
+                Dim format As System.Drawing.Imaging.ImageFormat
+
+                If isTransparant Then
+                    format = System.Drawing.Imaging.ImageFormat.Png
+                    thumb = StorageFolderThumbs & "\th" & ChanbName & ".png"
+                Else
+                    format = System.Drawing.Imaging.ImageFormat.Jpeg
+                    thumb = StorageFolderThumbs & "\th" & ChanbName & ".jpg"
+                End If
+
+
+                'Check if resize is needed.
+                If (w.Width * w.Height) < 62500 Then
+                    w.Save(thumb, format)
+                Else
+                    ResizeImage(w, 250).Save(thumb, format)
+                End If
 
 
                 If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection) Then
                     'If image already exist, we fetch the matching image data from the database, and delete the saved files.
                     If SmartLinkDuplicateImages = False Then
-                        FileIO.FileSystem.DeleteFile(FullImagePath)
-                        FileIO.FileSystem.DeleteFile(thumb)
+                        Delete_File_Fromdisk(FullImagePath)
+                        Delete_File_Fromdisk(thumb)
                         Throw New ArgumentException(duplicateFile)
                     Else
                         Dim wpi As WPostImage = GetFileDataByMD5(md5string, Connection)
                         'Delete previously saved files.
-                        FileIO.FileSystem.DeleteFile(FullImagePath)
-                        FileIO.FileSystem.DeleteFile(thumb)
+                        Delete_File_Fromdisk(FullImagePath)
+                        Delete_File_Fromdisk(thumb)
                         'Change the necessary variables
                         wpi.PostID = postId
                         wpi.RealName = f.FileName
@@ -166,8 +160,7 @@ Friend Module GlobalFunctions
             Case "SVG"
                 Dim dd As String = CStr(Date.UtcNow.ToFileTime) & "r" & CStr(rand.Next(0, 1024))
                 Dim p As String = StorageFolder & "\" & dd & "." & fileextension
-                'Thumb path
-                Dim thumb As String = StorageFolderThumbs & "\th" & dd & ".png"
+
                 f.SaveAs(p)
 
                 Dim fs As New IO.FileStream(p, IO.FileMode.Open)
@@ -179,13 +172,11 @@ Friend Module GlobalFunctions
                 If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection) Then
 
                     If SmartLinkDuplicateImages = False Then
-                        FileIO.FileSystem.DeleteFile(p)
-                        FileIO.FileSystem.DeleteFile(thumb)
+                        Delete_File_Fromdisk(p)
                         Throw New ArgumentException(duplicateFile)
                     Else
                         Dim wpi As WPostImage = GetFileDataByMD5(md5string, Connection)
-                        FileIO.FileSystem.DeleteFile(p)
-
+                        Delete_File_Fromdisk(p)
                         wpi.RealName = f.FileName
                         wpi.PostID = postId
                         AddFileToDatabase(wpi, postId, Connection)
@@ -195,6 +186,9 @@ Friend Module GlobalFunctions
                 Else
 
                     Dim svgBi As Drawing.Bitmap
+
+                    'Thumb path
+                    Dim thumb As String = StorageFolderThumbs & "\th" & dd & ".png"
 
                     Try
                         Dim svgDoc As Svg.SvgDocument = Svg.SvgDocument.Open(p)
@@ -207,10 +201,21 @@ Friend Module GlobalFunctions
                         g.Dispose()
                     End Try
 
-                    If (svgBi.Width * svgBi.Height) < 62500 Then
-                        svgBi.Save(thumb)
+                    Dim isTransparant As Boolean = ImageHaveTransparentBits(svgBi)
+                    Dim format As System.Drawing.Imaging.ImageFormat
+
+                    If isTransparant Then
+                        format = System.Drawing.Imaging.ImageFormat.Png
+                        thumb = StorageFolderThumbs & "\th" & dd & ".png"
                     Else
-                        ResizeImage(svgBi, 250).Save(thumb)
+                        format = System.Drawing.Imaging.ImageFormat.Jpeg
+                        thumb = StorageFolderThumbs & "\th" & dd & ".jpg"
+                    End If
+
+                    If (svgBi.Width * svgBi.Height) < 62500 Then
+                        svgBi.Save(thumb, format)
+                    Else
+                        ResizeImage(svgBi, 250).Save(thumb, format)
                     End If
 
                     Dim wpi As New WPostImage
@@ -246,8 +251,8 @@ Friend Module GlobalFunctions
 
                 If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection) Then
                     If SmartLinkDuplicateImages = False Then
-                        FileIO.FileSystem.DeleteFile(p)
-                        FileIO.FileSystem.DeleteFile(thumb)
+                        Delete_File_Fromdisk(p)
+                        Delete_File_Fromdisk(thumb)
                         Throw New ArgumentException(duplicateFile)
                     Else
                         Dim wpi As WPostImage = GetFileDataByMD5(md5string, Connection)
@@ -310,8 +315,8 @@ Friend Module GlobalFunctions
 
                     If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection)  Then
                         If SmartLinkDuplicateImages = False Then
-                            FileIO.FileSystem.DeleteFile(p)
-                            FileIO.FileSystem.DeleteFile(thumb)
+                           Delete_File_Fromdisk(p)
+                           Delete_File_Fromdisk(thumb)
                             Throw New ArgumentException(duplicateFile)
                         Else
                             Dim wpi As WPostImage = GetFileDataByMD5(md5string, Connection)
@@ -359,21 +364,27 @@ Friend Module GlobalFunctions
 
             Case "WEBM"
 
+                If Not Validators.ValidateWEBM(f.InputStream) Then
+                    Throw New Exception("Invalid WEBM file")
+                End If
+
                 Dim dd As String = CStr(Date.UtcNow.ToFileTime) & "r" & CStr(rand.Next(0, 1024))
                 Dim p As String = StorageFolder & "\" & dd & "." & fileextension
                 f.SaveAs(p)
 
                 Dim fs As New IO.FileStream(p, IO.FileMode.Open)
                 Dim md5string As String = MD5(fs)
+
+
                 fs.Close()
 
                 If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection) Then
                     If SmartLinkDuplicateImages = False Then
-                        FileIO.FileSystem.DeleteFile(p)
+                        Delete_File_Fromdisk(p)
                         Throw New ArgumentException(duplicateFile)
                     Else
                         Dim wpi As WPostImage = GetFileDataByMD5(md5string, Connection)
-                        FileIO.FileSystem.DeleteFile(p)
+                        Delete_File_Fromdisk(p)
                         wpi.RealName = f.FileName
                         wpi.PostID = postId
                         AddFileToDatabase(wpi, postId, Connection)
@@ -394,6 +405,18 @@ Friend Module GlobalFunctions
                 End If
 
             Case "MP3", "OGG"
+
+                Select Case fileextension
+                    Case "MP3"
+                        If Not Validators.ValidateMP3(f.InputStream) Then
+                            Throw New Exception("Invalid MP3 file")
+                        End If
+                    Case "OGG"
+                        If Not Validators.ValidateOGG(f.InputStream) Then
+                            Throw New Exception("Invalid OGG file")
+                        End If
+                End Select
+
                 Dim dd As String = CStr(Date.UtcNow.ToFileTime) & "r" & CStr(rand.Next(0, 1024))
                 Dim p As String = StorageFolder & "\" & dd & "." & fileextension
                 f.SaveAs(p)
@@ -403,11 +426,11 @@ Friend Module GlobalFunctions
 
                 If (Not AllowDuplicatesFiles) And FileExistInDB(md5string, Connection) Then
                     If SmartLinkDuplicateImages = False Then
-                        FileIO.FileSystem.DeleteFile(p)
+                        Delete_File_Fromdisk(p)
                         Throw New ArgumentException(duplicateFile)
                     Else
                         Dim wpi As WPostImage = GetFileDataByMD5(md5string, Connection)
-                        FileIO.FileSystem.DeleteFile(p)
+                        Delete_File_Fromdisk(p)
                         wpi.RealName = f.FileName
                         wpi.PostID = postId
                         AddFileToDatabase(wpi, postId, Connection)
@@ -447,30 +470,22 @@ Friend Module GlobalFunctions
 
                         If thumbData.thumbRequired Then
 
-                            'If thumbData.thumbData.RawFormat Is Drawing.Imaging.ImageFormat.Png Then
-                            '    thumb = StorageFolderThumbs & "\th" & dd & ".png"
-                            'Else
-                            '    thumb = StorageFolderThumbs & "\th" & dd & ".jpg"
-                            'End If
+                            Dim isTransparant As Boolean = ImageHaveTransparentBits(CType(thumbData.thumbData, Drawing.Bitmap))
 
-                            If thumbData.thumbExtension.ToLower() = "png" Then
+                            Dim format As Drawing.Imaging.ImageFormat
+
+                            If isTransparant Then
                                 thumb = StorageFolderThumbs & "\th" & dd & ".png"
+                                format = Drawing.Imaging.ImageFormat.Png
                             Else
                                 thumb = StorageFolderThumbs & "\th" & dd & ".jpg"
+                                format = Drawing.Imaging.ImageFormat.Jpeg
                             End If
 
                             If (thumbData.thumbData.Width * thumbData.thumbData.Height) < 62500 Then
-                                If fileextension = "png" Then
-                                    thumbData.thumbData.Save(thumb, Drawing.Imaging.ImageFormat.Png)
-                                Else
-                                    thumbData.thumbData.Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
-                                End If
+                                thumbData.thumbData.Save(thumb, format)
                             Else
-                                If fileextension = "png" Then
-                                    ResizeImage(thumbData.thumbData, 250).Save(thumb, Drawing.Imaging.ImageFormat.Png)
-                                Else
-                                    ResizeImage(thumbData.thumbData, 250).Save(thumb, Drawing.Imaging.ImageFormat.Jpeg)
-                                End If
+                                ResizeImage(thumbData.thumbData, 250).Save(thumb, format)
                             End If
                         End If
 
@@ -514,6 +529,15 @@ Friend Module GlobalFunctions
                 If Not fileHandled Then Throw New Exception("Unsupported file type")
         End Select
     End Sub
+
+    ''' <summary>
+    ''' Check if the image have transparent pixels.
+    ''' </summary>
+    ''' <param name="image"></param>
+    ''' <returns></returns>
+    Private Function ImageHaveTransparentBits(ByVal image As Drawing.Bitmap) As Boolean
+        Return ChanbCore.ImageManipulation.ImageHaveTransparentBits(image)
+    End Function
 
     Private Function GetCFHPlugins() As CustomFileHandler()
         Dim ila As New List(Of CustomFileHandler)
@@ -724,7 +748,7 @@ Friend Module GlobalFunctions
 
         postHTML = postHTML.Replace("%IMAGES%", GetFilesHTML(po))
 
-        If pa.isModerator Or pa.isAdmin Then postHTML = postHTML.Replace("%MODPANEL%", pa.CredMenu.Replace("%ID%", CStr(po.PostID))) Else postHTML = postHTML.Replace("%MODPANEL%", "")
+        If pa.isModerator Or pa.isAdmin Then postHTML = postHTML.Replace("%MODPANEL%", GetModeratorHTMLMenu(pa.CredPowers).Replace("%ID%", CStr(po.PostID))) Else postHTML = postHTML.Replace("%MODPANEL%", "")
 
         ''Post text  
         Dim commentShortened As Boolean = False
@@ -752,41 +776,59 @@ Friend Module GlobalFunctions
         Return postHTML
     End Function
 
-    Public Function ProcessPost(ByVal request As HttpRequest, ByVal Session As HttpSessionState) As String
+    Public Function ProcessPost(ByVal Context As HttpContext) As String
         Dim message As String = ""
-        Dim mode As String = request.Item("mode")
-        Dim isAdmin As Boolean = CBool(Session("admin"))
+
+        Dim Session As HttpSessionState = Context.Session
+        Dim Request As HttpRequest = Context.Request
+
+        Dim mode As String = Request.Item("mode")
+
+        Dim isAdmin As Boolean = False
+        If Not GetCookie(Context, "admin") = "" Then isAdmin = CBool(GetCookie(Context, "admin"))
+
+        Dim isMod As Boolean = False
+        If Not GetCookie(Context, "mod") = "" Then isMod = CBool(GetCookie(Context, "mod"))
+
         Dim cont As Boolean = True
         'Flood detection check
-        If Session.Item("lastpost") Is "" Or Session.Item("lastpost") Is Nothing Then
-            Session.Item("lastpost") = Now.ToString
+        If session.Item("lastpost") Is "" Or session.Item("lastpost") Is Nothing Then
+            session.Item("lastpost") = Now.ToString
         Else
-            Dim i As Date = Date.Parse(CStr(Session.Item("lastpost")))
+            Dim i As Date = Date.Parse(CStr(session.Item("lastpost")))
             If CInt((Now - i).TotalSeconds) <= TimeBetweenRequestes And (mode = "thread" Or mode = "reply") And Not (isAdmin) Then
                 message = FormatHTMLMessage("Error", FloodDetected.Replace("%", CStr(TimeBetweenRequestes)), "", "8888", True)
                 cont = False
             Else
-                Session.Item("lastpost") = Now.ToString
+                session.Item("lastpost") = Now.ToString
             End If
         End If
+
+        Dim sessionCaptcha As String = GetCookie(Context, "captcha")
+
         'Captcha check. Administrator does not need to enter captcha
         If EnableCaptcha And (mode = "thread" Or mode = "reply") And (Not isAdmin) Then
-
-            If Not Session("captcha") Is Nothing Then
-                If Not Session("captcha").ToString = request.Item("usercaptcha") Then
-                    message = FormatHTMLMessage("Error", wrongCaptcha, "", "8888", True)
+            If Not sessionCaptcha = "" Then
+                If Not sessionCaptcha = Request.Item("usercaptcha") Then
+                    message = FormatHTMLMessage(errorStr, wrongCaptcha, "default.aspx", "77", True)
                     cont = False
+                Else
+                    'Captcha is correct
+                    'we clear the cookie to prevent using the same captcha.
+                    'TODO : Fix the bug where if a bot kept using the same cookie with the same correct captcha resolution to spam.
+                    RemoveCookie(Context, "captcha")
                 End If
             Else
-                message = FormatHTMLMessage("Error", wrongCaptcha, "", "8888", True)
-                Session.Item("lastpost") = CDate(Now - New TimeSpan(0, 0, 5)).ToString
+                message = FormatHTMLMessage(errorStr, wrongCaptcha, "default.aspx", "77", True)
                 cont = False
             End If
 
         End If
+
+       
         'Check for files bigger than the allowed limits.
-        For Each fileKey As String In request.Files.AllKeys
-            Dim f As HttpPostedFile = request.Files(fileKey)
+        For Each fileKey As String In Request.Files.AllKeys
+            Dim f As HttpPostedFile = Request.Files(fileKey)
             If f.ContentLength > MaximumFileSize Then
                 message = FormatHTMLMessage(errorStr, FileToBig.Replace("%NAME%", f.FileName).Replace("%L%", CStr(FormatSizeString(MaximumFileSize))), "default.aspx", "8888", True)
                 cont = False
@@ -795,38 +837,38 @@ Friend Module GlobalFunctions
 
         ''Post processing begin here 
         If cont Then
-            If IsIPBanned(request.UserHostAddress) Then
+            If IsIPBanned(Request.UserHostAddress) Then
                 message = FormatHTMLMessage("", "", WebRoot & "banned.aspx", "0", False)
             Else
 
                 Select Case mode
                     Case "thread"
-                        If request.Files.Count = 0 Or request.Files("ufile").ContentLength = 0 Then
+                        If Request.Files.Count = 0 Or Request.Files("ufile").ContentLength = 0 Then
                             message = FormatHTMLMessage("error", ImageRequired, "default.aspx", "60", True)
                         Else
 
                             Dim er As New OPData
-                            er.Comment = ProcessInputs(request.Item("comment"))
-                            er.email = ProcessInputs(request.Item("email")).Trim
+                            er.Comment = ProcessInputs(Request.Item("comment"))
+                            er.email = ProcessInputs(Request.Item("email")).Trim
 
-                            If request.Item("postername").Trim() = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(request.Item("postername"))
+                            If Request.Item("postername").Trim() = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(Request.Item("postername"))
 
                             If isAdmin Then er.name = adminPostName
-                            If CBool(Session("mod")) Then er.name = modPostName
+                            If isMod Then er.name = modPostName
 
-                            er.subject = ProcessInputs(request.Item("subject")).Trim
+                            er.subject = ProcessInputs(Request.Item("subject")).Trim
                             er.time = Date.UtcNow
-                            er.password = ProcessInputs(request.Item("password"))
-                            er.IP = request.UserHostAddress
+                            er.password = ProcessInputs(Request.Item("password"))
+                            er.IP = Request.UserHostAddress
                             er.HasFile = True
-                            er.UserAgent = request.UserAgent.Replace("<", String.Empty).Replace(">", String.Empty)
+                            er.UserAgent = Request.UserAgent.Replace("<", String.Empty).Replace(">", String.Empty)
 
-                            If request.Cookies("pass") IsNot Nothing Then request.Cookies("pass").Value = request.Item("password") Else request.Cookies.Add(New HttpCookie("pass", request.Item("password")))
+                            If Request.Cookies("pass") IsNot Nothing Then Request.Cookies("pass").Value = Request.Item("password") Else Request.Cookies.Add(New HttpCookie("pass", Request.Item("password")))
 
                             Dim tid As Integer = MakeThread(er)
 
                             Try
-                                SavePostFile(request.Files("ufile"), False, tid)
+                                SavePostFile(Request.Files("ufile"), False, tid)
                             Catch ex As Exception
                                 DeletePost(tid)
                                 message = FormatHTMLMessage(errorStr, ex.Message, "default.aspx", "10", True)
@@ -839,7 +881,7 @@ Friend Module GlobalFunctions
 
                     Case "reply"
 
-                        Dim threadid As Integer = CInt(request.Item("threadid"))
+                        Dim threadid As Integer = CInt(Request.Item("threadid"))
 
                         Dim brd As beforeReplyData = _get_beforeReplyData(threadid)
 
@@ -860,19 +902,19 @@ Friend Module GlobalFunctions
 
 
                         If EnableImpresonationProtection Then
-                            If IsPosterNameAlreadyTaken(request.UserHostAddress, request.Item("postername"), threadid) Then
-                                message = FormatHTMLMessage(errorStr, nameAlreadyUsed.Replace("%", request.Item("postername")), "default.aspx?id=" & threadid, "5", True)
+                            If IsPosterNameAlreadyTaken(Request.UserHostAddress, Request.Item("postername"), threadid) Then
+                                message = FormatHTMLMessage(errorStr, nameAlreadyUsed.Replace("%", Request.Item("postername")), "default.aspx?id=" & threadid, "5", True)
                                 Exit Select
                             End If
                         End If
 
-                        If request.Cookies("pass") IsNot Nothing Then request.Cookies("pass").Value = request.Item("password") Else request.Cookies.Add(New HttpCookie("pass", request.Item("password")))
+                        If Request.Cookies("pass") IsNot Nothing Then Request.Cookies("pass").Value = Request.Item("password") Else Request.Cookies.Add(New HttpCookie("pass", Request.Item("password")))
 
                         Dim properFiles As New List(Of HttpPostedFile)
 
-                        For Each key As String In request.Files.AllKeys
+                        For Each key As String In Request.Files.AllKeys
 
-                            Dim f As HttpPostedFile = request.Files.Item(key)
+                            Dim f As HttpPostedFile = Request.Files.Item(key)
                             If (f.ContentLength > 0) Then
                                 properFiles.Add(f)
                             Else
@@ -887,40 +929,40 @@ Friend Module GlobalFunctions
                         Dim postId As Integer
                         Dim sage As Boolean = False
 
-                        If request.Item("finp") = "yes" And properFiles.Count > 1 Then ' Add each file to a seperate post, and dump the files.
+                        If Request.Item("finp") = "yes" And properFiles.Count > 1 Then ' Add each file to a seperate post, and dump the files.
 
                             Dim pos As Integer = 1
-                            Dim countFiles As Boolean = (request.Item("countf") = "yes")
+                            Dim countFiles As Boolean = (Request.Item("countf") = "yes")
                             Dim advanced As Boolean = False
                             For Each file As HttpPostedFile In properFiles
                                 Dim er As New OPData
 
                                 If Not advanced Then
-                                    er.Comment = ProcessInputs(request.Item("comment"))
+                                    er.Comment = ProcessInputs(Request.Item("comment"))
                                     If countFiles Then er.Comment = er.Comment & CStr(vbNewLine & pos & "/" & properFiles.Count)
                                     advanced = True
                                 Else
                                     If countFiles Then er.Comment = pos & "/" & properFiles.Count Else er.Comment = String.Empty
                                 End If
 
-                                If ProcessInputs(request.Item("email")).Trim() = "sage" Then
+                                If ProcessInputs(Request.Item("email")).Trim() = "sage" Then
                                     er.email = ""
                                     sage = True
                                 Else
-                                    er.email = ProcessInputs(request.Item("email"))
+                                    er.email = ProcessInputs(Request.Item("email"))
                                 End If
 
                                 er.HasFile = True
-                                If request.Item("postername").Trim() = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(request.Item("postername"))
+                                If Request.Item("postername").Trim() = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(Request.Item("postername"))
 
-                                If CBool(Session("admin")) Then er.name = adminPostName
-                                If CBool(Session("mod")) Then er.name = modPostName
+                                If isAdmin Then er.name = adminPostName
+                                If isMod Then er.name = modPostName
 
-                                er.subject = ProcessInputs(request.Item("subject"))
+                                er.subject = ProcessInputs(Request.Item("subject"))
                                 er.time = Date.UtcNow
-                                er.password = ProcessInputs(request.Item("password"))
-                                er.IP = request.UserHostAddress
-                                er.UserAgent = request.UserAgent.Replace("<", "").Replace(">", "")
+                                er.password = ProcessInputs(Request.Item("password"))
+                                er.IP = Request.UserHostAddress
+                                er.UserAgent = Request.UserAgent.Replace("<", "").Replace(">", "")
                                 postId = ReplyTo(threadid, er)
                                 SavePostFile(file, True, postId)
 
@@ -933,32 +975,32 @@ Friend Module GlobalFunctions
                             'Single file, or multiple files post.
                             Dim er As New OPData
 
-                            If (request.Item("comment").Length = 0 Or request.Item("comment").Trim.Length = 0) And properFiles.Count = 0 Then
+                            If (Request.Item("comment").Length = 0 Or Request.Item("comment").Trim.Length = 0) And properFiles.Count = 0 Then
                                 'no file and no text == blank post
                                 message = FormatHTMLMessage("Error", noBlankpost, "", "7777", True)
                                 Exit Select
                             Else
 
-                                er.Comment = ProcessInputs(request.Item("comment"))
+                                er.Comment = ProcessInputs(Request.Item("comment"))
 
-                                If ProcessInputs(request.Item("email")).Trim() = "sage" Then
+                                If ProcessInputs(Request.Item("email")).Trim() = "sage" Then
                                     er.email = ""
                                     sage = True
                                 Else
-                                    er.email = ProcessInputs(request.Item("email"))
+                                    er.email = ProcessInputs(Request.Item("email"))
                                 End If
 
-                                If request.Item("postername").Trim() = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(request.Item("postername"))
+                                If Request.Item("postername").Trim() = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(Request.Item("postername"))
 
-                                If CBool(Session("admin")) Then er.name = adminPostName
-                                If CBool(Session("mod")) Then er.name = modPostName
+                                If isAdmin Then er.name = adminPostName
+                                If isMod Then er.name = modPostName
 
-                                er.subject = ProcessInputs(request.Item("subject"))
+                                er.subject = ProcessInputs(Request.Item("subject"))
                                 er.time = Date.UtcNow
 
-                                er.password = ProcessInputs(request.Item("password"))
-                                er.IP = request.UserHostAddress
-                                er.UserAgent = request.UserAgent.Replace("<", "").Replace(">", "")
+                                er.password = ProcessInputs(Request.Item("password"))
+                                er.IP = Request.UserHostAddress
+                                er.UserAgent = Request.UserAgent.Replace("<", "").Replace(">", "")
                                 er.HasFile = Not (properFiles.Count = 0)
                                 postId = ReplyTo(threadid, er)
 
@@ -986,7 +1028,7 @@ Friend Module GlobalFunctions
 
                         Dim id As Integer
                         Try
-                            id = CInt(request.Item("id"))
+                            id = CInt(Request.Item("id"))
                         Catch ex As Exception
                             message = FormatHTMLMessage("error", NoPostWasSelected, "default.aspx", "60", True)
                             Exit Select
@@ -998,14 +1040,14 @@ Friend Module GlobalFunctions
                             Exit Select
                         End If
 
-                        If request("reportreason") = "" Then
+                        If Request("reportreason") = "" Then
                             message = FormatHTMLMessage("Ok", "", WebRoot & "report.aspx?id=" & CStr(id) & "&badcap=no", "0", False)
                         Else
                             If EnableCaptcha Then
                                 'Check captcha
-                                If request("usercaptcha") = Session("captcha").ToString Then
+                                If Request("usercaptcha") = sessionCaptcha Then
                                     ' OK PROCEED TO REPORT POST
-                                    ReportPost(id, request.UserHostAddress, Date.UtcNow, request.Item("reportreason"))
+                                    ReportPost(id, Request.UserHostAddress, Date.UtcNow, Request.Item("reportreason"))
                                     message = FormatHTMLMessage("Ok", ReportedSucess.Replace("%", CStr(id)), "", "7777", False)
                                 Else
                                     'REDIRECT TO REPORT PAGE WITH ERROR CAPTCHA NOTICE
@@ -1014,7 +1056,7 @@ Friend Module GlobalFunctions
 
                             Else
                                 'REPORT POST
-                                ReportPost(id, request.UserHostAddress, Date.UtcNow, request.Item("reportreason"))
+                                ReportPost(id, Request.UserHostAddress, Date.UtcNow, Request.Item("reportreason"))
                                 message = FormatHTMLMessage("Ok", ReportedSucess.Replace("%", CStr(id)), "", "7777", False)
                             End If
                         End If
@@ -1025,7 +1067,7 @@ Friend Module GlobalFunctions
 
                         Dim id As Integer
                         Try
-                            id = CInt(request.Item("id"))
+                            id = CInt(Request.Item("id"))
                         Catch ex As Exception
                             message = FormatHTMLMessage("error", NoPostWasSelected, "default.aspx", "60", True)
                             Exit Select
@@ -1036,15 +1078,15 @@ Friend Module GlobalFunctions
                             Exit Select
                         End If
 
-                        If request("deletepass") = "" Then
+                        If Request("deletepass") = "" Then
                             message = FormatHTMLMessage("Ok", "", WebRoot & "deletepost.aspx?id=" & CStr(id), "0", False)
                         Else
                             Dim po As WPost = FetchPostData(id)
                             If EnableCaptcha Then
                                 'Check captcha
-                                If request("usercaptcha") = Session("captcha").ToString Then
+                                If Request("usercaptcha") = sessionCaptcha Then
                                     ' OK. CHECK PASSWORD
-                                    If po.password = request.Item("deletepass").ToString Then
+                                    If po.password = CStr(Request.Item("deletepass")) Then
                                         'PRUNE IT
                                         PrunePost(id, AutoDeleteFiles)
                                         message = FormatHTMLMessage("Ok", PostDeletedSuccess.Replace("%", CStr(id)), "", "7777", False)
@@ -1059,7 +1101,7 @@ Friend Module GlobalFunctions
 
                             Else
                                 'CHECK PASSWORD
-                                If po.password = request.Item("deletepass") Then
+                                If po.password = Request.Item("deletepass") Then
                                     'PRUNE IT
                                     PrunePost(id, AutoDeleteFiles)
                                     message = FormatHTMLMessage("Ok", PostDeletedSuccess.Replace("%", CStr(id)), "", "7777", False)
@@ -1085,7 +1127,12 @@ Friend Module GlobalFunctions
 
         Dim mode As String = request.Item("postmode")
 
-        Dim isAdmin As Boolean = CBool(Session("admin"))
+        Dim isAdmin As Boolean = False
+        If Not GetCookie(context, "admin") = "" Then isAdmin = CBool(GetCookie(context, "admin"))
+
+        Dim isMod As Boolean = False
+        If Not GetCookie(context, "mod") = "" Then isMod = CBool(GetCookie(context, "mod"))
+
         Dim ContinueProcessing As Boolean = True
 
         'Flood detection check
@@ -1105,17 +1152,18 @@ Friend Module GlobalFunctions
         'Captcha check. Administrator does not need to enter captcha
         If EnableCaptcha And (mode = "thread" Or mode = "reply") And (Not isAdmin) Then
 
-            If Not Session("captcha") Is Nothing Then
-                If Not Session("captcha").ToString = request.Item("usercaptcha") Then
+            Dim captchaStr As String = GetCookie(context, "captcha")
+            If Not captchaStr = "" Then
+                If Not captchaStr = request.Item("usercaptcha") Then
                     resp.ResponseType = ApiResponse.ResType.Err
                     resp.ErrorType = ApiResponse.ErrType.Captcha
                     ContinueProcessing = False
+                Else
+                    RemoveCookie(context, "captcha")
                 End If
             Else
-
                 resp.ResponseType = ApiResponse.ResType.Err
                 resp.ErrorType = ApiResponse.ErrType.Captcha
-
                 ContinueProcessing = False
             End If
 
@@ -1157,7 +1205,7 @@ Friend Module GlobalFunctions
                             If request.Item("postername").Trim() = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(request.Item("postername"))
 
                             If isAdmin Then er.name = adminPostName
-                            If CBool(Session("mod")) Then er.name = modPostName
+                            If isMod Then er.name = modPostName
 
                             er.subject = ProcessInputs(request.Item("subject")).Trim
                             er.time = Date.UtcNow
@@ -1272,8 +1320,8 @@ Friend Module GlobalFunctions
                                 er.HasFile = True
                                 If request.Item("postername").Trim() = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(request.Item("postername"))
 
-                                If CBool(Session("admin")) Then er.name = adminPostName
-                                If CBool(Session("mod")) Then er.name = modPostName
+                                If isAdmin Then er.name = adminPostName
+                                If isMod Then er.name = modPostName
 
                                 er.subject = ProcessInputs(request.Item("subject"))
                                 er.time = Date.UtcNow
@@ -1313,8 +1361,8 @@ Friend Module GlobalFunctions
 
                                 If request.Item("postername").Trim() = "" Then er.name = AnonNameStr Else er.name = ProcessInputs(request.Item("postername"))
 
-                                If CBool(Session("admin")) Then er.name = adminPostName
-                                If CBool(Session("mod")) Then er.name = modPostName
+                                If isAdmin Then er.name = adminPostName
+                                If isMod Then er.name = modPostName
 
                                 er.subject = ProcessInputs(request.Item("subject"))
                                 er.time = Date.UtcNow
@@ -1572,13 +1620,17 @@ Friend Module GlobalFunctions
             sb.Append("<li<a>-----</a>li>")
             Return sb.ToString
         Else
-            Dim power As String() = powers.Split(CChar("-"))
-            Dim sb As New StringBuilder
-            For i As Integer = 0 To power.Length - 1 Step 1
-                If power(i) = "1" Then sb.Append(modMenuItems(i))
-            Next
-            sb.Append("<li><a>-----</a></li>")
-            Return sb.ToString
+            If IsModPowersValid(powers) Then
+                Dim power As String() = powers.Split(CChar("-"))
+                Dim sb As New StringBuilder
+                For i As Integer = 0 To power.Length - 1 Step 1
+                    If power(i) = "1" Then sb.Append(modMenuItems(i))
+                Next
+                sb.Append("<li><a>-----</a></li>")
+                Return sb.ToString
+            Else
+                Return "<!-- invalid mod powers -->"
+            End If
         End If
     End Function
 
@@ -1608,6 +1660,17 @@ Friend Module GlobalFunctions
 
             BanPoster(po.ip, postID, reason, modname, length, permBan, canbrowse)
 
+            If Not silentBan Then
+                Dim newText As String = po.comment & bannedMessageHTML
+                UpdatePostText(postID, newText, True)
+            End If
+        End If
+    End Sub
+
+    Sub BanPosterByPost_CR(ByVal postID As Integer, ByVal silentBan As Boolean, ByVal cutomReason As String, ByVal modname As String, ByVal perm As Boolean, ByVal exptime As Date, ByVal canbrowse As Boolean)
+        Dim po As WPost = FetchPostData(postID)
+        If Not IsIPBanned(po.ip) Then
+            BanPoster(po.ip, postID, cutomReason, modname, exptime, perm, canbrowse)
             If Not silentBan Then
                 Dim newText As String = po.comment & bannedMessageHTML
                 UpdatePostText(postID, newText, True)
@@ -1859,8 +1922,8 @@ Friend Module GlobalFunctions
     ''' <param name="id">Post id. Can be a thread or a reply.</param>
     ''' <param name="dF">Delete files</param>
     ''' <remarks></remarks>
-    Public Sub PrunePost(ByVal id As Integer, ByVal dF As Boolean)
-        If EnableArchive Then
+    Public Sub PrunePost(ByVal id As Integer, ByVal dF As Boolean, Optional ByVal forceDelete As Boolean = False)
+        If EnableArchive And Not forceDelete Then
             Archive(id)
         Else
             Dim w As WPost = FetchPostData(id)
@@ -1934,7 +1997,14 @@ Friend Module GlobalFunctions
 
 
 
-    Public Function GeneratePageHTML(ByVal isArchive As Boolean, ByVal session As HttpSessionState, ByVal Request As HttpRequest, ByVal Response As HttpResponse) As String
+    Public Function GeneratePageHTML(ByVal isArchive As Boolean, ByVal context As HttpContext) As String
+        ''Todo : fix this
+
+        Dim request As HttpRequest = context.Request
+        Dim response As HttpResponse = context.Response
+        Dim session As HttpSessionState = context.Session
+
+
         If Not CanIPBrowse(Request.UserHostAddress) Then
             Response.Redirect(WebRoot & "banned.aspx")
         End If
@@ -2008,15 +2078,15 @@ Friend Module GlobalFunctions
         '####################################### BODY PROCESSING CODE #######################################
         Dim body As New StringBuilder
         Dim para As New HTMLParameters()
-        para.isModerator = CBool(session("mod"))
-        para.isAdmin = CBool(session("admin"))
-        para.CredPowers = CStr(session("credpower"))
-        para.CredMenu = CStr(session("credmenu"))
+        If Not GetCookie(context, "mod") = "" Then para.isModerator = CBool(GetCookie(context, "mod"))
+        If Not GetCookie(context, "admin") = "" Then para.isAdmin = CBool(GetCookie(context, "admin"))
+        If Not GetCookie(context, "credpower") = "" Then para.CredPowers = CStr(GetCookie(context, "credpower"))
+
         para.isCurrentThread = Not isArchive
 
         Dim validID As Boolean = False
         Try
-            Dim i = CInt(Request.Item("id"))
+            Dim i = CInt(request.Item("id"))
             validID = True
         Catch ex As Exception
             validID = False
@@ -2026,28 +2096,28 @@ Friend Module GlobalFunctions
         If DisplayingThread And validID Then
 
             'Display a thread and children posts 
-            Dim opID As Integer = CInt(Request.Item("id"))
+            Dim opID As Integer = CInt(request.Item("id"))
             opID = Math.Abs(opID)
             Dim po As WPost = FetchPostData(opID)
 
             If StaticHTML Then
                 If FileIO.FileSystem.FileExists(ThreadStorageFolder & "\" & opID & ".html") = False Then UpdateThreadHtml(opID)
-                Response.Redirect(ThreadHTMLWebPath & opID & ".html")
+                response.Redirect(ThreadHTMLWebPath & opID & ".html")
             End If
 
             If po.type = WPost.PostType.Unknown Then
-                Response.Redirect(pageHandlerLink & ".aspx")
+                response.Redirect(pageHandlerLink & ".aspx")
             End If
 
             If po.archived And Not isArchive Then
-                Response.Redirect("archive.aspx?id=" & po.PostID)
+                response.Redirect("archive.aspx?id=" & po.PostID)
             ElseIf po.archived = False And isArchive Then
-                Response.Redirect("default.aspx?id=" & po.PostID)
+                response.Redirect("default.aspx?id=" & po.PostID)
             End If
 
             ' Check if it is a reply or a thread , 0 = thread, 1 = reply
             ' If it is a reply, redirect to parent thread.
-            If CInt(po.type) = 1 Then Response.Redirect(pageHandlerLink & ".aspx?id=" & po.parent & "#p" & po.PostID)
+            If CInt(po.type) = 1 Then response.Redirect(pageHandlerLink & ".aspx?id=" & po.parent & "#p" & po.PostID)
 
 
             para.replyButton = False
@@ -2063,7 +2133,7 @@ Friend Module GlobalFunctions
             Dim startIndex As Integer = 0
             para.replyButton = True
             para.isTrailPost = True
-            If Not (Request.Item("startindex") = "") Then startIndex = CInt(Request.Item("startindex")) * (ThreadPerPage)
+            If Not (request.Item("startindex") = "") Then startIndex = CInt(request.Item("startindex")) * (ThreadPerPage)
             For Each x In GetThreads(startIndex, ThreadPerPage - 1 + startIndex, False, isArchive)
                 body.Append(GetStreamThreadHTML(x, para, TrailPosts))
             Next
@@ -2087,7 +2157,7 @@ Friend Module GlobalFunctions
             Dim startIndexA As Integer
 
             Try
-                startIndexA = CInt(Request.Item("startindex"))
+                startIndexA = CInt(request.Item("startindex"))
             Catch ex As Exception
                 startIndexA = 0
             End Try
@@ -2278,6 +2348,15 @@ Friend Module GlobalFunctions
             Exit Function
         End If
 
+        Dim isAdmin As Boolean = False
+        If Not GetCookie(context, "admin") = "" Then isAdmin = CBool(GetCookie(context, "admin"))
+
+        If isAdmin Then
+            pageHTML = pageHTML.Replace("%formname%", "adminaction")
+        Else
+            pageHTML = pageHTML.Replace("%formname%", "modaction")
+        End If
+
         pageHTML = pageHTML.Replace("%ID%", CStr(id))
         pageHTML = pageHTML.Replace("%SIB%", context.Request.Item("sib"))
 
@@ -2300,7 +2379,7 @@ Friend Module GlobalFunctions
         If bd.BanEffective Then
             If Now > bd.ExpirationDate Then
                 DropBan(context.Request.UserHostAddress)
-                context.Response.Redirect("default.aspx")
+                context.Response.Redirect(WebRoot & "default.aspx")
                 Return ""
             Else
                 Dim pageHTML As String = BanPageTemplate
@@ -2323,6 +2402,7 @@ Friend Module GlobalFunctions
                 Return pageHTML
             End If
         Else
+            DropBan(context.Request.UserHostAddress)
             context.Response.Redirect("default.aspx")
             Return ""
         End If
@@ -2337,6 +2417,9 @@ Friend Module GlobalFunctions
             context.Response.End()
         End Try
 
+        Dim isAdmin As Boolean = False
+        If Not GetCookie(context, "admin") = "" Then isAdmin = CBool(GetCookie(context, "admin"))
+
         If postId > 0 Then
             Dim postData As WPost = FetchPostData(postId)
             Dim pageHTML As String = editPostPageTemplate
@@ -2344,7 +2427,17 @@ Friend Module GlobalFunctions
             .Replace("%BDESC%", BoardDesc).Replace("%ROOT%", WebRoot) _
             .Replace("%FOOTER TEXT%", footerText) _
             .Replace("%ID%", CStr(postId)) _
-            .Replace("%POST TEXT%", HttpUtility.HtmlDecode(postData.comment))
+            .Replace("%POST TEXT%", HttpUtility.HtmlDecode(postData.comment).Replace("</textarea>", "")) 'If the post text contain </textarea>, I remove it.
+            If CStr(context.Request("shw")) = "yes" Then
+                pageHTML = pageHTML.Replace("%SHOWHTMLWARNING%", "<span style='color:red'>HTML is Allowed</span><br/>")
+            Else
+                pageHTML = pageHTML.Replace("%SHOWHTMLWARNING%", "")
+            End If
+            If isAdmin Then
+                pageHTML = pageHTML.Replace("%formname%", "adminaction")
+            Else
+                pageHTML = pageHTML.Replace("%formname%", "modaction")
+            End If
             context.Response.Write(pageHTML)
         Else
             context.Response.Write(FormatHTMLMessage(errorStr, invalidIdStr, "", "888888", True))
@@ -2429,6 +2522,8 @@ Friend Module GlobalFunctions
             If i IsNot Nothing Then
                 If FileHasThumb(i.Extension) Then
                     sb.Append("<div class=""icon""><img class=""t"" src=""$""/></div>".Replace("$", i.ImageThumbailWebPath))
+                Else
+                    sb.Append("<div class=""icon""><h2>No image</h2></div>")
                 End If
             End If
            
@@ -2914,6 +3009,49 @@ Friend Module GlobalFunctions
         DatabaseEngine.ExecuteNonQuery(command)
     End Sub
 
+    Public Sub DeleteMod(ByVal name As String)
+        Dim command As DbCommand = DatabaseEngine.GenerateDbCommand
+        command.CommandText = "DELETE FROM mods WHERE (username LIKE @username)"
+        command.Parameters.Add(DatabaseEngine.MakeParameter("@username", name, Data.DbType.String))
+        DatabaseEngine.ExecuteNonQuery(command)
+    End Sub
+
+    Public Sub UpdateMod(ByVal name As String, ByVal updatetype As Integer, ByVal newValue As String)
+        Dim command As DbCommand = DatabaseEngine.GenerateDbCommand()
+        Select Case updatetype
+            Case 1
+                command.CommandText = "UPDATE mods SET password = @password WHERE (username = @username)"
+                command.Parameters.Add(DatabaseEngine.MakeParameter("@username", name, Data.DbType.String))
+                command.Parameters.Add(DatabaseEngine.MakeParameter("@password", MD5(newValue), Data.DbType.String))
+            Case 2
+                If IsModPowersValid(newValue) Then
+                    command.CommandText = "UPDATE mods SET powers = @powers WHERE (username = @username)"
+                    command.Parameters.Add(DatabaseEngine.MakeParameter("@username", name, Data.DbType.String))
+                    command.Parameters.Add(DatabaseEngine.MakeParameter("@powers", (newValue), Data.DbType.String))
+                Else
+                    command.Dispose()
+                    Throw New ArgumentException("Cannot update mod powers, bad powers")
+                End If
+            Case Else
+                command.Dispose()
+                Return
+        End Select
+        DatabaseEngine.ExecuteNonQuery(command)
+    End Sub
+
+    Private Function IsModPowersValid(ByVal d As String) As Boolean
+        If d.Split(CChar("-")).Length = DefaultModPowers.Split(CChar("-")).Length Then
+            For Each x In d.Split(CChar("-"))
+                If Not (x = "0" Or x = "1") Then
+                    Return False
+                End If
+            Next
+            Return True
+        Else
+            Return False
+        End If
+    End Function
+
     Public Function IsIPBanned(ByVal IP As String) As Boolean
         Dim dic As New ValuesStore(banFile)
         If dic.KeyExist(IP) Then
@@ -2927,7 +3065,7 @@ Friend Module GlobalFunctions
                     If b.Permanant Then
                         Return True
                     Else
-                        If Now > b.ExpirationDate Then
+                        If Now >= b.ExpirationDate Then
                             DropBan(IP)
                             Return False
                         Else
@@ -2936,6 +3074,7 @@ Friend Module GlobalFunctions
                     End If
 
                 Else
+                    DropBan(IP) 'fix a bug where a ban is not dropped from the ban file if the database record was deleted manually.
                     Return False
                 End If
             Else
@@ -2990,8 +3129,8 @@ Friend Module GlobalFunctions
                 data.BanID = -1
                 data.CanBrowse = True
                 data.Comment = ""
-                data.ExpirationDate = Now
-                data.BannedOn = Now
+                data.ExpirationDate = Now - New TimeSpan(1, 0, 0, 0)
+                data.BannedOn = Now - New TimeSpan(2, 0, 0, 0)
                 data.PostNumber = -1
             Else
                 data.BanID = CInt(ConvertNoNull(query.Reader(0)))

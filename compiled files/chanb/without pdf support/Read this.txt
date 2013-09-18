@@ -1,1 +1,0 @@
-Be sure to copy the template files, dll files and the db.txt file in the same directory as chanb.dll .

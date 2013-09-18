@@ -8,7 +8,7 @@
             Dim s As New Stopwatch
             s.Start()
 
-            Response.Write(chanb.GlobalFunctions.GeneratePageHTML(False, Session, Request, Response))
+            Response.Write(chanb.GlobalFunctions.GeneratePageHTML(False, Context))
 
             s.Stop()
             Response.Write("<!-- Generated in " & s.Elapsed.TotalSeconds & "-->")

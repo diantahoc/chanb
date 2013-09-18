@@ -6,7 +6,29 @@ chanb
 </name>
 </assembly>
 <members>
-<member name="F:chanb.test.form1">
+<member name="M:chanb.Misc.EncryptStringAES(System.String,System.String)">
+	<summary>
+ Encrypt the given string using AES.  The string can be decrypted using 
+ DecryptStringAES().  The sharedSecret parameters must match.
+ </summary>
+	<param name="plainText">The text to encrypt.</param>
+	<param name="sharedSecret">A password used to generate a key for encryption.</param>
+</member><member name="M:chanb.Misc.DecryptStringAES(System.String,System.String)">
+	<summary>
+ Decrypt the given string.  Assumes the string was encrypted using 
+ EncryptStringAES(), using an identical sharedSecret.
+ </summary>
+	<param name="cipherText">The text to decrypt.</param>
+	<param name="sharedSecret">A password used to generate a key for decryption.</param>
+</member><member name="M:chanb.Misc.Validators.FSContainSign(System.IO.Stream,System.String)">
+	<summary>
+ Experimental, not meant to be used.
+ </summary>
+	<param name="fs"></param>
+	<param name="sign"></param>
+	<returns></returns>
+	<remarks></remarks>
+</member><member name="F:chanb.test.form1">
 	<summary>
 form1 control.
 </summary>
@@ -321,6 +343,12 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 	<param name="i"></param>
 	<returns>ChanbQuery</returns>
 	<remarks></remarks>
+</member><member name="M:chanb.GlobalFunctions.ImageHaveTransparentBits(System.Drawing.Bitmap)">
+	<summary>
+ Check if the image have transparent pixels.
+ </summary>
+	<param name="image"></param>
+	<returns></returns>
 </member><member name="M:chanb.GlobalFunctions.GetImageWEBPATH(System.String)">
 	<summary>
  For full image
@@ -348,7 +376,7 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 	<summary>
  Get the complete thread html, over a single SQL query.
  </summary>
-</member><member name="M:chanb.GlobalFunctions.PrunePost(System.Int32,System.Boolean)">
+</member><member name="M:chanb.GlobalFunctions.PrunePost(System.Int32,System.Boolean,System.Boolean)">
 	<summary>
  Prune a post. It either delete a post or archive it, based on specific conditions. 
  </summary>

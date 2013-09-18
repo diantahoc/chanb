@@ -1,15 +1,12 @@
 ﻿<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" >
+<html>
 <head>
 <title>%BTITLE%</title>
 %EXTRA META%
-<link rel="Stylesheet" href="%ROOT%yotsubab.css" />
-<link rel="Stylesheet" href="%ROOT%mobile.css" />
+<link rel="stylesheet" title="grey" href="%ROOT%yotsubab.css" />
+<link rel="alternate stylesheet" title="gold" href="%ROOT%gold.css" />
+<link rel="stylesheet" href="%ROOT%mobile.css" />
 <link  rel="stylesheet" href="%ROOT%js/pr/prettify.css" />
-<!--<link rel="Stylesheet" href="%ROOT%css/effeckt/captions.css" />
-<link rel="Stylesheet" href="%ROOT%css/effeckt/effeckt.css" />
-<script src="%ROOT%js/xregexp-min.js"></script>
--->
 <script src="%ROOT%scripts.js"></script>
 <script src="%ROOT%extension.js"></script>
 <script src="%ROOT%js/jquery.min.js"></script>
@@ -17,14 +14,33 @@
 <script src="%ROOT%js/worker.nude.js"></script>
 <script src="%ROOT%dscripts.aspx"></script>
 <script src="%ROOT%js/pr/prettify.js"></script>
-<script>    $(document).ready(function() { extension_init(); show_hide_pbox();  /*checkforNSFWImages();*/ });</script>
+<script>    $(document).ready(function() { loadStyle(); extension_init(); show_hide_pbox(); });</script>
 </head> 
 <body>
-<div class="boardBanner"> 
-<div class="boardTitle">%BTITLE%</div>
-<div class="boardSubtitle">%BDESC%</div>
+
+<div class="desktop cssmenu"><ul><li class="active has-sub"><a href="#">[CSS]</a><ul><li><a onclick="switch_css('grey')">Grey</a></li><li><a onclick="switch_css('gold')">Gold</a></li></ul></li></ul></div>
+
+<div id="gheader">
+
+<div id="gcontent">
+
+<div class="gtitle" title="%BDESC%">
+<a title="Select a style" class="buttonBlue bbf" onclick="$('#css_box').toggleClass('hide')">#</a>
+<select class="hide form-select" id="css_box" onchange="switch_css($('#css_box')[0].value)">
+<option value="grey">Grey</option>
+<option value="gold">Gold</option>
+</select>&nbsp;%BTITLE%
 </div>
-%POSTING MODE%
+
+<div id="gtoolbox">
+<span id="extension_log"></span><span>|</span><a class="buttonBlue" onclick="noNewRepliesIncrem = 0">Update</a>
+<a class="buttonBlue" onclick="qr('show')">Quick Reply</a>
+</div>
+</div>
+</div>
+<br />
+<br />
+<!--%POSTING MODE%-->
 <div id="postdiv" align="center" class="%POSTDIVCLASS%">
 <form enctype="multipart/form-data" action="%ROOT%post.aspx" method="post" title="%POST FORM BUTTON%" defaultbutton="zeta" >
 <input type="hidden" name="mode" value="%POST FORM MODE%" />
@@ -48,7 +64,7 @@
 </tr>
 <tr>
 <th>%LANG commentString%</th>
-<td><textarea class="form-textarea" name="comment" id="commentfield" rows="5" cols="35"></textarea></td>
+<td><textarea class="form-textarea" name="comment" id="commentfield" rows="5" cols="30"></textarea></td>
 </tr>
 %CAPTCHA PHOLDER%
 <tr>
@@ -60,7 +76,7 @@
 <input type="file" name="ufile"/>
 </div>  
 %ADD NEW FILES PHOLDER%
-</td>   
+</td>
 </tr>
 <tr>
 <th>%LANG passwordStr%</th>
@@ -120,10 +136,6 @@
 %PAGES LIST%
 <div id="bottom"></div>
 <div id="absbot" class="absBotText"><span>%FOOTER TEXT%</span></div>
-<div id="extension_log">
-<span></span><br />
-<a onclick="noNewRepliesIncrem = 0">Update</a>
-</div>
 <div id="qrbox" class="qr hide">
 	<div id="qrtitle" class="qrtitle">
 		<span class="qrmove">Quick reply</span><a style="float:right;" class="buttonBlue bbf" href="javascript:qr('hide')">X</a>

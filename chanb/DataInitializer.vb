@@ -46,7 +46,6 @@
     Public ReadOnly Property FullPageTemplate() As String
         Get
             Return IO.File.ReadAllText(chanbDLLROOT & "templates\fullPageTemplate.html")
-            '  Return IO.File.ReadAllText("C:\Users\Istan\Documents\Visual Studio 2008\Projects\tinyboardasp\tinyboardasp\fullPageTemplate.html")
         End Get
     End Property
 

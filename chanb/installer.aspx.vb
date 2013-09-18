@@ -21,7 +21,7 @@ Partial Public Class _installer
             Response.Write("Forbidden")
             Response.End()
         Else
-            Session("admin") = CStr(True)
+            SetCookie(Context, "admin", "True")
         End If
     End Sub
 End Class

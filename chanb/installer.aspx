@@ -7,6 +7,9 @@
     <link rel="Stylesheet" href="yotsubab.css" />
     <script src="<% Response.Write(WB) %>scripts.js" type="text/javascript" language="javascript"></script>
     <script type="text/javascript" src="<% Response.Write(WB) %>js/jquery.min.js"></script>
+    <script>
+    var webroot = <% Response.Write("'" & WB & "';")  %>
+    </script>
 </head>
 <body>
 <form action="<% Response.Write(WB) %>adminaction.aspx" method="get" enctype="application/x-www-form-urlencoded" defaultbutton="send">

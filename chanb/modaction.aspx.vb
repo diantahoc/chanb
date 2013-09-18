@@ -2,13 +2,10 @@
     Inherits System.Web.UI.Page
 
     Protected Sub Page_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
-        If CStr(Session("mod")) = "" Or Session("mod") Is Nothing Then Session("mod") = CStr(False)
+        Dim isMod As Boolean = False
+        If Not GetCookie(Context, "mod") = "" Then isMod = CBool(GetCookie(Context, "mod"))
 
-        If CBool(Session("mod")) = False Then
-            Response.StatusCode = 403
-            Response.Write(FormatHTMLMessage(ForbiddenStr, modRequired, "", "8888", True))
-        Else
-            Dim powers As String() = CStr(Session("credpower")).Split(CChar("-"))
+        If isMod Then
             Dim id As Integer = 0
             Try
                 id = CInt(Request.Item("id"))
@@ -16,6 +13,7 @@
                 Response.Write(FormatHTMLMessage(errorStr, invalidIdStr, "", "4444", True))
                 Response.End()
             End Try
+            Dim powers As String() = GetCookie(Context, "credpower").Split(CChar("-"))
             Select Case Request.Item("action")
                 Case "banpost"
                     If powers(0) = "0" Then
@@ -27,7 +25,7 @@
                         Catch ex As Exception
                             silentBan = False
                         End Try
-                        BanPosterByPost(id, silentBan, CStr(Session("modname")), Request.Item("reason"))
+                        BanPosterByPost(id, silentBan, GetCookie(Context, "modname"), Request.Item("reason"))
                         Response.Write(FormatHTMLMessage(sucessStr, modBannedPosterStr.Replace("%", CStr(id)), "", "5555", False))
                     End If
                 Case "delpost"
@@ -67,6 +65,9 @@
                     Response.StatusCode = 403
                     Response.End()
             End Select
+        Else
+            Response.StatusCode = 403
+            Response.Write(FormatHTMLMessage(ForbiddenStr, modRequired, "", "8888", True))
         End If
     End Sub
 

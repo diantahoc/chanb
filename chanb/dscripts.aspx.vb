@@ -1,4 +1,6 @@
-﻿Public Partial Class dscripts
+﻿Imports System.Web.Configuration
+
+Partial Public Class dscripts
     Inherits System.Web.UI.Page
 
     Protected Sub Page_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
@@ -7,9 +9,11 @@
 
     Private Sub WriteScriptDocument(ByVal context As HttpContext)
         With context
-            .Response.Cache.SetExpires(DateTime.Now.AddDays(3))
+            .Response.Cache.SetExpires(DateTime.Now.AddDays(1))
             .Response.ContentType = "application/javascript"
             .Response.ContentEncoding = Text.Encoding.UTF8
+
+            Dim runtimeSection As New HttpRuntimeSection()
 
             Dim sb As New Text.StringBuilder
 
@@ -33,6 +37,8 @@
             sb.Append(MakeScriptVariable("AudioItemTemplate", AudioItemTemplate))
 
             sb.Append("var selinks = " & JSONApi.GetSELinks & ";")
+
+            sb.Append("var max_file_per_post = " & ((runtimeSection.MaxRequestLength * 1024) / GlobalVariables.MaximumFileSize) & ";")
 
 
             Dim additionalFiles As New List(Of String)

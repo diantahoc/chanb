@@ -162,10 +162,15 @@ Friend Module GlobalVariables
                                        _modLi.Replace("%ACTION%", "tglock").Replace("$", tglockStr), _
                                        _modLi.Replace("%ACTION%", "editpost").Replace("$", EditpostStr)}
 
-    Private _adminLi As String = "<li><a href=""%WEBROOT%adminaction.aspx?action=%ACTION%&id=%ID%"" target=""_blank"">$</a></li>".Replace("%WEBROOT%", WebRoot)
+    Private _adminLi As String = "<li><a class=""wdlink"" href=""%WEBROOT%adminaction.aspx?action=%ACTION%&id=%ID%"" target=""_blank"">$</a></li>".Replace("%WEBROOT%", WebRoot)
 
-    Public adminMenuItems As String() = {"<li><a href=""%WEBROOT%adminaction.aspx?action=banpost&id=%ID%&sib=false"" target=""_blank"">$</a></li>".Replace("%WEBROOT%", WebRoot).Replace("$", banuserStr) & _
-                                   "<li><a href=""%WEBROOT%adminaction.aspx?action=banpost&id=%ID%&sib=true"" target=""_blank"">$</a></li>".Replace("%WEBROOT%", WebRoot).Replace("$", banuserStr & " (" & modSilentBanStr & ")")}
+    Public adminMenuItems As String() = {("<li><a class=""wdlink"" href=""%WEBROOT%modSelectBanReason.aspx?id=%ID%&sib=false"" target=""_blank"">$</a></li>".Replace("$", banuserStr) & _
+                                       "<li><a class=""wdlink"" href=""%WEBROOT%modSelectBanReason.aspx?id=%ID%&sib=true"" target=""_blank"">$</a></li>".Replace("$", banuserStr & " (" & modSilentBanStr & ")")).Replace("%WEBROOT%", WebRoot), _
+                                       _adminLi.Replace("%ACTION%", "permadelpost").Replace("$", "Perma delete"), _
+                                       _adminLi.Replace("%ACTION%", "tgsticky").Replace("$", tgstickStr), _
+                                       _adminLi.Replace("%ACTION%", "tglock").Replace("$", tglockStr), _
+                                       _adminLi.Replace("%ACTION%", "editpost").Replace("$", EditpostStr)}
+
 
     Public ReadOnly bannedMessageHTML As String = "<br/><strong style=""color: red;"">%MES%</strong>".Replace("%MES%", banMsgStr)
 

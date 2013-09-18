@@ -1,1 +1,1 @@
-﻿<%@ Page Language="VB" AutoEventWireup="false" CodeBehind="adminaction.aspx.vb" Inherits="chanb._adminaction" %>
+﻿<%@ Page Language="VB" validateRequest="false" AutoEventWireup="false" CodeBehind="adminaction.aspx.vb" Inherits="chanb._adminaction" %>

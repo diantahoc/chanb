@@ -34,7 +34,7 @@ function ext_timer() {
 }
 
 function displayMessage(s) {
-    document.getElementById("extension_log").children[0].textContent = s;//console.log(s);
+    document.getElementById("extension_log").textContent = s;//console.log(s);
  }
 
 function updateThread() {

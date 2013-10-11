@@ -23,51 +23,64 @@ function insert(textarea, text) {
 }
 
 function getUfCount(id) {
-    return document.getElementById(id).getElementsByTagName("input").length;
+    var filesInputs = document.getElementById(id).getElementsByTagName("input");
+    //check if the browser support the files attribute for <file> input
+    if (filesInputs[0].files) {
+        var sum = 0;
+        for (i = 0; i < filesInputs.length; i++) {
+            if (filesInputs[i].files) {
+                for (f = 0; f < filesInputs[i].files.length; f++) {
+                    if (filesInputs[i].files[f]) {
+                        sum += filesInputs[i].files[f].size;
+                    };
+                } 
+            }
+        }
+        return sum;
+    }
+    else {
+        return -3;
+    }
 }
+
 function addUf(id) {
-    if (getUfCount(id) > max_file_per_post) { return;}
-    
+    var sum = getUfCount(id);
+    if (sum == -3) {
+        //browser does not support files attribute for <file> input. Assume all files have equal size defined by maxFileLength
+        var maximum_file_per_post = (maxHttpLength / maxFileLength).toFixed(0);
+        if (document.getElementById(id).getElementsByTagName("input").length > maximum_file_per_post) {
+            return;
+        }
+    }
+    else {
+        if (sum > maxHttpLength) {
+            return;
+        }
+    }
+
     var cont = document.getElementById(id);
     
-    var divTag = document.createElement("input");
-
-    var idstr = "d" + Math.random().toString(10);
-
-    divTag.setAttribute("name", idstr);
-    divTag.setAttribute("id", "uf" + idstr);
-    divTag.setAttribute("type", "file");
-
+    var inputElem = document.createElement("input");
+    inputElem.setAttribute("name", "file" + Math.random().toString(10));
+    inputElem.setAttribute("type", "file");
+    
     var delbutton = document.createElement("input");
-
-    delbutton.setAttribute("onclick", "javascript:delUf('" + idstr + "')");
     delbutton.setAttribute("type", "button");
     delbutton.setAttribute("value", "X");
-    delbutton.setAttribute("id", "delb" + idstr);
     delbutton.setAttribute("class", "buttonBlue bbf");
 
     var br = document.createElement("br");
-    br.setAttribute("id", "br" + idstr);
-
-    cont.appendChild(br);
-    cont.appendChild(divTag);
-    cont.appendChild(delbutton);
-
-}
-
-function delUf(id) {
-
-    var parent = document.getElementById("delb"+id).parentElement;
     
-    var a = document.getElementById("uf" + id);
-    var b = document.getElementById("delb" + id);
-    var c = document.getElementById("br" + id);
-
-    parent.removeChild(a);
-    parent.removeChild(b);
-    parent.removeChild(c);
+    delbutton.addEventListener("click", function() {
+        cont.removeChild(inputElem);
+        cont.removeChild(delbutton);
+        cont.removeChild(br);
+    }, false);
+    
+    cont.appendChild(br);
+    cont.appendChild(inputElem);
+    cont.appendChild(delbutton);
 }
-
 
 function goleft(id) {
 
@@ -126,16 +139,6 @@ function updateAttrb(id, name, value) {
 
 function getAttrb(id, name) {
     return document.getElementById(id).getAttribute(name).toString();
-}
-
-function showFullName(id) {
-    $("#fsn" + id).addClass("hide");
-    $("#ffn" + id).removeClass("hide");
-}
-
-function showShortName(id) {
-    $("#ffn" + id).addClass("hide");
-    $("#fsn" + id).removeClass("hide");
 }
 
 function handle_pbox(e) {
@@ -212,7 +215,6 @@ function qr(command) {
                     qr_fil.removeChild(gee[i]);
                 }
             }
-
             break;
         case "submit":
             qr_send(document.getElementById("qr_form"));
@@ -425,4 +427,6 @@ function qr_disable_controls() {
           switch_css(css_title);
       }
 }
- 
+
+
+

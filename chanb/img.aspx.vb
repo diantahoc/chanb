@@ -19,12 +19,17 @@
                         Dim RealName As String = .Request.Item("rn")
 
                         If FileIO.FileSystem.FileExists(StorageFolder & "\" & ChanbName) Then
+                            Dim f As IO.FileInfo = FileIO.FileSystem.GetFileInfo(StorageFolder & "\" & ChanbName)
+
+                            If Not f.Directory.FullName = FileIO.FileSystem.GetDirectoryInfo(StorageFolder).FullName Then c404(.Response)
+
+
                             .Response.Clear()
                             .Response.ClearContent()
                             .Response.ClearHeaders()
                             .Response.BufferOutput = True
 
-                            Dim f As IO.FileInfo = FileIO.FileSystem.GetFileInfo(StorageFolder & "\" & ChanbName)
+
 
                             Dim fileextension As String = ChanbName.Split(CChar(".")).ElementAt(ChanbName.Split(CChar(".")).Length - 1).ToUpper
 

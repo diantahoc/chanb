@@ -28,21 +28,6 @@ chanb
 	<param name="sign"></param>
 	<returns></returns>
 	<remarks></remarks>
-</member><member name="F:chanb.test.form1">
-	<summary>
-form1 control.
-</summary>
-	<remarks>
-Auto-generated field.
-To modify move field declaration from designer file to code-behind file.
-</remarks>
-</member><member name="P:chanb.GlobalVariables.WebRoot">
-	<summary>
- Get application web root.
- </summary>
-	<value></value>
-	<returns></returns>
-	<remarks>With a trailing slash /</remarks>
 </member><member name="M:chanb.ValuesStore.AddKey(System.String,System.String)">
 	<summary>
  Update an existing key or add a new key.
@@ -54,158 +39,6 @@ To modify move field declaration from designer file to code-behind file.
  Project: Novelli Torrent
  </summary>
 	<remarks></remarks>
-</member><member name="P:chanb.My.MyWebExtension.Computer">
-	<summary>
- Returns information about the host computer.
- </summary>
-</member><member name="P:chanb.My.MyWebExtension.User">
-	<summary>
- Returns information for the current Web user.
- </summary>
-</member><member name="P:chanb.My.MyWebExtension.Request">
-	<summary>
- Returns Request object.
- </summary>
-</member><member name="P:chanb.My.MyWebExtension.Response">
-	<summary>
- Returns Response object.
- </summary>
-</member><member name="P:chanb.My.MyWebExtension.Log">
-	<summary>
- Returns the Asp log object.
- </summary>
-</member><member name="T:chanb.My.MyWebExtension">
-	<summary>
- Module used to define the properties that are available in the My Namespace for Web projects.
- </summary>
-	<remarks></remarks>
-</member><member name="F:chanb.MakeAllStatic.form1">
-	<summary>
-form1 control.
-</summary>
-	<remarks>
-Auto-generated field.
-To modify move field declaration from designer file to code-behind file.
-</remarks>
-</member><member name="M:chanb.CustomFileHandler.GetHTTPFileThumb(System.IO.Stream)">
-	<summary>
- Called when a user upload a file.
- </summary>
-	<param name="f"></param>
-	<returns></returns>
-	<remarks>If no thumbnail is required for the file, please return a CFHThumbData class with thumbRequired = False.</remarks>
-</member><member name="M:chanb.CustomFileHandler.GetFileHTML(chanb.WPostImage)">
-	<summary>
- Called when ChanB need to display a file.
- </summary>
-	<param name="wpi"></param>
-	<returns></returns>
-	<remarks></remarks>
-</member><member name="M:chanb.CustomFileHandler.GetFileHTML_NoScript(chanb.WPostImage)">
-	<summary>
- Called when ChanB need to display a file when JavaScript is disabled.
- </summary>
-	<param name="wpi"></param>
-	<returns></returns>
-	<remarks></remarks>
-</member><member name="M:chanb.CustomFileHandler.GetJSHandler">
-	<summary>
- Called by ChanB JS extension when updating a thread.
- </summary>
-	<returns></returns>
-	<remarks></remarks>
-</member><member name="M:chanb.CustomFileHandler.Get_Supported_Files">
-	<summary>
- Needs to return an array containing all the supported files extension.
- </summary>
-	<returns></returns>
-	<remarks></remarks>
-</member><member name="M:chanb.CustomFileHandler.FileHasThumb(System.String)">
-	<summary>
- Need to return if the file associated with this extension has a thumnbail
- </summary>
-	<param name="lower_case_fileExtension">The lowercase extension. It's only the extension part (for example 'jpg', not '.jpg')</param>
-	<returns></returns>
-	<remarks></remarks>
-</member><member name="P:chanb.My.Resources.Resources.ResourceManager">
-	<summary>
-  Returns the cached ResourceManager instance used by this class.
-</summary>
-</member><member name="P:chanb.My.Resources.Resources.Culture">
-	<summary>
-  Overrides the current thread's CurrentUICulture property for all
-  resource lookups using this strongly typed resource class.
-</summary>
-</member><member name="P:chanb.My.Resources.Resources.eq">
-	<summary>
-  Looks up a localized string similar to &lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
-&lt;head&gt;
-&lt;title&gt;An error has been occured&lt;/title&gt;
-&lt;style&gt;
-html {
-  background-color: #E6E6E6;
-  font-size: 10pt;
-  margin: 50px 40px 20px 40px;
-  text-align: center;
-}
-body {
-  margin: auto;
-  max-width: 540px;
-  min-width: 200px;
-}
-#pc {
-  margin: auto;
-  padding-bottom: 20px;
-  max-width: 540px;
-  min-width: 200px;
-  border: 0px solid #AAA;
-  color: #444;
-  background-color: #f9f9f9;
-  border: 1px solid #AAA;
-  border-bottom: 1px solid #888 [rest of string was truncated]";.
-</summary>
-</member><member name="P:chanb.My.Resources.Resources.mssqlDatabaseSetup">
-	<summary>
-  Looks up a localized string similar to /****** Object:  Table [dbo].[bans]    Script Date: 07/20/2013 08:13:55 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[bans]') AND type in (N'U'))
-DROP TABLE [dbo].[bans]
-
-/****** Object:  Table [dbo].[board]    Script Date: 07/20/2013 08:13:55 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[board]') AND type in (N'U'))
-DROP TABLE [dbo].[board]
-
-/****** Object:  Table [dbo].[files]    Script Date: 07/20/2013 08:13:55 ******/
-IF  [rest of string was truncated]";.
-</summary>
-</member><member name="P:chanb.My.Resources.Resources.mysqlDatabaseSetup">
-	<summary>
-  Looks up a localized string similar to -- phpMyAdmin SQL Dump
--- version 3.3.8.1
--- http://www.phpmyadmin.net
---
--- Host: 127.0.0.1
--- Generation Time: Jul 20, 2013 at 08:32 AM
--- Server version: 5.1.51
--- PHP Version: 5.3.3
-
-SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
-
---
--- Database: `channelboard`
---
-
--- ------------------ [rest of string was truncated]";.
-</summary>
-</member><member name="T:chanb.My.Resources.Resources">
-	<summary>
-  A strongly-typed resource class, for looking up localized strings, etc.
-</summary>
 </member><member name="M:chanb.UnixCrypt.IntToFourBytes(System.UInt32,System.Byte[],System.UInt32)">
 	<summary>
  Converts an uint into 4 seperate bytes.
@@ -285,64 +118,6 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
  
  Reconverted to VB using Instant VB
  </remarks>
-</member><member name="M:chanb.DatabaseEngine.ExecuteNonQuery(System.String)">
-	<summary>
- Execute text query.
- </summary>
-	<param name="QueryText"></param>
-	<returns>Number of rows affected</returns>
-	<remarks></remarks>
-</member><member name="M:chanb.DatabaseEngine.ExecuteNonQuery(System.Data.Common.DbCommand)">
-	<summary>
- Execute DbCommand query.
- </summary>
-	<param name="Query"></param>
-	<returns>Number of rows affected</returns>
-	<remarks></remarks>
-</member><member name="M:chanb.DatabaseEngine.ExecuteNonQuery(System.String,System.Data.Common.DbConnection)">
-	<summary>
- Execute text query with an existing connection.
- </summary>
-	<param name="QueryText"></param>
-	<returns>Number of rows affected</returns>
-	<remarks></remarks>
-</member><member name="M:chanb.DatabaseEngine.ExecuteNonQuery(System.Data.Common.DbCommand,System.Data.Common.DbConnection)">
-	<summary>
- Execute DbCommand query with an existing connection.
- </summary>
-	<param name="Query"></param>
-	<returns>Number of rows affected</returns>
-	<remarks></remarks>
-</member><member name="M:chanb.DatabaseEngine.ExecuteQueryReader(System.String)">
-	<summary>
- Execute text query.
- </summary>
-	<param name="QueryText"></param>
-	<returns>ChanbQuery</returns>
-	<remarks></remarks>
-</member><member name="M:chanb.DatabaseEngine.ExecuteQueryReader(System.Data.Common.DbCommand)">
-	<summary>
- Execute DbCommand query.
- </summary>
-	<param name="Query"></param>
-	<returns>ChanbQuery</returns>
-	<remarks></remarks>
-</member><member name="M:chanb.DatabaseEngine.ExecuteQueryReader(System.String,System.Data.Common.DbConnection)">
-	<summary>
- Execute text query with an existing connection.
- </summary>
-	<param name="QueryText"></param>
-	<param name="i"></param>
-	<returns>ChanbQuery</returns>
-	<remarks></remarks>
-</member><member name="M:chanb.DatabaseEngine.ExecuteQueryReader(System.Data.Common.DbCommand,System.Data.Common.DbConnection)">
-	<summary>
- Execute DbCommand query with an existing connection.
- </summary>
-	<param name="Query"></param>
-	<param name="i"></param>
-	<returns>ChanbQuery</returns>
-	<remarks></remarks>
 </member><member name="M:chanb.GlobalFunctions.ImageHaveTransparentBits(System.Drawing.Bitmap)">
 	<summary>
  Check if the image have transparent pixels.
@@ -405,6 +180,232 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 	<param name="bbcode"></param>
 	<returns></returns>
 	<remarks></remarks>
+</member><member name="P:chanb.GlobalVariables.WebRoot">
+	<summary>
+ Get application web root.
+ </summary>
+	<value></value>
+	<returns></returns>
+	<remarks>With a trailing slash /</remarks>
+</member><member name="M:chanb.DatabaseEngine.ExecuteNonQuery(System.String)">
+	<summary>
+ Execute text query.
+ </summary>
+	<param name="QueryText"></param>
+	<returns>Number of rows affected</returns>
+	<remarks></remarks>
+</member><member name="M:chanb.DatabaseEngine.ExecuteNonQuery(System.Data.Common.DbCommand)">
+	<summary>
+ Execute DbCommand query.
+ </summary>
+	<param name="Query"></param>
+	<returns>Number of rows affected</returns>
+	<remarks></remarks>
+</member><member name="M:chanb.DatabaseEngine.ExecuteNonQuery(System.String,System.Data.Common.DbConnection)">
+	<summary>
+ Execute text query with an existing connection.
+ </summary>
+	<param name="QueryText"></param>
+	<returns>Number of rows affected</returns>
+	<remarks></remarks>
+</member><member name="M:chanb.DatabaseEngine.ExecuteNonQuery(System.Data.Common.DbCommand,System.Data.Common.DbConnection)">
+	<summary>
+ Execute DbCommand query with an existing connection.
+ </summary>
+	<param name="Query"></param>
+	<returns>Number of rows affected</returns>
+	<remarks></remarks>
+</member><member name="M:chanb.DatabaseEngine.ExecuteQueryReader(System.String)">
+	<summary>
+ Execute text query.
+ </summary>
+	<param name="QueryText"></param>
+	<returns>ChanbQuery</returns>
+	<remarks></remarks>
+</member><member name="M:chanb.DatabaseEngine.ExecuteQueryReader(System.Data.Common.DbCommand)">
+	<summary>
+ Execute DbCommand query.
+ </summary>
+	<param name="Query"></param>
+	<returns>ChanbQuery</returns>
+	<remarks></remarks>
+</member><member name="M:chanb.DatabaseEngine.ExecuteQueryReader(System.String,System.Data.Common.DbConnection)">
+	<summary>
+ Execute text query with an existing connection.
+ </summary>
+	<param name="QueryText"></param>
+	<param name="i"></param>
+	<returns>ChanbQuery</returns>
+	<remarks></remarks>
+</member><member name="M:chanb.DatabaseEngine.ExecuteQueryReader(System.Data.Common.DbCommand,System.Data.Common.DbConnection)">
+	<summary>
+ Execute DbCommand query with an existing connection.
+ </summary>
+	<param name="Query"></param>
+	<param name="i"></param>
+	<returns>ChanbQuery</returns>
+	<remarks></remarks>
+</member><member name="M:chanb.CustomFileHandler.GetHTTPFileThumb(System.IO.Stream)">
+	<summary>
+ Called when a user upload a file.
+ </summary>
+	<param name="f"></param>
+	<returns></returns>
+	<remarks>If no thumbnail is required for the file, please return a CFHThumbData class with thumbRequired = False.</remarks>
+</member><member name="M:chanb.CustomFileHandler.GetFileHTML(chanb.WPostImage)">
+	<summary>
+ Called when ChanB need to display a file.
+ </summary>
+	<param name="wpi"></param>
+	<returns></returns>
+	<remarks></remarks>
+</member><member name="M:chanb.CustomFileHandler.GetFileHTML_NoScript(chanb.WPostImage)">
+	<summary>
+ Called when ChanB need to display a file when JavaScript is disabled.
+ </summary>
+	<param name="wpi"></param>
+	<returns></returns>
+	<remarks></remarks>
+</member><member name="M:chanb.CustomFileHandler.GetJSHandler">
+	<summary>
+ Called by ChanB JS extension when updating a thread.
+ </summary>
+	<returns></returns>
+	<remarks></remarks>
+</member><member name="M:chanb.CustomFileHandler.Get_Supported_Files">
+	<summary>
+ Needs to return an array containing all the supported files extension.
+ </summary>
+	<returns></returns>
+	<remarks></remarks>
+</member><member name="M:chanb.CustomFileHandler.FileHasThumb(System.String)">
+	<summary>
+ Need to return if the file associated with this extension has a thumnbail
+ </summary>
+	<param name="lower_case_fileExtension">The lowercase extension. It's only the extension part (for example 'jpg', not '.jpg')</param>
+	<returns></returns>
+	<remarks></remarks>
+</member><member name="F:chanb.CaptchaData.CaptchaChallenge">
+	<summary>
+ The captcha session challenge
+ </summary>
+	<remarks></remarks>
+</member><member name="P:chanb.My.MyWebExtension.Computer">
+	<summary>
+ Returns information about the host computer.
+ </summary>
+</member><member name="P:chanb.My.MyWebExtension.User">
+	<summary>
+ Returns information for the current Web user.
+ </summary>
+</member><member name="P:chanb.My.MyWebExtension.Request">
+	<summary>
+ Returns Request object.
+ </summary>
+</member><member name="P:chanb.My.MyWebExtension.Response">
+	<summary>
+ Returns Response object.
+ </summary>
+</member><member name="P:chanb.My.MyWebExtension.Log">
+	<summary>
+ Returns the Asp log object.
+ </summary>
+</member><member name="T:chanb.My.MyWebExtension">
+	<summary>
+ Module used to define the properties that are available in the My Namespace for Web projects.
+ </summary>
+	<remarks></remarks>
+</member><member name="F:chanb.MakeAllStatic.form1">
+	<summary>
+form1 control.
+</summary>
+	<remarks>
+Auto-generated field.
+To modify move field declaration from designer file to code-behind file.
+</remarks>
+</member><member name="P:chanb.My.Resources.Resources.ResourceManager">
+	<summary>
+  Returns the cached ResourceManager instance used by this class.
+</summary>
+</member><member name="P:chanb.My.Resources.Resources.Culture">
+	<summary>
+  Overrides the current thread's CurrentUICulture property for all
+  resource lookups using this strongly typed resource class.
+</summary>
+</member><member name="P:chanb.My.Resources.Resources.eq">
+	<summary>
+  Looks up a localized string similar to &lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+&lt;title&gt;An error has been occured&lt;/title&gt;
+&lt;style&gt;
+html {
+  background-color: #E6E6E6;
+  font-size: 10pt;
+  margin: 50px 40px 20px 40px;
+  text-align: center;
+}
+body {
+  margin: auto;
+  max-width: 540px;
+  min-width: 200px;
+}
+#pc {
+  margin: auto;
+  padding-bottom: 20px;
+  max-width: 540px;
+  min-width: 200px;
+  border: 0px solid #AAA;
+  color: #444;
+  background-color: #f9f9f9;
+  border: 1px solid #AAA;
+  border-bottom: 1px solid #888 [rest of string was truncated]";.
+</summary>
+</member><member name="P:chanb.My.Resources.Resources.messageTemplate">
+	<summary>
+  Looks up a localized string similar to &lt;html xmlns="http://www.w3.org/1999/xhtml"&gt; &lt;head&gt; &lt;META HTTP-EQUIV="pragma" CONTENT="no-cache"&gt; &lt;title&gt;%TITLE%&lt;/title&gt; &lt;style&gt;html{background-color:#e6e6e6;font-size:10pt;margin:50px 40px 20px 40px;text-align:center}body{margin:auto;max-width:540px;min-width:200px}#pc{margin:auto;padding-bottom:20px;max-width:540px;min-width:200px;border:0 solid #AAA;color:#444;background-color:#f9f9f9;border:1px solid #AAA;border-bottom:1px solid #888;border-radius:3px;box-shadow:0 2px 2px #AAA}#pc #titleText{color:#666;m [rest of string was truncated]";.
+</summary>
+</member><member name="P:chanb.My.Resources.Resources.mssqlDatabaseSetup">
+	<summary>
+  Looks up a localized string similar to /****** Object:  Table [dbo].[bans]    Script Date: 07/20/2013 08:13:55 ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[bans]') AND type in (N'U'))
+DROP TABLE [dbo].[bans]
+
+/****** Object:  Table [dbo].[board]    Script Date: 07/20/2013 08:13:55 ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[board]') AND type in (N'U'))
+DROP TABLE [dbo].[board]
+
+/****** Object:  Table [dbo].[files]    Script Date: 07/20/2013 08:13:55 ******/
+IF  [rest of string was truncated]";.
+</summary>
+</member><member name="P:chanb.My.Resources.Resources.mysqlDatabaseSetup">
+	<summary>
+  Looks up a localized string similar to -- phpMyAdmin SQL Dump
+-- version 3.3.8.1
+-- http://www.phpmyadmin.net
+--
+-- Host: 127.0.0.1
+-- Generation Time: Jul 20, 2013 at 08:32 AM
+-- Server version: 5.1.51
+-- PHP Version: 5.3.3
+
+SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+
+--
+-- Database: `channelboard`
+--
+
+-- ------------------ [rest of string was truncated]";.
+</summary>
+</member><member name="T:chanb.My.Resources.Resources">
+	<summary>
+  A strongly-typed resource class, for looking up localized strings, etc.
+</summary>
 </member>
 </members>
 </doc>

@@ -1,0 +1,219 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<title>%BTITLE%</title>
+%EXTRA META%
+<link rel="stylesheet" title="grey" href="%ROOT%css/grey.css" />
+<link rel="alternate stylesheet" title="gold" href="%ROOT%css/gold.css" />
+<link rel="stylesheet" href="%ROOT%css/mobile.css" />
+<link  rel="stylesheet" href="%ROOT%js/pr/prettify.css" />
+<script src="%ROOT%js/scripts.js"></script>
+<script src="%ROOT%js/extension.js"></script>
+<script src="%ROOT%js/libs/jquery.min.js"></script>
+<script src="%ROOT%js/libs/jquery-ui.min.js"></script>
+<script src="%ROOT%dscripts.aspx"></script>
+<script src="%ROOT%js/pr/prettify.js"></script>
+<script src="%ROOT%js/pr/lang-all.js"></script>
+<script>$(document).ready(function() { loadStyle(); extension_init(); if (checkforNSFWImages) { checkforNSFWImages(); } });</script>
+</head> 
+<body>
+<div id="top"></div>
+<div id="gheader">
+
+<div id="gcontent">
+
+<div class="gtitle" title="%BDESC%">
+<a title="Select a style" class="buttonBlue bbf" onclick="$('#css_box').toggleClass('hide')">#</a>
+<select class="hide form-select" id="css_box" onchange="switch_css($('#css_box')[0].value)">
+<option value="grey">Grey</option>
+<option value="gold">Gold</option>
+</select>&nbsp;%BTITLE%
+</div>
+
+<div id="gtoolbox" class="desktop" display="none">
+<span id="extension_log"></span><span>|</span><a class="buttonBlue" onclick="forceUpdate()">Update</a>
+<a class="buttonBlue" onclick="qr('show')">Quick Reply</a>
+</div>
+<script>document.getElementById("gtoolbox").style.display = ""</script>
+</div>
+</div>
+<br />
+<br />
+<!--%POSTING MODE%-->
+<div id="postdiv" align="center" class="%POSTDIVCLASS%">
+<form enctype="multipart/form-data" action="%ROOT%post.aspx" method="post" title="%POST FORM BUTTON%" defaultbutton="zeta" >
+<input type="hidden" name="mode" value="%POST FORM MODE%" />
+<input type="hidden" name="threadid" value="%POST FORM TID%" />
+<table>
+<tbody>
+<tr><th>%LANG nameString%</th>
+<td><input class="form-text" type="text" size="30" name="postername" id="pname"/></td>
+</tr>
+<tr>
+<th>%LANG emailString%</th>
+<td>
+<input class="form-text" name="email" size="30" type="text" id="pemail"/>
+</td>
+</tr>
+<tr>
+<th>%LANG subjectString%</th>
+<td><input class="form-text" style="float:left;" name="subject" size="30" type="text"/>
+<input class="button" style="margin-left:2px;" name="post" value="%POST FORM BUTTON%" type="submit" id="zeta"/>
+</td>
+</tr>
+<tr>
+<th>%LANG commentString%</th>
+<td><textarea class="form-textarea" name="comment" id="commentfield" rows="5" cols="30"></textarea></td>
+</tr>
+<tr class="%captcha show%">
+<th>%LANG verificationStr%</th>
+<td>%CAPTCHA PHOLDER%</td>
+</tr>
+<tr>
+<th>
+%LANG fileStr%
+</th>
+<td>
+<div id="files" >
+<input type="file" name="ufile"/>
+</div>  
+%ADD NEW FILES PHOLDER%
+</td>
+</tr>
+<tr>
+<th>%LANG passwordStr%</th>
+<td><input class="form-text" name="password" required="required" id="formps" size="12" autocomplete="off" type="password" value="%SESSION PASSWORD%" />
+<span>(%LANG FOR PD%)</span>
+</td>
+</tr>
+</tbody>
+</table>
+</form>
+</div>
+<div id="rulesdiv" align="center">
+<ul class="rules">
+<li><span>Maximum file size is %MAXIMUM FILE SIZE%.</span></li>
+<li><span>Supported file types are : JPG, JPEG, BMP, PNG, PDF, WEBM, MP3, OGG and SVG.</span></li>
+%THREAD COUNT%
+%POSTING RULES%
+<li><span>This website is for demonstrating a live preview of ChanB imageboard. Expect your post to be gone at any time.</span></li>
+</ul>
+</div>
+<div class="navLinks navLinksBot desktop">
+%RETURN BUTTON DESKTOP%
+<a class="buttonBlue" href="%ROOT%catalog.aspx">%LANG catalogStr%</a>
+<a class="buttonBlue" href="#bottom">%LANG bottomStr%</a>
+<a class="buttonBlue" href="%ROOT%archive.aspx">%LANG archiveStr%</a>
+</div>
+<div class="navLinks mobile" style="margin-top: 10px;">
+%RETURN BUTTON MOBILE%
+<span class="mobileib buttonm"><a href="#bottom">%LANG bottomStr%</a></span>
+<span class="mobileib buttonm"><a href="%ROOT%catalog.aspx">%LANG catalogStr%</a></span>
+<span class="mobileib buttonm"><a href="javascript:document.location.reload();" id="refresh_top">%LANG refreshStr%</a></span>
+<span class="mobileib buttonm"><a href="%ROOT%archive.aspx">%LANG archiveStr%</a></span>
+</div>
+<hr />
+
+<form id="delfrm" name="deletation" action="%ROOT%post.aspx" enctype="application/x-www-form-urlencoded" method="post">
+<div class="board">
+%BODY%
+</div>
+<div style="float: right;">
+</div>
+</form>
+<div class="navLinks mobile" style="margin-top: 10px;">
+%RETURN BUTTON MOBILE%
+<span class="mobileib buttonm"><a href="#top">%LANG topStr%</a></span>
+<span class="mobileib buttonm"><a href="%ROOT%catalog.aspx">%LANG catalogStr%</a></span>
+<span class="mobileib buttonm"><a href="javascript:document.location.reload();" id="refresh_bottom">%LANG refreshStr%</a></span>
+<span class="mobileib buttonm"><a href="%ROOT%archive.aspx">%LANG archiveStr%</a></span>
+</div>
+<div class="navLinks navLinksBot desktop">
+%RETURN BUTTON DESKTOP%
+<a class="buttonBlue" href="%ROOT%catalog.aspx">%LANG catalogStr%</a>
+<a class="buttonBlue" href="#top">%LANG topStr%</a>
+<a class="buttonBlue" href="%ROOT%archive.aspx">%LANG archiveStr%</a>
+</div>
+<br />
+%PAGES LIST%
+<div id="bottom"></div>
+<div id="absbot" class="absBotText"><span>%FOOTER TEXT%</span></div>
+
+<div id="qrbox" class="desktop qr hide">
+	<div id="qrtitle" class="qrtitle">
+		<span id="qr_title_text" class="qrmove">Quick reply</span><a style="float:right;" class="buttonBlue bbf" href="javascript:qr('hide')">X</a>
+	</div>
+	<div id="qrbody" class="qrbody">
+		<form enctype="multipart/form-data" id="qr_form" action="%ROOT%post.aspx" target="qr_upload_frame" method="post">
+		<input type="hidden" id="qr_mode" name="postmode" value="%POST FORM MODE%" />
+		<input type="hidden" name="mode" value ="qrpost" />
+        <input type="hidden" id="qr_form_tid" name="threadid" value="%POST FORM TID%" />
+        	<input id="qr_pass" type="hidden" value="0" name="password"/>
+        	<script>
+        	    $("#qr_pass").attr("value", $("#formps").attr("value"));
+        	    if ("%POST FORM MODE%" == "thread") {
+        	        $("#qr_addfile").hide();
+        	     }
+        	</script>
+        	<table style="background-color: #FF0000; color:#FFFFFF" id="qr_message" class="hide">
+        	<tr><td><span id="qr_message_content"></span><a onclick="$('#qr_message').addClass('hide')">[Hide]</a></td></tr>
+        	</table>
+		<table>
+			<tr>
+				<td><input id="qr_name" class="form-text" type="text" name="postername" placeholder="%LANG nameString%" /></td>
+				<td><input id="qr_email" class="form-text" type="text" name="email" placeholder="%LANG emailString%" /></td>
+				<td><input id="qr_subject" class="form-text" type="text" name="subject" placeholder="%LANG subjectString%" /></td>
+			</tr>
+		</table>
+			<table>
+	
+			<tr>
+				<td>
+					<textarea id="qr_comment" cols="65" rows="15" name="comment" class="form-textarea" placeholder="%LANG commentString%"></textarea>
+				</td>
+			</tr>
+			<tr class="%captcha show%">
+			    <td>
+			     %CAPTCHA PHOLDER QR%
+			    </td>
+			</tr>
+			<tr>
+				<td>
+				    
+					<input type="button" id="qr_send" class="buttonBlue" onclick="qr('submit')" value="Send"/>
+					<input id="qr_reset" type="button" class="buttonBlue" value="Clear" onclick="qr('clear');qr('clear')"/>
+					
+					<input type="checkbox" id="qr_finp" name="finp" value="yes" />
+					<label for="qr_finp">Dump</label>
+					
+	     			<input type="checkbox" id="qr_cfiles" name="countf" value="yes" />
+	     			<label for="qr_finp">Count files</label>
+			    </td>     
+			</tr>                    
+            
+			<tr>
+			<td>
+			<div id="qr_files" >
+            <input type="file" multiple="" name="ufile"/>
+            </div>
+            </td>
+
+			<td><a id="qr_addfile" class="form-button" onclick="addUf('qr_files')">+</a>
+			</td>
+			</tr>
+			
+			<tr>
+			<td>
+			<div class="progress-block" id="progress-block" >
+                  <div class="progressbar-percents" id="download_perc"></div>
+                  <div class="progressbar"><div class="progressbarfill" style="width: 0%;" id="download_progress"></div></div>
+            </div>
+			</td>
+			</tr>
+			</table>
+		</form>
+	</div>
+	<script>qr_init();</script>
+</div>
+</body>
+</html>

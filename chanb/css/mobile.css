@@ -1,0 +1,695 @@
+﻿@media only screen and (max-width:480px) {
+	html
+	{
+		-moz-text-size-adjust: 100%;
+		-webkit-text-size-adjust: 100%;
+		-ms-text-size-adjust: 100%
+	}
+	
+	img.topad,.topad>div,.topad a img
+	{
+		width: 320px;
+		height: 40px;
+		max-width: 100%;
+		overflow: hidden;
+		margin: auto
+	}
+	
+	img.middlead,.middlead>div,.middlead a img
+	{
+		width: 234px;
+		height: 30px;
+		max-width: 100%;
+		overflow: hidden;
+		margin: auto
+	}
+	
+	img.bottomad,.bottomad>div,.bottomad a img
+	{
+		width: 320px;
+		height: 40px;
+		max-width: 100%;
+		overflow: hidden;
+		margin: auto
+	}
+	
+	ul.rules
+	{
+		display: none
+	}
+	
+
+	
+	div.boardBanner
+	{
+		margin-top: 40px!important;
+		text-align: center;
+		clear: both
+	}
+	
+	.mobile
+	{
+		display: block!important;
+		clear: left!important
+	}
+	
+	.mobileinline
+	{
+		display: inline!important
+	}
+	
+	.mobileib
+	{
+		display: inline-block!important
+	}
+	
+	span.replyTextM
+	{
+		display: inline!important
+	}
+	
+	.desktop
+	{
+		display: none!important
+	}
+	
+	.hideMobile
+	{
+		display: none!important
+	}
+	
+	div.board>hr
+	{
+		border: 0;
+		border-top: 1px solid #b7c5d9;
+		height: 0;
+		margin-top: 30px!important;
+		margin-bottom: 30px!important
+	}
+	
+	div.board>hr:last-of-type
+	{
+		margin-bottom: 10px!important
+	}
+	
+	hr.abovePostForm
+	{
+		width: 90%
+	}
+	
+	span.x-small
+	{
+		font-size: x-small
+	}
+	
+	div.postLink
+	{
+		padding: 5px;
+		overflow: hidden;
+		background: #d5d3d3;
+	}
+	
+	div.postLink span
+	{
+		float: left
+	}
+	
+	.postLink a
+	{
+		float: right;
+	}
+	
+	.mobilePostFormToggle
+	{
+		text-align: center;
+		font-weight: 700;
+		margin: 0 auto;
+		padding-top: 15px
+	}
+	
+	a.mobilePostFormToggle
+	{
+		text-align: center;
+		display: inline-block!important
+	}
+	
+	div.mobilePostFormToggle div
+	{
+		width: 300px;
+		padding-top: 5px;
+		padding-bottom: 5px;
+		border: 1px solid #000;
+		margin: 0 auto;
+		background: #98E
+	}
+	
+	div.post div.file .fileThumb img
+	{
+		max-width: 100px;
+		max-height: 100px;
+		border: 0;
+		float: left
+	}
+	
+	span.fileThumb
+	{
+		margin-left: 0!important;
+		margin-right: 5px!important
+	}
+	
+	div.post div.file .fileThumb
+	{
+		margin-left: 5px!important;
+		margin-right: 10px!important;
+		text-decoration: none;
+		float: left !important;
+	}
+	
+	div.post div.file div.fileInfo
+	{
+		display: none
+	}
+		
+	div.reply
+	{
+		display: table;
+		padding: 2px;
+		margin: 0;
+		border: solid 1px #b9b9b9;
+		background: #e6e6e6;
+	}
+	
+	div.replyContainer
+	{
+		margin-top: 5px;
+		margin-left: 5px;
+		margin-right: 5px;
+		background: #e6e6e6;
+	}
+	
+	div.opContainer
+	{
+		padding: 5px;
+		display: block;
+		overflow: hidden;
+		border: 1px solid #b9b9b9!important;
+		background: #e6e6e6
+	}
+	
+	blockquote
+	{
+		margin: 10px!important
+	}
+	
+	blockquote.postMessage
+	{
+		font-size: 11pt
+	}
+	
+	.omittedposts,.abbr
+	{
+		color: #707070!important;
+		font-size: 10pt!important;
+		color: #070707
+	}
+	
+	div.thread
+	{
+		border-top: 0
+	}
+	
+	div.post
+	{
+		min-width: 0px !important;
+	}
+	
+	div.opContainer div.postInfo
+	{
+		display: none!important
+	}
+	
+	div.post div.postInfoM
+	{
+		overflow: hidden;
+		border-bottom: 1px dotted #b7c5d9;
+		padding: 5px;
+		margin: -5px -6px 5px -5px
+	}
+	
+	div.replyContainer div.postInfoM
+	{
+		margin: 0
+	}
+	
+	div.post div.postInfoM span.postNum,div.postInfo span.postNum
+	{
+		float: left
+	}
+	
+	div.post div.postInfoM span.postNum a,div.postInfo span.postNum a
+	{
+		text-decoration: none;
+		color: #000!important
+	}
+	
+	div.post div.postInfoM span.postNum a:hover
+	{
+		color: red
+	}
+	
+	div.post div.postInfoM span.nameBlock,div.postInfo span.nameBlock
+	{
+		display: inline;
+		float: left;
+		clear: left
+	}
+	
+	div.post div.postInfoM span.dateTime
+	{
+		float: right;
+		font-style: italic;
+		text-align: right;
+		color: #000!important
+	}
+		
+	span.fileText
+	{
+		font-size: smaller
+	}
+	
+	div.replyContainer div.reply
+	{
+		width: 100%;
+		padding: 0!important
+	}
+	
+	div.replyContainer div.post div.postInfo
+	{
+		overflow: hidden;
+		border-bottom: 1px solid #b7c5d9;
+		padding: 3px;
+		margin: 0;
+		background: #c9cde8
+	}
+	
+	div.replyContainer div.post div.postInfo input[type=checkbox]
+	{
+		display: none
+	}
+	
+	div.replyContainer div.post div.postInfo span.postNum
+	{
+		font-style: italic
+	}
+	
+	div.replyContainer div.post div.postInfo span.userInfo
+	{
+		float: left;
+		padding-left: 5px
+	}
+	
+	div.replyContainer div.post div.postInfo span.postNum a:first-child:after
+	{
+		content: " "
+	}
+	
+	div.replyContainer div.post div.postInfo span.dateTime
+	{
+		float: right;
+		text-align: right;
+		padding-right: 10px;
+		font-style: italic
+	}
+	
+	div.replyContainer div.post div.postInfo span.dateTime span.date
+	{
+		display: block
+	}
+	
+	div.thread>div:nth-of-type(2)>div.reply
+	{
+		margin-top: 0!important
+	}
+	
+	div.replyContainer div.post div.fileInfo
+	{
+		margin-left: 0
+	}
+	
+	div.replyContainer div.post div.file
+	{
+		padding: 5px;
+	}
+	
+	div.mPagelist
+	{
+		margin-top: 10px;
+		text-align: center;
+		border-bottom: 1px solid #b7c5d9;
+		padding-bottom: 10px;
+		color: #89A
+	}
+	
+	div.mPagelist strong
+	{
+		color: #34345c
+	}
+	
+	div.mPagelist>div.prev,div.mPagelist div.next
+	{
+		margin: 20px 2px 15px;
+		display: inline-block
+	}
+	
+	.buttonm
+	{
+		border-radius: 5px 5px 5px 5px;
+		padding: 5px 10px 5px;
+		border: 2px solid #5287df !important;
+		user-select: none;
+		text-decoration: none;
+		color: #FFFFFF !important;
+		background: #5294f2;
+	}
+	
+	.buttonm a
+	{
+		text-decoration: none!important;
+		color: #FFFFFF !important;
+	}
+			
+	div.mPagelist span
+	{
+		padding-left: 3px;
+		padding-right: 3px;
+		font-size: larger
+	}
+	
+	.buttonm:hover
+	{
+		cursor: pointer
+	}
+	
+	div.absBotText
+	{
+		margin-top: 10px
+	}
+	
+	div#boardNavMobile
+	{
+		padding: 5px;
+		overflow: hidden;
+		border-bottom: 1px solid #b7c5d9;
+		position: fixed;
+		top: 0;
+		width: 100%;
+		font-size: x-small;
+		background: #d6daf0
+	}
+	
+	div#boardNavMobile select,div#boardNavMobile option
+	{
+		font-size: x-small
+	}
+	
+	div.boardSelect
+	{
+		float: left
+	}
+	
+	div.boardSelect>strong
+	{
+		padding-right: 5px
+	}
+	
+	div.pageJump
+	{
+		float: right;
+		padding-right: 5px;
+		padding-top: 3px;
+		font-size: 7.5pt
+	}
+	
+	.pageJump a
+	{
+		text-decoration: none;
+		padding-right: 5px
+	}
+	
+	div.postingMode
+	{
+		padding: 3px;
+		text-align: center;
+		width: 300px;
+		margin: 0 auto;
+		background: #e04000
+	}
+	
+	div.navLinks
+	{
+		margin-top: 9px!important;
+		margin-bottom: 0!important;
+		text-align: center
+	}
+	
+	div.post div.postInfo span.postNum a
+	{
+		text-decoration: none;
+		color: #000
+	}
+	
+	span.quote
+	{
+		color: #789922!important
+	}
+	
+	a.quoteLink,.quotelink:visited
+	{
+		color: #D00!important
+	}
+	
+	div.boardBanner>img
+	{
+		border: 1px solid #34345c;
+		margin: 5px 0;
+		height: 50px;
+		width: 150px;
+		max-width: 100%
+	}
+	
+	div.boardBanner>div.boardTitle
+	{
+		letter-spacing: -2px;
+		margin-top: 0;
+		font: 700 28px Tahoma,sans-serif
+	}
+	
+	div.boardBanner>div.boardSubtitle
+	{
+		font-size: x-small
+	}
+	
+	span.subject
+	{
+		display: block
+	}
+	
+	hr
+	{
+		border: 0;
+		border-top: 1px solid #b7c5d9;
+		height: 0
+	}
+	
+	.commentpostername
+	{
+		font-weight: 700
+	}
+	
+	.navSmall
+	{
+		font-size: 90%
+	}
+	
+	.center
+	{
+		text-align: center
+	}
+	
+	.bold
+	{
+		font-weight: 700
+	}
+	
+	.smaller
+	{
+		font-size: smaller
+	}
+	
+	.globalMessage
+	{
+		color: red;
+		text-align: center
+	}
+	
+	.highlightPost
+	{
+		background: #f0d6d6!important
+	}
+	
+	span.spoiler
+	{
+		color: #000!important;
+		background: #000!important
+	}
+	
+	span.spoiler:hover,span.spoiler:focus
+	{
+		color: #fff!important
+	}
+		
+	#navtopright,#navbotright
+	{
+		float: right
+	}
+	
+	.preview
+	{
+		border: 1px solid #b7c5d9!important;
+		border-right-width: 2px!important;
+		border-bottom-width: 2px!important;
+		background: #d6daf0
+	}
+	
+	div.posthover
+	{
+		max-width: 400px;
+		margin-left: 20px;
+		padding: 5px;
+		padding-left: 10px;
+		padding-right: 10px
+	}
+	
+	div.posthover a.fileThumb
+	{
+		margin-left: 5px!important;
+		margin-right: 10px!important
+	}
+	
+	div.posthover blockquote
+	{
+		margin: 5px
+	}
+	
+	div.posthover img[data-md5]
+	{
+		max-width: 80px;
+		max-height: 80px
+	}
+	
+	div.posthover div.fileThumb
+	{
+		margin-left: 0!important;
+		margin-right: 10px!important
+	}
+	
+	.fileThumb img
+	{
+		width: auto!important;
+		height: auto!important
+	}
+	
+	div.mPagelist a
+	{
+		text-decoration: none!important
+	}
+	
+	img.expandedImg
+	{
+		max-width: auto!important;
+		max-height: auto!important
+	}
+		
+	td>input[type="text"],td>textarea,td>input[type="password"]
+	{
+		width: 220px!important;
+		margin-right: 0!important
+	}
+	
+	#postForm input[name="sub"]
+	{
+		width: 160px!important
+	}
+	
+	#postForm input[type="submit"]
+	{
+		width: 60px;
+		padding: 2px 4px 3px;
+		margin: 0
+	}
+	
+	#postForm input[type="password"]
+	{
+		width: 70px!important
+	}
+	
+	td>input
+	{
+		margin-left: 1px
+	}
+	
+	tr.mobile
+	{
+		display: table-row!important
+	}
+	
+	tr.mobile td
+	{
+		padding: 5px
+	}
+		
+	input:focus,textarea:focus
+	{
+		border: 1px solid #98e!important
+	}
+		
+	.buttonm a:hover,a.buttonm:hover
+	{
+		color: #34345c!important
+	}
+	
+	a.redButton:hover,a.redButton:focus
+	{
+		color: #800!important
+	}
+			
+	.mFileInfo
+	{
+		padding-top: 5px;
+		text-align: center;
+		color: #707070!important;
+		font-size: 9pt!important;
+		text-decoration: none!important
+	}
+	
+
+	
+.cimage, video, audio {	max-width: 125px; max-height: 125px;}
+	
+   
+	
+
+	
+	
+}/*end of mobile view*/
+	
+ blockquote
+	{
+		margin: 10px!important;
+	}
+	
+    blockquote.postMessage
+	{
+		font-size: 11pt;
+		display: block !important;	
+	}

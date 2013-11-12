@@ -1,0 +1,1 @@
+﻿<%@ Page Language="vb" AutoEventWireup="false" CodeBehind="deletefile.aspx.vb" Inherits="chanb.deletefile" %>

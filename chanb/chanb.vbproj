@@ -46,23 +46,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\Desktop\New folder\CCore\CCore\bin\Release\CCore.dll</HintPath>
     </Reference>
-    <Reference Include="ExifLib, Version=1.4.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\ExifLib.dll</HintPath>
-    </Reference>
-    <Reference Include="MarkdownSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\MarkdownSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="mysql.data, Version=6.6.5.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\mysqlv2\mysql.data.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="Svg, Version=0.5.2.36557, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Svg, Version=0.5.2.3247, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Svg.dll</HintPath>
     </Reference>
@@ -113,34 +97,22 @@
     <Content Include="archive.aspx" />
     <Content Include="captcha.aspx" />
     <Content Include="catalog.aspx" />
-    <Content Include="catalogItemTemplate.html" />
     <Content Include="default.aspx" />
     <Content Include="faq.aspx" />
-    <Content Include="fullPageTemplate.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="img.aspx" />
     <Content Include="installer.aspx" />
-    <Content Include="js\jquery-ui.min.js" />
-    <Content Include="js\jquery.min.js" />
     <Content Include="MakeAllStatic.aspx" />
-    <Content Include="mobile.css" />
+    <Content Include="css\mobile.css" />
     <Content Include="res\bgdark.png" />
     <Content Include="res\bggrey.png" />
     <Content Include="res\bgwhite.png" />
     <Content Include="res\locked.png" />
     <Content Include="res\sticky.png" />
-    <Content Include="RotatorTemplate.html" />
-    <Content Include="imageTemplate.html" />
     <Content Include="login.aspx" />
     <Content Include="modaction.aspx" />
-    <Content Include="opPostTemplate.html" />
     <Content Include="post.aspx" />
-    <Content Include="postTemplate.html" />
-    <Content Include="scripts.js" />
-    <Content Include="threadTemplate.html" />
-    <Content Include="videoTemplate.html" />
-    <Content Include="yotsubab.css" />
+    <Content Include="js\scripts.js" />
+    <Content Include="css\grey.css" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="adminaction.aspx.designer.vb">
@@ -164,7 +136,14 @@
       <DependentUpon>archive.aspx</DependentUpon>
       <SubType>ASPXCodebehind</SubType>
     </Compile>
-    <Compile Include="BanData.vb" />
+    <Compile Include="panel.aspx.designer.vb">
+      <DependentUpon>panel.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="panel.aspx.vb">
+      <DependentUpon>panel.aspx</DependentUpon>
+      <SubType>ASPXCodebehind</SubType>
+    </Compile>
+    <Compile Include="vb\BanData.vb" />
     <Compile Include="banned.aspx.designer.vb">
       <DependentUpon>banned.aspx</DependentUpon>
     </Compile>
@@ -179,6 +158,7 @@
       <DependentUpon>captcha.aspx</DependentUpon>
       <SubType>ASPXCodebehind</SubType>
     </Compile>
+    <Compile Include="vb\Captcha.vb" />
     <Compile Include="catalog.aspx.designer.vb">
       <DependentUpon>catalog.aspx</DependentUpon>
     </Compile>
@@ -186,15 +166,23 @@
       <DependentUpon>catalog.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="CustomFileHandler.vb" />
-    <Compile Include="DatabaseEngine.vb" />
-    <Compile Include="DataInitializer.vb" />
-    <Compile Include="DBInitializer.vb" />
+    <Compile Include="vb\ChanbCaptcha.vb" />
+    <Compile Include="vb\CustomFileHandler.vb" />
+    <Compile Include="vb\DatabaseEngine.vb" />
+    <Compile Include="vb\DataInitializer.vb" />
+    <Compile Include="vb\DBInitializer.vb" />
     <Compile Include="default.aspx.designer.vb">
       <DependentUpon>default.aspx</DependentUpon>
     </Compile>
     <Compile Include="default.aspx.vb">
       <DependentUpon>default.aspx</DependentUpon>
+      <SubType>ASPXCodebehind</SubType>
+    </Compile>
+    <Compile Include="deletefile.aspx.designer.vb">
+      <DependentUpon>deletefile.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="deletefile.aspx.vb">
+      <DependentUpon>deletefile.aspx</DependentUpon>
       <SubType>ASPXCodebehind</SubType>
     </Compile>
     <Compile Include="deletepost.aspx.designer.vb">
@@ -231,9 +219,10 @@
     <Compile Include="Global.asax.vb">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="GlobalFunctions.vb" />
-    <Compile Include="GlobalVariables.vb" />
-    <Compile Include="HTMLParameters.vb" />
+    <Compile Include="vb\GlobalFunctions.vb" />
+    <Compile Include="vb\GlobalVariables.vb" />
+    <Compile Include="vb\GoogleCaptcha.vb" />
+    <Compile Include="vb\HTMLParameters.vb" />
     <Compile Include="img.aspx.designer.vb">
       <DependentUpon>img.aspx</DependentUpon>
     </Compile>
@@ -241,7 +230,7 @@
       <DependentUpon>img.aspx</DependentUpon>
       <SubType>ASPXCodebehind</SubType>
     </Compile>
-    <Compile Include="InstallActions.vb" />
+    <Compile Include="vb\InstallActions.vb" />
     <Compile Include="installer.aspx.designer.vb">
       <DependentUpon>installer.aspx</DependentUpon>
     </Compile>
@@ -249,10 +238,10 @@
       <DependentUpon>installer.aspx</DependentUpon>
       <SubType>ASPXCodebehind</SubType>
     </Compile>
-    <Compile Include="JSONAPI.vb" />
-    <Compile Include="LangEngine.vb" />
-    <Compile Include="Language.vb" />
-    <Compile Include="LoginInfo.vb" />
+    <Compile Include="vb\JSONAPI.vb" />
+    <Compile Include="vb\LangEngine.vb" />
+    <Compile Include="vb\Language.vb" />
+    <Compile Include="vb\LoginInfo.vb" />
     <Compile Include="MakeAllStatic.aspx.designer.vb">
       <DependentUpon>MakeAllStatic.aspx</DependentUpon>
     </Compile>
@@ -260,7 +249,7 @@
       <DependentUpon>MakeAllStatic.aspx</DependentUpon>
       <SubType>ASPXCodebehind</SubType>
     </Compile>
-    <Compile Include="Misc.vb" />
+    <Compile Include="vb\Misc.vb" />
     <Compile Include="login.aspx.designer.vb">
       <DependentUpon>login.aspx</DependentUpon>
     </Compile>
@@ -308,15 +297,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="OPDATA.vb" />
-    <Compile Include="panel.aspx.designer.vb">
-      <DependentUpon>panel.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="panel.aspx.vb">
-      <DependentUpon>panel.aspx</DependentUpon>
-      <SubType>ASPXCodebehind</SubType>
-    </Compile>
-    <Compile Include="PanelModule.vb" />
+    <Compile Include="vb\OPDATA.vb" />
     <Compile Include="post.aspx.designer.vb">
       <DependentUpon>post.aspx</DependentUpon>
     </Compile>
@@ -324,7 +305,10 @@
       <DependentUpon>post.aspx</DependentUpon>
       <SubType>ASPXCodebehind</SubType>
     </Compile>
-    <Compile Include="post.vb">
+    <Compile Include="vb\PanelModule.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="vb\post.vb">
     </Compile>
     <Compile Include="report.aspx.designer.vb">
       <DependentUpon>report.aspx</DependentUpon>
@@ -333,21 +317,14 @@
       <DependentUpon>report.aspx</DependentUpon>
       <SubType>ASPXCodebehind</SubType>
     </Compile>
-    <Compile Include="Report.vb">
+    <Compile Include="vb\Report.vb">
     </Compile>
-    <Compile Include="test.aspx.designer.vb">
-      <DependentUpon>test.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="test.aspx.vb">
-      <DependentUpon>test.aspx</DependentUpon>
-      <SubType>ASPXCodebehind</SubType>
-    </Compile>
-    <Compile Include="textParser.vb" />
-    <Compile Include="ThreadReplies.vb" />
-    <Compile Include="unixcrypt.vb" />
-    <Compile Include="ValueStore.vb" />
-    <Compile Include="WordFilter.vb" />
-    <Compile Include="WPostImage.vb" />
+    <Compile Include="vb\textParser.vb" />
+    <Compile Include="vb\ThreadReplies.vb" />
+    <Compile Include="vb\unixcrypt.vb" />
+    <Compile Include="vb\ValueStore.vb" />
+    <Compile Include="vb\WordFilter.vb" />
+    <Compile Include="vb\WPostImage.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
@@ -358,12 +335,12 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="catalog.css" />
-    <Content Include="Copy of modSBR.html" />
+    <Content Include="css\catalog.css" />
+    <Content Include="chanbCaptchaTemplate.htm" />
+    <Content Include="deletefile.aspx" />
     <Content Include="dscripts.aspx" />
     <Content Include="error.aspx" />
-    <Content Include="errorPageTemplate.html" />
-    <Content Include="extension.js" />
+    <Content Include="js\extension.js" />
     <Content Include="fileHandler.ashx" />
     <None Include="My Project\Application.myapp">
       <Generator>MyApplicationCodeGenerator</Generator>
@@ -374,28 +351,105 @@
       <CustomToolNamespace>My</CustomToolNamespace>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
-    <Content Include="audiofileTemplate.html" />
     <Content Include="banned.aspx" />
-    <Content Include="bannedPageTemplate.html" />
     <Content Include="deletepost.aspx" />
-    <Content Include="deletepostPage.html" />
     <Content Include="Global.asax" />
-    <Content Include="gold.css" />
-    <Content Include="js\extension.js" />
-    <Content Include="js\noworker.nude.min.js" />
-    <Content Include="js\worker.nude.js" />
-    <Content Include="modEditpost.aspx" />
-    <Content Include="modSBR.html" />
-    <Content Include="modSelectBanReason.aspx" />
+    <Content Include="css\gold.css" />
+    <Content Include="js\libs\jquery-ui.min.js" />
+    <Content Include="js\libs\jquery.min.js" />
+    <Content Include="js\libs\noworker.nude.min.js" />
+    <Content Include="js\libs\worker.nude.js" />
+    <Content Include="js\libs\xregexp-min.js" />
+    <Content Include="js\pr\lang-all.js" />
+    <Content Include="js\pr\langs\lang-apollo.js" />
+    <Content Include="js\pr\langs\lang-basic.js" />
+    <Content Include="js\pr\langs\lang-clj.js" />
+    <Content Include="js\pr\langs\lang-css.js" />
+    <Content Include="js\pr\langs\lang-dart.js" />
+    <Content Include="js\pr\langs\lang-erlang.js" />
+    <Content Include="js\pr\langs\lang-go.js" />
+    <Content Include="js\pr\langs\lang-hs.js" />
+    <Content Include="js\pr\langs\lang-lisp.js" />
+    <Content Include="js\pr\langs\lang-llvm.js" />
+    <Content Include="js\pr\langs\lang-lua.js" />
+    <Content Include="js\pr\langs\lang-matlab.js" />
+    <Content Include="js\pr\langs\lang-ml.js" />
+    <Content Include="js\pr\langs\lang-mumps.js" />
+    <Content Include="js\pr\langs\lang-n.js" />
+    <Content Include="js\pr\langs\lang-pascal.js" />
+    <Content Include="js\pr\langs\lang-proto.js" />
+    <Content Include="js\pr\langs\lang-r.js" />
+    <Content Include="js\pr\langs\lang-rd.js" />
+    <Content Include="js\pr\langs\lang-scala.js" />
+    <Content Include="js\pr\langs\lang-scm.js" />
+    <Content Include="js\pr\langs\lang-sql.js" />
+    <Content Include="js\pr\langs\lang-tcl.js" />
+    <Content Include="js\pr\langs\lang-tex.js" />
+    <Content Include="js\pr\langs\lang-vb.js" />
+    <Content Include="js\pr\langs\lang-vhdl.js" />
+    <Content Include="js\pr\langs\lang-wiki.js" />
+    <Content Include="js\pr\langs\lang-xq.js" />
+    <Content Include="js\pr\langs\lang-yaml.js" />
+    <Content Include="js\pr\prettify.css" />
+    <Content Include="js\pr\prettify.js" />
     <Content Include="panel.aspx" />
-    <Content Include="panelTemplate.html" />
+    <Content Include="templates\audio_file.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="templates\banned_page.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="templates\scratch\catalog_item.html" />
+    <Content Include="templates\scratch\Copy of modSBR.html" />
+    <Content Include="templates\delete_file_page.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="templates\delete_post_page.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="templates\edit_post_page.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="templates\scratch\errorPageTemplate.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="templates\full_page.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="templates\scratch\GenericMessageTemplate.html" />
+    <Content Include="templates\image_file.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="templates\modSBR.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="templates\op_post.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="templates\scratch\panelTemplate.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="templates\reply_post.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="templates\scratch\qrTemplate.html" />
+    <Content Include="templates\report_page.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="templates\files_rotator.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="templates\scratch\scratch.htm" />
+    <Content Include="templates\thread.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="templates\video_file.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="modEditpost.aspx" />
+    <Content Include="modSelectBanReason.aspx" />
     <Content Include="report.aspx" />
-    <Content Include="reportPage.html" />
-    <Content Include="editPostPageTemplate.html" />
-    <Content Include="scratch.htm" />
-    <Content Include="sfw.js" />
-    <Content Include="sysadmin.css" />
-    <Content Include="test.aspx" />
+    <Content Include="js\sfw.js" />
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>

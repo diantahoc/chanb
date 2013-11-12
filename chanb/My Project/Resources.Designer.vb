@@ -94,6 +94,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  Looks up a localized string similar to &lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt; &lt;head&gt; &lt;META HTTP-EQUIV=&quot;pragma&quot; CONTENT=&quot;no-cache&quot;&gt; &lt;title&gt;%TITLE%&lt;/title&gt; &lt;style&gt;html{background-color:#e6e6e6;font-size:10pt;margin:50px 40px 20px 40px;text-align:center}body{margin:auto;max-width:540px;min-width:200px}#pc{margin:auto;padding-bottom:20px;max-width:540px;min-width:200px;border:0 solid #AAA;color:#444;background-color:#f9f9f9;border:1px solid #AAA;border-bottom:1px solid #888;border-radius:3px;box-shadow:0 2px 2px #AAA}#pc #titleText{color:#666;m [rest of string was truncated]&quot;;.
+        '''</summary>
+        Friend ReadOnly Property messageTemplate() As String
+            Get
+                Return ResourceManager.GetString("messageTemplate", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  Looks up a localized string similar to /****** Object:  Table [dbo].[bans]    Script Date: 07/20/2013 08:13:55 ******/
         '''IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[bans]&apos;) AND type in (N&apos;U&apos;))
         '''DROP TABLE [dbo].[bans]

@@ -24,8 +24,12 @@ Public Class Global_asax
         ' Fires when an error occurs
 
         'Try
-        Dim aq As Exception = Server.GetLastError()
-        Dim lastError As Exception = aq.GetBaseException()
+        'Dim aq As Exception = Server.GetLastError()
+        'Dim lastError As Exception = aq.GetBaseException()
+
+        'If Context Is Nothing Then
+        '    Return
+        'End If
 
         'Dim errorPageHTML As String = ""
         'errorPageHTML = errorPageTemplate.Replace("%EM%", lastError.Message) _
@@ -34,12 +38,12 @@ Public Class Global_asax
         '                             .Replace("%EH%", lastError.HelpLink)
         '.Response.Write(errorPageHTML)
 
-        Context.Session("EM") = lastError.Message
-        Context.Session("ES") = lastError.Source
-        Context.Session("EST") = lastError.StackTrace
-        Context.Session("EH") = lastError.HelpLink
+        'Context.Session("EM") = lastError.Message
+        'Context.Session("ES") = lastError.Source
+        'Context.Session("EST") = lastError.StackTrace
+        'Context.Session("EH") = lastError.HelpLink
 
-        Context.Response.Redirect(WebRoot & "error.aspx?aspxerrorpath=" & Request.Path, True)
+        '  Context.Response.Redirect(WebRoot & "error.aspx?aspxerrorpath=" & Request.Path, True)
 
 
         'Catch ex As Exception

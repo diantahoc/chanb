@@ -3,7 +3,7 @@
 
     Protected Sub Page_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
         Session("chanb") = "chanb"
-        Response.Write(ProcessPost(Context))
+        ProcessPost(Context)
     End Sub
 
 End Class

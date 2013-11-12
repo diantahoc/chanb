@@ -48,8 +48,6 @@ Partial Public Class _captcha
 
         Dim f As New Font(FontFamily.GenericMonospace, fontSize, FontStyle.Regular, GraphicsUnit.Pixel)
 
-    
-
         captchaString = New String(CType(captchaString, Char()), 0, maximumChars + 1)
 
         SetCookie(Context, "captcha", captchaString)

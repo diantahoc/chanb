@@ -38,8 +38,11 @@ Partial Public Class dscripts
 
             sb.Append("var selinks = " & JSONApi.GetSELinks & ";")
 
-            sb.Append("var max_file_per_post = " & ((runtimeSection.MaxRequestLength * 1024) / GlobalVariables.MaximumFileSize) & ";")
+            sb.Append("var maxHttpLength = " & runtimeSection.MaxRequestLength * 1024 & ";")
 
+            sb.Append("var maxFileLength = " & GlobalVariables.MaximumFileSize & ";")
+
+            sb.Append(MakeScriptVariable("dfiles_template", deleteFilesHTMLMenuItem))
 
             Dim additionalFiles As New List(Of String)
 
@@ -60,7 +63,7 @@ Partial Public Class dscripts
     End Sub
 
     Private Function MakeScriptVariable(ByVal name As String, ByVal content As String) As String
-        Return "var " & name & " = """ & content.Replace("""", "\""") & """;"
+        Return "var " & name & " = """ & content.Replace("""", "\""").Replace(vbNewLine, "") & """;"
     End Function
 
 End Class

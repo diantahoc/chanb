@@ -1,0 +1,31 @@
+<div class="postContainer replyContainer" id="pc%ID%">
+<div class="desktop cssmenu"><ul><li class="active has-sub"><a href="#">[#]</a><ul>%MODPANEL%<li><a class="wdlink" href="%ROOT%post.aspx?mode=report&id=%ID%" target="_blank">%LANG reportStr%</a></li>%DFILESMENU%<li class="last"><a class="wdlink" href="%ROOT%post.aspx?mode=delete&id=%ID%" target="_blank">%LANG deleteStr%</a></li></ul></li></ul></div>
+<div id="p%ID%" class="post reply %UIDS%">
+<div class="postInfoM mobile" id="pim%ID%">
+<span class="nameBlock">
+    %NAMESPAN%
+    %UID%
+    <br>
+    <span class="subject">%SUBJECT%</span>
+</span>
+<span class="dateTime postNum" data-utc="%DATE UTC UNIX%">%DATE UTC TEXT%&nbsp;<a href="%POST LINK%">No.</a>
+    <a href="%POST LINK%" title="Quote this post">%ID%</a>
+</span>
+</div>
+<div class="postInfo desktop" id="pi%ID%">
+<span class="subject">%SUBJECT%</span>&nbsp;
+<span class="nameBlock">
+%NAMESPAN%
+&nbsp;
+%UID%
+&nbsp;
+<span class="dateTime">%DATE UTC TEXT%</span>
+<span class="postNum desktop">
+<a href="%POST LINK%" title="Highlight this post">&nbsp;No.&nbsp;</a>
+<a href="javascript:quote('%ID%','%TID%');" title="Quote this post">%ID%</a>
+</span></span>
+</div>
+%IMAGES%
+<blockquote class="postMessage" id="m%ID%">%POST TEXT%</blockquote>
+</div>
+</div>

@@ -1,0 +1,46 @@
+<div class="replyContainer" id="pc{wpost:id}">
+    
+    <div class="desktop cssmenu">
+        <ul>
+            <li class="active has-sub"><a href="#">[#]</a>
+                <ul>
+                    <li><a class="wdlink" href="{WebRoot}report.aspx?id={wpost:id}" target="_blank">
+                        {lang:report}</a></li>
+                    <li class="last"><a class="wdlink" href=""
+                        target="_blank">{lang:delete}</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <div id="p{wpost:id}" class="post reply">
+       
+        <div class="postInfoM mobile">
+            {wpost:subject}
+            <span class="name">{wpost:name}</span>
+            {wpost:trip}
+            {wpost:posterId}
+            <br />
+            <span class="dateTime">{wpost:time}</span>
+            <a href="{postLink}">No. {wpost:id}</a>
+        </div>
+
+        <div class="postInfo desktop">
+
+            {wpost:subject}
+            <span class="name">{wpost:name}</span>
+            {wpost:posterId}
+            <span class="dateTime">{wpost:time}</span>
+
+            <span class="postNum">
+                <a href="{postLink}">No.</a>
+                <a href="javascript:quote('{wpost:id}','{wpost:parent}')" title="{lang:quotethispost}">{wpost:id}</a>
+            </span>
+
+        </div>
+
+        {wpost:files}
+
+        {wpost:comment}
+    </div>
+</div>

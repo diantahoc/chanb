@@ -1,0 +1,1 @@
+﻿<%@ Page Language="C#" EnableViewState="false" EnableSessionState="false" OutputCache VaryByParams="none" Duration="60" AutoEventWireup="true" CodeBehind="dscripts.aspx.cs" Inherits="chanb.dscripts" %>

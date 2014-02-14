@@ -1,0 +1,23 @@
+﻿<form method="post" enctype="application/x-www-form-urlencoded">
+<input type="hidden" name="id" value="{ID}" />
+
+<label for="rr">{lang:reportreason}:</label>
+
+<select id="rr" name="rr">
+    {ReportReasons}
+</select>
+
+<br />
+
+<div class="{ShowCaptchaHTMLClass}">
+    <br />
+    {notice:wrongcaptcha} <span style="color: red" class="%badc%">%LANG wrongCaptchaStr%</span>
+    <br />
+    {captcha}
+    <br />
+</div>
+
+<div>
+    <input type="submit" value="{lang:report}" />
+</div>
+</form>

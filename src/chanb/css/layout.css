@@ -1,0 +1,578 @@
+﻿html
+{
+    -webkit-text-size-adjust: 100%;
+}
+
+body
+{
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 5px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.mobile, .mobileinline, .mobileib
+{
+    display: none !important;
+}
+
+div#footer
+{
+    clear: both;
+    text-align: center;
+}
+
+hr
+{
+    background: url("../res/hr.png") repeat-x scroll 0px 0px transparent;
+    border: 0px none;
+    color: rgb(204, 204, 204);
+    height: 4px;
+    padding: 0px;
+    clear: both;
+}
+
+div.boardBanner {
+    text-align: center;
+    clear: both;
+}
+
+div.boardBanner>img {
+    margin: 5px 0px 5px 0px;
+    width: 300px;
+    height: 100px;
+    max-width: 100%;
+}
+
+div.boardBanner>div.boardTitle {
+    font-size: 28px;
+    font-weight: bold;
+    letter-spacing: -2px;
+    margin-top: 0px;
+}
+
+div.boardBanner>div.boardSubtitle {
+    font-size: x-small;
+}
+
+/*div.board > hr
+{
+    clear: both;
+}
+
+ul.rules
+{
+    margin: 0px;
+    padding: 0px;
+    margin-top: 1px;
+}
+
+ul.rules > li
+{
+    list-style: none;
+    font-size: 10px;
+}
+
+.rules > li:before
+{
+    content: "\2022 \20";
+}*/
+
+div.opContainer
+{
+    display: inline;
+}
+
+div.thread
+{
+    margin: 0px;
+    clear: both;
+}
+
+div.post
+{
+    margin: 4px 0;
+    overflow: hidden;
+}
+
+div.thread > div:nth-of-type(2) > div.reply
+{
+    margin-top: 2px !important;
+}
+
+div.op
+{
+    display: inline;
+}
+
+div.reply
+{
+    display: table;
+    min-width: 500px;
+}
+
+div.reply div.postInfo
+{
+    display: block;
+    width: 100%;
+}
+
+div.post div.postInfo span.postNum a
+{
+    text-decoration: none;
+}
+
+/*.dateTime
+{
+    color: #000 !important;
+}
+
+.posteruid
+{
+    color: rgb(00, 88, 193);
+}
+
+div.post div.postInfo span.postNum a:hover, .posteruid .hand:hover
+{
+    color: #DD0000 !important;
+}*/
+
+div.post div.postInfo span.nameBlock
+{
+    display: inline-block;
+}
+
+div.post div.postInfo span.nameBlock
+{
+    color: #117743;
+    font-weight: normal !important;
+}
+
+div.post blockquote
+{
+    display: block;
+}
+
+div.post div.file
+{
+    display: block;
+}
+
+div.post div.file div.fileInfo
+{
+    margin-right: 10px;
+}
+
+div.replyContainer div.post div.file div.fileInfo
+{
+    margin-left: 20px;
+}
+
+div.post div.file .fileThumb
+{
+    float: left;
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-top: 3px;
+    margin-bottom: 5px;
+}
+
+span.fileThumb
+{
+    margin-left: 0px !important;
+    margin-right: 5px !important;
+}
+
+div.reply span.fileThumb, div.reply span.fileThumb img
+{
+    float: none !important;
+    margin-top: 0px !important;
+    margin-bottom: 0px !important;
+}
+
+div.post div.file .fileThumb img
+{
+    border: none;
+    float: left;
+}
+
+span.summary
+{
+    margin-top: 10px;
+}
+
+div.thread:last-child
+{
+    padding-bottom: 21px;
+    margin-bottom: 6px;
+}
+
+div.pagelist
+{
+    font-size: small;
+    margin: 0;
+    padding: 3px 7px;
+    list-style: none;
+    overflow: hidden;
+}
+
+div.pagelist > div
+{
+    display: inline-block;
+}
+
+div.pagelist > div span
+{
+    padding: 4px;
+    display: inline-block;
+}
+
+div.pagelist div.pages
+{
+    padding: 4px;
+}
+
+div.pagelist strong
+{
+    color: #000000;
+}
+
+div.pagelist
+{
+    padding-left: 12px;
+    margin-left: 7px;
+}
+
+input[type=password]
+{
+    width: 50px;
+    text-align: center;
+}
+
+table
+{
+    border-spacing: 1px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+tr.rules td
+{
+    border: 0px !important;
+    background-color: transparent !important;
+    font-weight: normal !important;
+}
+
+td
+{
+    margin: 0px;
+    padding: 0px;
+    font-size: 10pt;
+}
+
+.postblock
+{
+    background-color: #98E;
+    color: #000;
+    font-weight: bold;
+    border: 1px solid #000;
+    padding: 0 5px;
+    font-size: 10pt;
+}
+
+@media screen and (-webkit-min-device-pixel-ratio:0)
+{
+    tbody textarea
+    {
+        margin-bottom: -3px !important;
+        width: 292px;
+    }
+}
+
+.center
+{
+    text-align: center;
+}
+
+.bold
+{
+    font-weight: bold;
+}
+
+.smaller
+{
+    font-size: smaller;
+}
+
+.hand
+{
+    cursor: pointer;
+}
+
+s, s a:not(:hover)
+{
+    color: #000 !important;
+    background: #000 !important;
+    text-decoration: none;
+}
+
+s:hover, s:focus, s:hover a
+{
+    color: #fff !important;
+}
+
+s:hover a
+{
+    text-decoration: underline;
+}
+
+.deadlink
+{
+    text-decoration: line-through;
+}
+
+.mFileInfo
+{
+    padding-top: 5px;
+    text-align: center;
+    color: #707070 !important;
+    font-size: 9pt !important;
+    text-decoration: none !important;
+}
+
+/*Rotator Classes*/
+
+.hide
+{
+    display: none !important;
+}
+
+div.qp
+{
+    border-radius: 2px 2px 2px 2px;
+    background: #e6e6e6 !important;
+    padding: 5px 5px 5px 5px;
+    border: dotted 3px #FF0000;
+    display: table !important;
+    position: fixed;
+    z-index: 1000;
+}
+
+.qphl
+{
+    border: dotted 3px #FF0000;
+}
+
+div.qpInserted
+{
+    background: #f6f6f6 !important;
+    padding: 5px 5px 5px 5px;
+    border: dotted 3px #000000;
+}
+
+div.post img
+{
+    max-height: 250px;
+    max-width: 250px;
+}
+
+/*-------------------- CSS MENU SECTION --------------------*/
+
+.cssmenu
+{
+    height: 25px;
+    display: inline;
+    margin: 0;
+    border-radius: 5px 5px 5px 5px;
+}
+
+.cssmenu > ul
+{
+    list-style: inside none;
+    padding: 0;
+    margin: 0;
+}
+
+.cssmenu > ul > li
+{
+    list-style: inside none;
+    padding: 0;
+    margin: 0;
+    float: left;
+    display: block;
+    position: relative;
+}
+
+.cssmenu > ul > li > a
+{
+    outline: none;
+    display: block;
+    position: relative;
+    padding: 5px 5px 5px 5px;
+    font: bold 13px/100% Arial,Helvetica,sans-serif;
+    text-align: center;
+    text-decoration: none;
+    text-shadow: 1px 1px 0 rgba(0,0,0,.4);
+}
+
+.cssmenu > ul > li:first-child > a
+{
+    border-radius: 5px 5px 5px 5px;
+}
+
+.cssmenu ul li.has-sub:hover > a:after
+{
+    top: 0;
+    bottom: 0;
+}
+
+.cssmenu > ul > li.has-sub > a:before
+{
+    position: absolute;
+    top: 18px;
+    right: 6px;
+    border: 5px solid transparent;
+    border-top: 5px solid #fff;
+}
+
+.cssmenu > ul > li.has-sub:hover > a:before
+{
+    top: 19px;
+}
+
+.cssmenu ul li.has-sub:hover > a
+{
+    top: -1px;
+    z-index: 99999;
+}
+
+.cssmenu ul li.has-sub:hover > ul, #cssmenu ul li.has-sub:hover > div
+{
+    display: block;
+}
+
+.cssmenu ul li > ul, .cssmenu ul li > div
+{
+    display: none;
+    width: auto;
+    position: absolute;
+    top: 20px;
+    padding: 10px 0;
+    border-radius: 0 0 5px 5px;
+    z-index: 999999;
+}
+
+.cssmenu ul li > ul
+{
+    width: 120px;
+}
+
+.cssmenu ul li > ul li
+{
+    display: block;
+    list-style: inside none;
+    padding: 0;
+    margin: 0;
+    position: relative;
+}
+
+.cssmenu ul li > ul li a
+{
+    outline: none;
+    display: block;
+    position: relative;
+    margin: 0;
+    padding: 8px 20px;
+    font: 10pt Arial,Helvetica,sans-serif;
+    color: #fff;
+    text-decoration: none;
+}
+
+/*-------------------- END OF CSS MENU SECTION --------------------*/
+
+.qr
+{
+    z-index: 5000;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+}
+
+.qrtitle
+{
+    border-radius: 5px 5px 0px 0px;
+    height: 30px;
+    cursor: move;
+    text-align: center;
+}
+
+#gheader
+{
+    position: fixed;
+    top: 0px;
+    right: 0px;
+    width: 100%;
+    height: 35px;
+    box-shadow: 0px 3px 4px 1px rgba(0, 0, 0, 0.35);
+    background: #000;
+    z-index: 4999;
+    overflow: hidden;
+    color: #FFFFFF;
+}
+
+#gcontent
+{
+    text-align: center;
+    float: none;
+}
+
+.gtitle
+{
+    text-transform: capitalize;
+    float: left;
+    padding: 5px 10px;
+}
+
+#gtoolbox
+{
+    text-align: center;
+    float: right;
+    padding: 5px 10px;
+}
+
+.gsep
+{
+    width: 1px;
+    max-width: 1px;
+    height: inherit;
+    background: #FFFFFF;
+}
+
+.gstatus
+{
+    color: #FFFFFF;
+    text-transform: capitalize;
+    float: right;
+    padding: 5px 10px;
+}
+
+#dimbox
+{
+    z-index: 6000;
+    background: #000000;
+    opacity: 0.6;
+    position: fixed;
+    top: 0px;
+    right: 0px;
+    width: 100%;
+    height: 100%;
+}
+
+#modal_dialog
+{
+    position: fixed;
+    z-index: 6001;
+    box-shadow: 0px 0px 10px #FFFFFF;
+    border-radius: 5px 5px 5px 5px;
+}

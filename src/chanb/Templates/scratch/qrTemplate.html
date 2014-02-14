@@ -1,0 +1,71 @@
+﻿<div id="qrbox" class="desktop qr hide">
+	<div id="qrtitle" class="qrtitle">
+		<span id="qr_title_text" class="qrmove">Quick reply</span><a style="float:right;" class="buttonBlue bbf" href="javascript:qr('hide')">X</a>
+	</div>
+	<div id="qrbody" class="qrbody">
+		<form enctype="multipart/form-data" id="qr_form" action="%ROOT%post.aspx" target="qr_upload_frame" method="post">
+		<input type="hidden" id="qr_mode" name="postmode" value="%POST FORM MODE%" />
+		<input type="hidden" name="mode" value ="qrpost" />
+        <input type="hidden" id="qr_form_tid" name="threadid" value="%POST FORM TID%" />
+        	<input id="qr_pass" type="hidden" value="0" name="password"/>
+        	<script>
+        	    $("#qr_pass").attr("value", $("#formps").attr("value"));
+        	    if ("%POST FORM MODE%" == "thread") {
+        	        $("#qr_addfile").hide();
+        	     }
+        	</script>
+        	<table style="background-color: #FF0000; color:#FFFFFF" id="qr_message" class="hide">
+        	<tr><td><span id="qr_message_content"></span><a onclick="$('#qr_message').addClass('hide')">[Hide]</a></td></tr>
+        	</table>
+			<table>
+					<tr>
+				<td>
+					<input id="qr_name" class="form-text" type="text" name="postername" /></td>
+				<td>	<input id="qr_email" class="form-text" type="text" name="email" /></td>
+				<td>	<input id="qr_subject" class="form-text" type="text" name="subject" />
+				</td>
+			</tr>
+			</table>
+			<table>
+	
+			<tr>
+				<td>
+					<textarea id="qr_comment" cols="50" rows="10" name="comment" class="form-textarea"></textarea>
+				</td>
+			</tr>
+			
+			%CAPTCHA PHOLDER QR%
+			
+			<tr>
+				<td>
+					<input type="button" id="qr_send" class="buttonBlue" onclick="qr('submit')" value="Send"/>
+					<input id="qr_reset" type="reset" class="buttonBlue" value="Reset"/>
+					<input type="checkbox" name="finp" value="yes">Dump ?</input>
+	     			<input type="checkbox" name="countf" value="yes">Count files ?</input>	
+			    </td>     
+			</tr>                    
+            
+			<tr>
+			<td>
+			<div id="qr_files" >
+            <input type="file" name="ufile"/>
+            </div>
+            </td>
+
+			<td><a id="qr_addfile" class="form-button" onclick="addUf('qr_files')">+</a>
+			</td>
+			</tr>
+			
+			<tr>
+			<td>
+			<div class="progress-block" id="progress-block" >
+                  <div class="progressbar-percents" id="download_perc"></div>
+                  <div class="progressbar"><div class="progressbarfill" style="width: 0%;" id="download_progress"></div></div>
+            </div>
+			</td>
+			</tr>
+			</table>
+		</form>
+	</div>
+	<script> qr_init();</script>
+</div>

@@ -1,0 +1,35 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+<title>%BTITLE%</title>
+
+<link rel="Stylesheet" href="%ROOT%yotsubab.css" />
+<link rel="Stylesheet" href="%ROOT%mobile.css" />
+<script src="%ROOT%scripts.js" type="text/javascript" language="javascript"></script>
+<script type="text/javascript" src="%ROOT%js/jquery.min.js"></script>
+<script type="text/javascript" src="%ROOT%js/jquery-ui.min.js"></script>
+</head>
+<body>
+<div class="boardBanner"> 
+<div class="boardTitle">%BTITLE%</div>
+<div class="boardSubtitle">%BDESC%</div>
+</div>
+<hr />
+<form action="%ROOT%modaction.aspx" method="post" enctype="application/x-www-form-urlencoded" defaultbutton="nb" > 
+<input type="hidden" name="id" value="%ID%" />
+<input type="hidden" name="action" value="banpost" />
+<input type="hidden" name="sib" value="%SIB%" />
+<span>%LANG modSelectBanReason%</span>
+<select class="form-select" name="reason">
+%REASONS%
+</select>
+<br />
+<div>
+<input id="nb" class="button" type="submit" value="%LANG banUserStr%" />
+</div>
+
+</form>
+<hr />
+<div id="absbot" class="absBotText"><span>%FOOTER TEXT%</span></div>
+</body>
+</html>

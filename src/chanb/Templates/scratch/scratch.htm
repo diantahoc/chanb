@@ -1,0 +1,305 @@
+﻿<!--<a href="javascript:;" class="menu-button">[<i></i>]
+<div style="top: 100%; left: 0px;" tabindex="0" id="menu" class="dialog">
+	<a style="order: 10;" href="post.aspx?action=report&id=%ID%" target="_blank" class="report-link entry">Report this post</a>
+	<a style="order: 10;" href="post.aspx?action=delete&id=%ID%" target="_blank" class="report-link entry">Delete this post</a>
+	%MODMENU%
+</div>
+</a>
+
+<!-- moderator menu -->
+
+<!--	<div style="order: 150;" class="entry has-submenu">
+		Moderator
+		<div style="top: 0px; bottom: auto; left: 100%; right: auto;" class="dialog submenu">
+			<a style="order: 100;" class="entry" href="%WEBROOT%modaction.aspx?action=delpost&id=%ID%" target="_blank">Delete post</a>
+	        <a style="order: 100;" class="entry" href="%WEBROOT%modaction.aspx?action=banpost&id=%ID%" target="_blank">Ban poster</a>
+			<a style="order: 100;" class="entry" href="%WEBROOT%modaction.aspx?action=tgsticky&id=%ID%" target="_blank">Toggle sticky</a>
+			<a style="order: 100;" class="entry" href="%WEBROOT%modaction.aspx?action=tglock&id=%ID%" target="_blank">Toggle locked</a>
+			<a style="order: 100;" class="entry" href="%WEBROOT%modaction.aspx?action=editpost&id=%ID%" target="_blank">Edit post</a>	
+		</div>
+	</div>-->
+	
+<!--	<div style="order: 40;" class="delete-link entry has-submenu">
+		Delete
+		<div style="top: 0px; bottom: auto; left: 100%; right: auto;" class="dialog submenu">
+			<a style="order: 100;" href="javascript:;" class="delete-post entry">Post</a>
+		</div>
+	</div>
+	
+	
+	
+		<div style="order: 50;" class="entry has-submenu">
+		Filter
+		<div style="top: 0px; bottom: auto; left: 100%; right: auto;" class="dialog submenu">
+			<a style="order: 100;" class="entry" data-type="name" href="javascript:;">Name</a><a style="order: 100;" class="entry" data-type="email" href="javascript:;">E-mail</a><a style="order: 100;" class="entry" data-type="comment" href="javascript:;">Comment</a>
+		</div>
+	</div>
+	
+	
+	
+	
+	-->
+	
+	
+<!--<!--<!--<!--<div>
+<div class="content">
+<style>
+.cssmenu
+{
+	height: 25px;
+	display: inline-block;
+	padding: 0;
+	margin: 0;
+    border-radius: 5px 5px 5px 5px;
+}
+
+.cssmenu>ul
+{
+	list-style: inside none;
+	padding: 0;
+	margin: 0
+}
+
+.cssmenu>ul>li
+{
+	list-style: inside none;
+	padding: 0;
+	margin: 0;
+	float: left;
+	display: block;
+	position: relative
+}
+
+.cssmenu>ul>li>a
+{
+	outline: none;
+	display: block;
+	position: relative;
+	padding: 5px 5px 5px 5px;
+	font: bold 13px/100% Arial,Helvetica,sans-serif;
+	text-align: center;
+	text-decoration: none;
+	text-shadow: 1px 1px 0 rgba(0,0,0,.4);
+	color: #FFFFFF !important;
+}
+
+.cssmenu>ul>li:first-child>a
+{
+	border-radius: 5px 5px 5px 5px
+}
+
+.cssmenu>ul>li>a:after
+{
+}
+
+.cssmenu ul li.has-sub:hover>a:after
+{
+	top: 0;
+	bottom: 0
+}
+
+.cssmenu>ul>li.has-sub>a:before
+{
+	
+	position: absolute;
+	top: 18px;
+	right: 6px;
+	border: 5px solid transparent;
+	border-top: 5px solid #fff
+}
+
+.cssmenu>ul>li.has-sub:hover>a:before
+{
+	top: 19px
+}
+
+.cssmenu ul li.has-sub:hover>a
+{
+	background: #3f3f3f;
+	border-color: #3f3f3f;
+	top: -1px;
+	z-index: 999
+}
+
+.cssmenu ul li.has-sub:hover>ul,#cssmenu ul li.has-sub:hover>div
+{
+	display: block
+}
+
+.cssmenu ul li.has-sub>a:hover
+{
+	background: #3f3f3f;
+	border-color: #3f3f3f
+}
+
+.cssmenu ul li>ul,.cssmenu ul li>div
+{
+	display: none;
+	width: auto;
+	position: absolute;
+	top: 20px;
+	padding: 10px 0;
+	background: #3f3f3f;
+	border-radius: 0 0 5px 5px;
+	z-index: 999
+}
+
+.cssmenu ul li>ul
+{
+	width: 120px
+}
+
+.cssmenu ul li>ul li
+{
+	display: block;
+	list-style: inside none;
+	padding: 0;
+	margin: 0;
+	position: relative
+}
+
+.cssmenu ul li>ul li a
+{
+	outline: none;
+	display: block;
+	position: relative;
+	margin: 0;
+	padding: 8px 20px;
+	font: 10pt Arial,Helvetica,sans-serif;
+	color: #fff;
+	text-decoration: none;
+	text-shadow: 1px 1px 0 rgba(0,0,0,.5)
+}
+
+.cssmenu,.cssmenu>ul>li>ul>li a:hover
+{
+	background: #4fbdf0;
+	background: -moz-linear-gradient(top,#4fbdf0 0%,#45b2d2 100%);
+	background: -webkit-gradient(linear,left top,left bottom,color-stop(0%,#4fbdf0),color-stop(100%,#45b2d2));
+	background: -webkit-linear-gradient(top,#4fbdf0 0%,#45b2d2 100%);
+	background: -o-linear-gradient(top,#4fbdf0 0%,#45b2d2 100%);
+	background: -ms-linear-gradient(top,#4fbdf0 0%,#45b2d2 100%);
+	background: linear-gradient(top,#4fbdf0 0%,#45b2d2 100%);
+}
+
+
+
+.cssmenu>ul>li>a:after
+{
+	border-color: #6ed1ff
+}
+
+.cssmenu>ul>li>a:hover
+{
+	background: #36acd2
+}
+</style>
+
+<div class="cssmenu">
+<ul>
+   <li class="active has-sub"><a href="#"><span>[▼]</span></a>
+      <ul>
+      
+         <li><a href="#"><span>Ban post</span></a></li>
+         <li><a href="#"><span>Delete post</span></a></li>
+         <li><a href="#"><span>Fuck</span></a></li>
+         
+         <li class="last"><a href="#"><span>Product 2</span></a></li>
+
+      </ul>
+   </li>  
+</ul>
+</div>
+
+</div>        
+</div>
+
+
+<input name="proc%ID%" value="delete" type="checkbox">
+
+
+<style>
+
+</style>
+
+<!--qr-->
+<!--<div style="" id="qr" class="qr">
+	<div>
+		<span class="move"></span><a href="javascript:qr('close')">×</a>
+	</div>
+	<div id="qrdata">
+        <input id="qrname" type="text" /><input id="qremail" type="text" /><input id="qrsubject" type="text" />
+        
+        <br />
+        
+        <textarea id="qrtext" cols="3" rows="3"></textarea>
+        
+        <br />
+        
+        
+        <input type="button" onclick="qr('sumbit');" value="send" />
+	</div>
+</div>-->
+
+<!--<script>
+$("#qr").dragable();
+</script>-->
+
+
+<!--<figure class="fileThumb effeckt-caption effeckt-caption-1">
+<img id="thumb%ID%%IMAGE MD5%" class="cimage" src="%THUMB_LINK%" alt="%FILE NAME%" data-md5="%IMAGE MD5%" />
+<div class="mFileInfo mobile">%IMAGE SIZE% %FILE SIZE% <br/>%IMAGE EXT%</div>
+<figcaption>
+<div class="effeckt-figcaption-wrap" style="background-color: #000000 !important; color: #FFFFFF !important; padding: 3px 3px 3px 3px;">
+<span><a href="%IMAGE DL%" target="_blank">%FILE NAME%</a>,  %FILE SIZE% %IMAGE EXT%</span>
+</div>
+</figcaption>-->
+<!--<style>
+.qr {   
+    z-index: 1000;
+    width:500px!important;
+    max-width:500px!important;   
+    min-width:500px!important;   
+    position:fixed;
+    top: 50%;
+    left: 25%;
+    right: 25%;
+}
+
+.qrtitle{
+    border-radius: 5px 5px 0px 0px;
+    background: #000000 url(res/bgdark.png);
+    color: #FFFFFF;
+    height: 30px;
+    cursor: move;
+    text-align:center;
+}
+
+.qrbody{
+    background: #e6e6e6;
+    border-radius: 0px 0px 5px 5px;
+    box-shadow: 0px 0px 5px rgba(169, 169, 169, 0.5);
+    text-align: left; 
+}
+
+</style>
+<link rel="Stylesheet" href="yotsubab.css" />
+<script src="js/jquery.min.js"></script>
+<script src="js/jquery-ui.min.js"></script>
+-->
+
+
+<div class="mobile">
+
+<div><!--item-->
+
+<a href="%LINK%">
+<img src="%THUMBSRC%" /><br /> <!-- or  --> <span>NO IMAGE</span>
+%TEXT%
+</a>
+
+</div>
+
+</div>
+
+http://www.google.com/recaptcha/api/verify

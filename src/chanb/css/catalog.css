@@ -1,0 +1,232 @@
+ul {
+	list-style: none;
+}
+
+a {
+	margin: 0;
+	padding: 0;
+	font-size: 100%;
+	vertical-align: baseline;
+	
+}
+
+a:link {
+	-webkit-tap-highlight-color: #F0D200;
+}
+
+html {
+	overflow-y: scroll;
+}
+
+strong {
+	font-weight: bold;
+}
+
+h1, h2 {
+	font-weight: normal;
+}
+
+.wrap:before, .wrap:after {
+	content: "\0020";
+	display: block;
+	height: 0;
+	visibility: hidden;
+}
+
+.wrap:after {
+	clear: both;
+}
+
+.wrap {
+	zoom: 1;
+	width: 960px;
+	margin: 0 auto;
+}
+
+a:link, a:visited {
+	color: #1E8585;
+	text-decoration: none;
+}
+
+a:hover, a:active {
+	color: #000;
+}
+
+
+
+/* Main */
+
+#main {
+	padding: 20px 0 50px;
+}
+
+#browserlist:before, #browserlist:after {
+	content: "\0020";
+	display: block;
+	height: 0;
+	visibility: hidden;
+}
+
+#browserlist:after {
+	clear: both;
+}
+
+#browserlist {
+	zoom: 1;
+}
+
+#browserlist li {
+	width: 192px;
+	min-height: 270px;
+	float: left;
+	margin: 0;
+}
+
+#browserlist li .icon {
+	width: 125px;
+	text-align: center;
+	margin: 0 auto 20px;
+  
+}
+
+img.t {max-width:125px;max-height:125px}
+
+#browserlist h2 {
+	font: 140%/1 Impact, Helvetica, sans-serif;
+	text-align: center;
+	text-transform: uppercase;
+	color: #DC3228;
+	background-color: rgba(255,255,255,.3);
+	margin: 0 0 10px;
+	line-height: 1;
+	padding: 8px 0;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+}
+
+.wf-leaguegothic1leaguegothic2-n4-active #browserlist h2 {
+	font-size: 200%;
+	font-family: "league-gothic-1","league-gothic-2";
+}
+
+.no-rgba #browserlist h2 {
+	background: url(imgs/alphabg.png) repeat;
+}
+
+#browserlist p {
+	padding: 0 5px;
+}
+
+#browserlist p.info {
+	max-height: 35px;
+}
+
+#browserlist p.version {
+	margin-bottom: 10px;
+	text-align: center;
+}
+
+#browserlist p.website {
+	background-color: rgb(255,255,255);
+	line-height: 1;
+	margin: 0;
+	padding: 8px 5px;
+	text-align: center;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+}
+
+.no-rgba #browserlist p.website {
+	background: url(imgs/alphabg.png) repeat;
+}
+
+#browserlist li a:link, #browserlist li a:visited {
+	color: #324B4B;
+	padding: 30px 10px 10px;
+	display: block;
+	overflow: hidden;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+}
+
+#browserlist li a:hover {
+	background: rgba(255,255,255,.3);
+	-webkit-transform: scale(1.05,1.05);
+	-moz-transform: scale(1.05,1.05);
+	-o-transform: scale(1.05,1.05);
+	transform: scale(1.05,1.05);
+}
+
+.no-rgba #browserlist li a:hover {
+	background: url(imgs/alphabg.png) repeat;
+}
+
+#browserlist li a:hover .website {
+	background: #4daaa7;
+	color: #fff;
+	text-shadow: 0 1px 0 #266E67;
+}
+
+#browserlist li a:hover .icon {
+	-webkit-transform: scale(1.1,1.1);
+	-moz-transform: scale(1.1,1.1);
+	-o-transform: scale(1.1,1.1);
+	transform: scale(1.1,1.1);
+}
+
+#browserlist li a, #browserlist li a .icon {
+	-webkit-transition: all .1s;
+	-moz-transition: all .1s;
+	-o-transition: all .1s;
+	transition: all .1s;
+}
+
+#browserlist li a .website {
+	-webkit-transition: all .5s ease-in;
+	-moz-transition: all .5s ease-in;
+	-o-transition: all .5s ease-in;
+	transition: all .5s ease-in;
+}
+
+#browserlist li a:hover, #browserlist li a:hover .icon {
+	-webkit-transition: all .8s;
+	-moz-transition: all .8s;
+	-o-transition: all .8s;
+	transition: all .8s;
+}
+
+#browserlist li a:link, #browserlist li a:link .icon {
+	-webkit-transition: all .2s;
+	-moz-transition: all .2s;
+	-o-transition: all .2s;
+	transition: all .2s;
+}
+
+#browserlist li a:hover .website {
+	-webkit-transition: all .3s ease-out;
+	-moz-transition: all .3s ease-out;
+	-o-transition: all .3s ease-out;
+	transition: all .3s ease-out;
+}
+
+#browserlist li a:link .website {
+	-webkit-transition: all .1s ease-out;
+	-moz-transition: all .1s ease-out;
+	-o-transition: all .1s ease-out;
+	transition: all .1s ease-out;
+}
+
+#browserlist p.likebutton {
+	text-align: center;
+	margin: 15px 5px 0
+}
+
+
+.cmi{max-width:100px;max-height:100px;}
+
+.cati{text-align:center;}
+
+.catii{border: dotted 0.5px #000000;}

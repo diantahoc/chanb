@@ -1,0 +1,20 @@
+﻿<div class="file rotator">
+    <span>{rotator:filecount} {lang:images}</span>
+    <div class="hide">
+        <a href="javascript:gofirst('{post:id}');">
+            <img title="{lang:first}" alt="{lang:first}" src="{WebRoot}res/up.png" /></a>
+        <a href="javascript:goleft('{post:id}');">
+            <img title="{lang:previous}" alt="{lang:previous}" src="{WebRoot}res/prev.png" /></a>
+        <a href="javascript:goright('{post:id}');">
+            <img title="{lang:next}" alt="{lang:next}" src="{WebRoot}res/next.png" /></a>
+        <a href="javascript:golast('{post:id}');">
+            <img title="{lang:last}" alt="{lang:last}" src="{WebRoot}res/down.png" /></a>
+        <div id="rot{post:id}">
+            {rotator:items}
+        </div>
+    </div>
+    <noscript>
+        <br />
+        {rotator:noscriptitems}
+    </noscript>
+</div>

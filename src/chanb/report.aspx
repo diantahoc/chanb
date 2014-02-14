@@ -1,0 +1,1 @@
+﻿<%@ Page Language="C#" EnableSessionState="false" AutoEventWireup="true" CodeBehind="report.aspx.cs" Inherits="chanb.report" %>

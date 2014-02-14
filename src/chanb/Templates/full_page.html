@@ -1,0 +1,271 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>{BoardTitle}</title>
+
+    <link rel="stylesheet" href="{WebRoot}css/layout.css" />
+
+    <link rel="stylesheet" title="grey" href="{WebRoot}css/grey.css" />
+   <!-- <link rel="alternate stylesheet" title="gold" href="{WebRoot}css/gold.css" />-->
+
+    <link rel="stylesheet" href="{WebRoot}css/mobile.css" />
+   <!-- <link rel="stylesheet" href="{WebRoot}js/pr/prettify.css" />-->
+    <link rel="stylesheet" href="{WebRoot}css/pojoaque.css" />
+    <link rel="stylesheet" href="{WebRoot}css/jui/jui.css" />
+
+    <script src="{WebRoot}js/scripts.js"></script>
+    <script src="{WebRoot}js/extension.js"></script>
+    <script src="{WebRoot}js/libs/jquery.min.js"></script>
+    <script src="{WebRoot}js/libs/jquery-ui.min.js"></script>
+<!--    <script src="{WebRoot}js/pr/prettify.js"></script>
+    <script src="{WebRoot}js/pr/lang-all.js"></script>-->
+     <script src="{WebRoot}js/highlight.js"></script>
+    <script src="{WebRoot}dscripts.aspx"></script>
+    <script>$(document).ready(function () { hljs.initHighlightingOnLoad(); loadStyle(); extension_init(); if (checkforNSFWImages != null) { checkforNSFWImages(); } });</script>
+</head>
+
+<body>
+    <div id="top"></div>
+
+    <div id="gheader">
+        <div id="gcontent">
+            <div class="gtitle" title="{BoardDecs}">
+                <a title="Select a style" class="button" onclick="$('#css_box').toggleClass('hide')">#</a>
+                <select class="hide" id="css_box" onchange="switch_css($('#css_box')[0].value)">
+                    <option value="grey">Grey</option>
+                    <option value="gold">Gold</option>
+                </select>&nbsp;{BoardTitle}
+            </div>
+            <div id="gtoolbox" class="desktop" display="none">
+                <span id="extension_log"></span><span>|</span>
+                <a class="button" onclick="forceUpdate()">{lang:update}</a>
+                <a class="button" onclick="qr('show')">{lang:quickreply}</a>
+            </div>
+            <script>document.getElementById("gtoolbox").style.display = ""</script>
+        </div>
+    </div>
+    <br />
+    <br />
+    <div id="postdiv" align="center" class="{HidePostForm}">
+        <form enctype="multipart/form-data" action="{WebRoot}post.aspx" method="post" defaultbutton="zeta">
+        <input type="hidden" name="mode" value="{PostFormMode}" />
+        <input type="hidden" name="threadid" value="{PostFormTID}" />
+        <table>
+            <tbody>
+                <tr>
+                    <th>
+                        {lang:name}
+                    </th>
+                    <td>
+                        <input type="text" size="30" name="postername" id="pname" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        {lang:email}
+                    </th>
+                    <td>
+                        <input name="email" size="30" type="text" id="pemail" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        {lang:subject}
+                    </th>
+                    <td>
+                        <input style="float: left;" name="subject" size="30" type="text" />
+                        <input type="submit" style="margin-left: 2px;" name="post" value="{lang:postaction}"  id="zeta" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        {lang:comment}
+                    </th>
+                    <td>
+                        <textarea name="comment" id="commentfield" rows="5" cols="30"></textarea>
+                    </td>
+                </tr>
+                <tr class="%captcha show%">
+                    <th>
+                        {lang:verification}
+                    </th>
+                    <td>
+                        {CaptchaHTML}
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        {lang:files}
+                    </th>
+                    <td>
+                        <div id="files">
+                            <input type="file" name="ufile" />
+                        </div>
+                        {AddNewFilesButtonHTML}
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        {lang:password}
+                    </th>
+                    <td>
+                        <input type="password" name="password" required="required" id="formps" size="12"
+                            autocomplete="off"  value="{SessionPassword}" />
+                        <span>({lang:forpostremoval})</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        </form>
+    </div>
+
+    <div id="rulesdiv" align="center">
+        <ul class="rules">
+            {BoardRules}
+            <!--<li><span>Maximum file size is %MAXIMUM FILE SIZE%.</span></li>
+            <li><span>Supported file types are : JPG, JPEG, BMP, PNG, PDF, WEBM, MP3, OGG and SVG.</span></li>
+            %THREAD COUNT% %POSTING RULES%
+            <li><span>This website is for demonstrating a live preview of ChanB imageboard. Expect
+                your post to be gone at any time.</span></li>-->
+        </ul>
+    </div>
+
+    <div class="desktop">
+        {DesktopReturnHTML}
+        <a class="button" href="{WebRoot}catalog.aspx">{lang:catalog}</a>
+        <a class="button" href="#bottom">{lang:bottom}</a>
+        <a class="button" href="{WebRoot}archive.aspx">{lang:archive}</a>
+    </div>
+
+    <div class="mobile" style="margin-top: 10px;">
+        {MobileReturnHTML}
+        <span class="mobileib buttonm"><a href="#bottom">{lang:bottom}</a></span>
+        <span class="mobileib buttonm"><a href="{WebRoot}catalog.aspx">{lang:catalog}</a></span>
+        <span class="mobileib buttonm"><a href="javascript:document.location.reload();" id="refresh_top">{lang:refresh}</a></span>
+        <span class="mobileib buttonm"><a href="{WebRoot}archive.aspx">{lang:archive}</a></span>
+    </div>
+
+    <hr />
+
+    <div class="board">
+        {DocumentBody}
+    </div>
+
+    <div class="mobile" style="margin-top: 10px;">
+        {MobileReturnHTML}
+        <span class="mobileib buttonm"><a href="#top">{lang:top}</a></span>
+        <span class="mobileib buttonm"><a href="{WebRoot}catalog.aspx">{lang:catalog}</a></span>
+        <span class="mobileib buttonm"><a href="javascript:document.location.reload();" id="refresh_bottom">{lang:refresh}</a></span>
+        <span class="mobileib buttonm"><a href="{WebRoot}archive.aspx">{lang:archive}</a></span>
+    </div>
+
+    <div class="desktop">
+        {DesktopReturnHTML}
+        <a class="button" href="{WebRoot}catalog.aspx">{lang:catalog}</a>
+        <a class="button" href="#top">{lang:top}</a>
+        <a class="button" href="{WebRoot}archive.aspx">{lang:archive}</a>
+    </div>
+
+    <br />
+
+    {PagesList}
+
+    <div id="bottom"></div>
+    
+    <div id="footer">
+        <span>{FooterText}</span>
+    </div>
+    
+    <div id="qrbox" class="desktop qr hide">
+        <div id="qrtitle" class="qrtitle">
+            <span id="qr_title_text" class="qrmove">{lang:quickreply}</span><a style="float: right;"
+                class="button" href="javascript:qr('hide')">X</a>
+        </div>
+        <div id="qrbody" class="qrbody">
+            <form enctype="multipart/form-data" id="qr_form" action="{WebRoot}post.aspx" target="qr_upload_frame" method="post">
+
+            <input type="hidden" id="qr_mode" name="postmode" value="{PostFormMode}" />
+            <input type="hidden" name="mode" value="qrpost" />
+            <input type="hidden" id="qr_form_tid" name="threadid" value="{PostFormTID}" />
+
+            <script>
+                $("#qr_pass").attr("value", $("#formps").attr("value"));
+                if ("{PostFormMode}" == "thread") {
+                    $("#qr_addfile").hide();
+                }
+            </script>
+
+            <table style="background-color: #FF0000; color: #FFFFFF" id="qr_message" class="hide">
+                <tr>
+                    <td>
+                        <span id="qr_message_content"></span><a onclick="$('#qr_message').addClass('hide')">
+                            [Hide]</a>
+                    </td>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <td>
+                        <input id="qr_name" type="text" name="postername" placeholder="{lang:name}" />
+                    </td>
+                    <td>
+                        <input id="qr_email" type="text" name="email" placeholder="{lang:email}" />
+                    </td>
+                    <td>
+                        <input id="qr_subject" type="text" name="subject" placeholder="{lang:comment}" />
+                    </td>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <td>
+                        <textarea id="qr_comment" cols="65" rows="15" name="comment" placeholder="{lang:comment}"></textarea>
+                    </td>
+                </tr>
+                <tr class="{HideCaptchaRow}">
+                    <td>
+                        {CaptchaQrHTML}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="button" id="qr_send" onclick="qr('submit')" value="{lang:send}" />
+                        <input id="qr_reset" type="button" value="Clear" onclick="qr('clear');qr('clear')" />
+                        <input type="checkbox" id="qr_finp" name="finp" value="yes" />
+                        <label for="qr_finp">{lang:dump}</label>
+                        <input type="checkbox" id="qr_cfiles" name="countf" value="yes" />
+                        <label for="qr_finp">{lang:countfiles}</label>
+                        <br />
+                        <label for="qr_pass">{lang:password}</label>
+                        <input type="password" id="qr_pass" name="password" value="{SessionPassword}" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div id="qr_files">
+                            <input type="file" name="ufile" />
+                        </div>
+                    </td>
+                    <td>
+                        <a id="qr_addfile" onclick="addUf('qr_files')">+</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="progress-block" id="progress-block">
+                            <div class="progressbar-percents" id="download_perc">
+                            </div>
+                            <div class="progressbar">
+                                <div class="progressbarfill" style="width: 0%;" id="download_progress">
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            </form>
+        </div>
+        <script>qr_init();</script>
+    </div>
+</body>
+</html>

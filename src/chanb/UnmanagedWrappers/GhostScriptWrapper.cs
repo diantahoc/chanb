@@ -19,7 +19,16 @@ namespace chanb.UnmanagedWrappers
 
         static GhostScriptWrapper()
         {
-            gs_path = Path.Combine(Settings.Paths.DllFolder, "gswin32c.exe");
+            switch (Environment.OSVersion.Platform)
+            {
+                case PlatformID.Unix:
+                    gs_path = "/usr/bin/gs";
+                    break;
+                default:
+                    gs_path = Path.Combine(Settings.Paths.DllFolder, "gswin32c.exe");
+                    break;
+            }
+
             binary_exist = File.Exists(gs_path);
         }
 
@@ -42,7 +51,7 @@ namespace chanb.UnmanagedWrappers
                     param.Append(" -dFirstPage=1  "); //only the first page
                     param.Append(" -dLastPage=1  ");
                     param.Append(" -dJPEGQ=75 "); // set JPEG quality to 75%
-                    param.AppendFormat(" -dNumRenderingThreads={0} ", Environment.ProcessorCount); // use multiple threads 
+                    param.AppendFormat(" -dNumRenderingThreads={0} ", Environment.ProcessorCount * 2); // use multiple threads 
                     param.Append(" -dBATCH -dNOPAUSE ");
                     param.Append(" -dGrayDetection=false "); //speed up
                     param.Append(" -dPDFFitPage "); //for aspect ratio
@@ -61,6 +70,7 @@ namespace chanb.UnmanagedWrappers
                     Process proc = Process.Start(psr);
 
                     proc.WaitForExit(15000); // wait 15 seconds 
+
 
                     if (!proc.HasExited) { proc.Kill(); }
 

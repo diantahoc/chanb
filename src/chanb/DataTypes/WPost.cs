@@ -146,11 +146,21 @@ namespace chanb.DataTypes
 
             if (this.FileCount > 0)
             {
+                if (this.FileCount > 1 || (this.FileCount == 1 & !string.IsNullOrEmpty(this.Comment)) || (this.FileCount == 1 & this.Type == Enums.PostType.Thread))
+                {
+                    template.Replace("{menu:deletefile}", TemplateProvider.post_menu_delete_files.Replace("{wpost:id}", this.PostID.ToString()));
+                }
+                else 
+                {
+                    template.Replace("{menu:deletefile}", "");
+                }
+
                 template.Replace("{wpost:files}", Board.Formatters.FileFormatter.FormatPostFiles(this));
             }
             else
             {
-                template.Replace("{wpost:files}", "");
+                template.Replace("{wpost:files}", "")
+                        .Replace("{menu:deletefile}", ""); ;
             }
 
             if (string.IsNullOrEmpty(this.Comment))

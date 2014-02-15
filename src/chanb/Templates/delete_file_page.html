@@ -1,57 +1,25 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>%BTITLE%</title>
-    <link rel="Stylesheet" href="%ROOT%css/grey.css" />
-    <style>
-        li
-        {
-            width: 192px;
-            min-height: 192px;
-            max-height: 192px;
-            float: left;
-        }
-        ul
-        {
-            list-style: none outside none;
-        }
-    </style>
-</head>
-<body>
-    <div class="boardBanner">
-        <div class="boardTitle">
-            %BTITLE%</div>
-        <div class="boardSubtitle">
-            %BDESC%</div>
-    </div>
-    <hr />
-    <form action="%ROOT%deletefile.aspx" method="post" enctype="application/x-www-form-urlencoded"
-    defaultbutton="a">
-    <input type="hidden" name="mode" value="deletefile" />
-    <input type="hidden" name="id" value="%ID%" />
-    <div style="min-height: 300px; overflow-x: scroll;">
-        <ul>
-            %ITEMS%
-        </ul>
-    </div>
+﻿<form method="post" enctype="application/x-www-form-urlencoded" defaultbutton="a">
+<input type="hidden" name="mode" value="deletefile" />
+<input type="hidden" name="id" value="{ID}" />
+<div style="min-height: 300px; overflow-x: scroll;">
+    <ul>
+        {Files}
+    </ul>
+</div>
+    
     <br />
-    <span style="color: red" class="%badp%">%LANG wrongPasswordStr%</span>
+    
+    {notice:badpassword}
+    
     <br />
-    <span>%LANG enterPassword%</span>
-    <input class="form-text" type="password" name="deletepass" />
-    <div class="%captcha show%">
-        <br />
-        <span style="color: red" class="%badc%">%LANG wrongCaptchaStr%</span>
-        <br />
-        %CAPTCHA PHOLDER%
-    </div>
+    
+    <label for="password">{lang:password}</label>
+    
+    <input id="password" type="password" name="pwd" />
+    
+    {captcha}
+    
     <br />
-    <div>
-        <input id="a" type="submit" class="button" value="%LANG deleteStr%" />
-    </div>
-    </form>
-    <hr />
-    <div id="absbot" class="absBotText">
-        <span>%FOOTER TEXT%</span></div>
-</body>
-</html>
+    
+    <input id="a" type="submit" class="button" value="{lang:deletefile}" />
+</form>

@@ -1,0 +1,1 @@
+﻿<%@ Page Language="C#" EnableViewState="false" EnableSessionState="false" AutoEventWireup="true" CodeBehind="deletefile.aspx.cs" Inherits="chanb.deletefile" %>

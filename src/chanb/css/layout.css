@@ -56,6 +56,11 @@ div.boardBanner>div.boardSubtitle {
     font-size: x-small;
 }
 
+img.icon 
+{
+    max-height: 46px;
+    max-width: 46px;
+}
 /*div.board > hr
 {
     clear: both;

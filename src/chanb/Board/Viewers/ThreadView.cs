@@ -28,6 +28,15 @@ namespace chanb.Board
             pageHTML.Replace("{PostFormTID}", id.ToString());
 
             pageHTML.Replace("{AddNewFilesButtonHTML}", TemplateProvider.html_add_new_files);
+            
+            if (Settings.ApplicationSettings.EnableCaptcha)
+            {
+                pageHTML.Replace("{captcha}", BoardCommon.GetCaptchaFullPageBody());
+            }
+            else
+            {
+                pageHTML.Replace("{captcha}", "");
+            }
 
             pageHTML.Replace("{PagesList}", "");
 

@@ -129,6 +129,9 @@
   <data name="archive" xml:space="preserve">
     <value>Archive</value>
   </data>
+  <data name="badpassword" xml:space="preserve">
+    <value>Bad password</value>
+  </data>
   <data name="bottom" xml:space="preserve">
     <value>Bottom</value>
   </data>
@@ -143,6 +146,9 @@
   </data>
   <data name="delete" xml:space="preserve">
     <value>Delete</value>
+  </data>
+  <data name="deletefiles" xml:space="preserve">
+    <value>Delete files</value>
   </data>
   <data name="dump" xml:space="preserve">
     <value>Dump</value>
@@ -182,6 +188,9 @@
   </data>
   <data name="noaudiosupport" xml:space="preserve">
     <value>Your browser does not support HTML5 audio</value>
+  </data>
+  <data name="nofileselected" xml:space="preserve">
+    <value>No file was selected</value>
   </data>
   <data name="novideosupport" xml:space="preserve">
     <value>Your browser does not support HTML5 video</value>
@@ -242,5 +251,8 @@
   </data>
   <data name="verification" xml:space="preserve">
     <value>Verification</value>
+  </data>
+  <data name="wrongcaptcha" xml:space="preserve">
+    <value>Wrong captcha</value>
   </data>
 </root>

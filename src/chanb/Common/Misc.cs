@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Text;
+using System.IO;
 
 namespace chanb.Common
 {
@@ -39,6 +40,11 @@ namespace chanb.Common
         {
             TimeSpan ts = DateTime.UtcNow - unix_epoch;
             return Convert.ToInt32(ts.TotalSeconds);
+        }
+
+        public static bool IsRunningOnMono()
+        {
+            return Type.GetType("Mono.Runtime") != null;
         }
 
     }

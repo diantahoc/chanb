@@ -83,6 +83,7 @@
     <Content Include="css\pojoaque.css" />
     <Content Include="css\sysadmin.css" />
     <Content Include="default.aspx" />
+    <Content Include="deletefile.aspx" />
     <Content Include="dscripts.aspx" />
     <Content Include="Global.asax" />
     <Content Include="js\highlight.js" />
@@ -236,12 +237,22 @@
   <ItemGroup>
     <Compile Include="Board\BanHandler.cs" />
     <Compile Include="Board\BoardCommon.cs" />
+    <Compile Include="Board\CaptchaProvider.cs" />
+    <Compile Include="Board\DeleteHelper.cs" />
     <Compile Include="Board\DialogCommon.cs" />
+    <Compile Include="Board\ImageManipulator.cs" />
     <Compile Include="Board\ReportHelper.cs" />
     <Compile Include="Board\Validator.cs" />
     <Compile Include="Common\Misc.cs" />
     <Compile Include="DataTypes\ReportReason.cs" />
     <Compile Include="DataTypes\ThreadInfo.cs" />
+    <Compile Include="deletefile.aspx.cs">
+      <DependentUpon>deletefile.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="deletefile.aspx.designer.cs">
+      <DependentUpon>deletefile.aspx</DependentUpon>
+    </Compile>
     <Compile Include="dscripts.aspx.cs">
       <DependentUpon>dscripts.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -272,7 +283,6 @@
     <Compile Include="Board\TemplateProvider.cs" />
     <Compile Include="Board\Viewers\ThreadView.cs" />
     <Compile Include="Common\Limits.cs" />
-    <Compile Include="Database\ChanbQuery.cs" />
     <Compile Include="Database\DatabaseEngine.cs" />
     <Compile Include="DataTypes\BanData.cs" />
     <Compile Include="DataTypes\LoginInfo.cs" />

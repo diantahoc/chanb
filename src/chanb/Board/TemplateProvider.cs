@@ -43,20 +43,29 @@ namespace chanb.Board
 
         public static string NoScriptFile { get { return get_template("file_noscript"); } }
 
-        public static string html_desktop_return { get {  return string.Format("<a class=\"button\" href=\"{0}default.aspx\">{1}</a>", Paths.WebRoot, Lang.return_); ; } }
+        public static string html_desktop_return { get { return string.Format("<a class=\"button\" href=\"{0}default.aspx\">{1}</a>", Paths.WebRoot, Lang.return_); ; } }
 
         public static string html_mobile_return { get { return string.Format("<span class=\"mobileib buttonm\"><a href=\"{0}default.aspx\">{1}</a></span>", Paths.WebRoot, Lang.return_); ; } }
 
-        public static string html_add_new_files 
+        public static string html_add_new_files
         {
             get
             {
-                return "<input id=\"fr_finp\" type=\"checkbox\" name=\"finp\" value=\"yes\" /><label for=\"fr_finp\">" + Lang.addeachfiletoseperatepost +"</label><br/><input type=\"checkbox\" name=\"countf\" id=\"fr_cfiles\" value=\"yes\" /><label for=\"fr_cfiles\">" + Lang.countfiles + "</label><br/><input type='button' onclick=\"addUf('files')\" class='button' value='" + Lang.addanotherfile + "'/>";
+                return "<input id=\"fr_finp\" type=\"checkbox\" name=\"finp\" value=\"yes\" /><label for=\"fr_finp\">" + Lang.addeachfiletoseperatepost + "</label><br/><input type=\"checkbox\" name=\"countf\" id=\"fr_cfiles\" value=\"yes\" /><label for=\"fr_cfiles\">" + Lang.countfiles + "</label><br/><input type='button' onclick=\"addUf('files')\" class='button' value='" + Lang.addanotherfile + "'/>";
             }
- 
+
+        }
+
+        public static string post_menu_delete_files
+        {
+            get
+            {
+                return "<li><a class=\"wdlink\" href=\"" + Paths.WebRoot + "deletefile.aspx?id={wpost:id}\" target=\"_blank\">" + Lang.deletefiles + "</a></li>";
+            }
         }
 
         //public static string CatalogItem { get { return get_template("catalog_item"); } }
+
 
         private static string get_template(string templateName)
         {

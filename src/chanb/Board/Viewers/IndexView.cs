@@ -24,6 +24,15 @@ namespace chanb.Board
             pageHTML.Replace("{MobileReturnHTML}", "");
             pageHTML.Replace("{lang:postaction}", Lang.newthread);
 
+            if (Settings.ApplicationSettings.EnableCaptcha)
+            {
+                pageHTML.Replace("{captcha}", BoardCommon.GetCaptchaFullPageBody());
+            }
+            else
+            {
+                pageHTML.Replace("{captcha}", "");
+            }
+
             int page = 1;
 
             if (!string.IsNullOrEmpty(context.Request["pn"])) { page = Convert.ToInt32(context.Request["pn"]); }
@@ -72,7 +81,7 @@ namespace chanb.Board
                     return data;
                 }
             }
-            else 
+            else
             {
                 return generate_index_thread_html(id, con);
             }
@@ -175,7 +184,7 @@ namespace chanb.Board
 
             sb.Append("<div align=\"center\" class=\"pagelist\">");
 
-            int page_count = Convert.ToInt32(Convert.ToDouble(threadCount) / Convert.ToDouble(Settings.ApplicationSettings.ThreadPerPage));
+            int page_count = Convert.ToInt32(Math.Round(Convert.ToDouble(threadCount) / Convert.ToDouble(Settings.ApplicationSettings.ThreadPerPage), MidpointRounding.AwayFromZero));
 
             if (page > 1)
             {

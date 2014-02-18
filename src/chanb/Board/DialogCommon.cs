@@ -19,5 +19,15 @@ namespace chanb.Board
 
             return sb;
         }
+
+        public static string GetCaptcha_ForDialogs()
+        {
+            return "";
+        }
+
+        //public static string FormatStatusDialog(string status_title, string message, string url)
+        //{
+
+        //}
     }
 }

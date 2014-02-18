@@ -12,34 +12,7 @@ namespace chanb.Database
 {
     public static class DatabaseEngine
     {
-        public static int ExecuteNonQuery(string queryText)
-        {
-            switch (DatabaseSettings.DbType)
-            {
-                case Enums.DatabaseType.MsSQL:
-                    using (SqlConnection sq = new SqlConnection(DatabaseSettings.ConnectionString))
-                    {
-                        sq.Open();
-                        using (SqlCommand sc = new SqlCommand(queryText, sq))
-                        {
-                            return sc.ExecuteNonQuery();
-                        }
-                    }
-                case Enums.DatabaseType.MySQL:
-                    using (MySqlConnection sq = new MySqlConnection(DatabaseSettings.ConnectionString))
-                    {
-                        sq.Open();
-                        using (MySqlCommand sc = new MySqlCommand(queryText, sq))
-                        {
-                            return sc.ExecuteNonQuery();
-                        }
-                    }
-                default:
-                    return 0;
-            }
-        }
-
-        //public static int ExecuteNonQuery(DbCommand query)
+        //public static int ExecuteNonQuery(string queryText)
         //{
         //    switch (DatabaseSettings.DbType)
         //    {
@@ -47,43 +20,22 @@ namespace chanb.Database
         //            using (SqlConnection sq = new SqlConnection(DatabaseSettings.ConnectionString))
         //            {
         //                sq.Open();
-        //                using (query)
+        //                using (SqlCommand sc = new SqlCommand(queryText, sq))
         //                {
-        //                    query.Connection = sq;
-        //                    return query.ExecuteNonQuery();
+        //                    return sc.ExecuteNonQuery();
         //                }
         //            }
         //        case Enums.DatabaseType.MySQL:
         //            using (MySqlConnection sq = new MySqlConnection(DatabaseSettings.ConnectionString))
         //            {
         //                sq.Open();
-        //                using (query)
+        //                using (MySqlCommand sc = new MySqlCommand(queryText, sq))
         //                {
-        //                    query.Connection = sq;
-        //                    return query.ExecuteNonQuery();
+        //                    return sc.ExecuteNonQuery();
         //                }
         //            }
         //        default:
-        //            return -1;
-        //    }
-        //}
-
-        //public static int ExecuteNonQuery(string queryText, DbConnection dc)
-        //{
-        //    switch (DatabaseSettings.DbType)
-        //    {
-        //        case Enums.DatabaseType.MsSQL:
-        //            using (SqlCommand sc = new SqlCommand(queryText, (SqlConnection)dc))
-        //            {
-        //                return sc.ExecuteNonQuery();
-        //            }
-        //        case Enums.DatabaseType.MySQL:
-        //            using (MySqlCommand sc = new MySqlCommand(queryText, (MySqlConnection)dc))
-        //            {
-        //                return sc.ExecuteNonQuery();
-        //            }
-        //        default:
-        //            return -1;
+        //            return 0;
         //    }
         //}
 
@@ -102,82 +54,7 @@ namespace chanb.Database
                     return -1;
             }
         }
-
-        //public static ChanbQuery ExecuteQueryReader(string queryText)
-        //{
-        //    switch (DatabaseSettings.DbType)
-        //    {
-        //        case Enums.DatabaseType.MsSQL:
-        //            SqlConnection sq = new SqlConnection(DatabaseSettings.ConnectionString);
-        //            sq.Open();
-        //            SqlCommand sc = new SqlCommand(queryText, sq);
-        //            return new ChanbQuery() { Connection = sq, Reader = sc.ExecuteReader() };
-
-        //        case Enums.DatabaseType.MySQL:
-        //            MySqlConnection my_sq = new MySqlConnection(DatabaseSettings.ConnectionString);
-        //            my_sq.Open();
-        //            MySqlCommand my_sc = new MySqlCommand(queryText, my_sq);
-        //            return new ChanbQuery() { Connection = my_sq, Reader = my_sc.ExecuteReader() };
-
-        //        default:
-        //            return null;
-        //    }
-        //}
-
-        public static ChanbQuery ExecuteQueryReader(DbCommand query)
-        {
-            switch (DatabaseSettings.DbType)
-            {
-                case Enums.DatabaseType.MsSQL:
-                    SqlConnection sq = new SqlConnection(DatabaseSettings.ConnectionString);
-                    sq.Open();
-                    query.Connection = sq;
-
-                    return new ChanbQuery() { Connection = sq, Reader = query.ExecuteReader() };
-
-                case Enums.DatabaseType.MySQL:
-                    MySqlConnection my_sq = new MySqlConnection(DatabaseSettings.ConnectionString);
-                    my_sq.Open();
-                    query.Connection = my_sq;
-
-                    return new ChanbQuery() { Connection = my_sq, Reader = query.ExecuteReader() };
-
-                default:
-                    return null;
-            }
-        }
-
-        public static ChanbQuery ExecuteQueryReader(string queryText, DbConnection dc)
-        {
-            switch (DatabaseSettings.DbType)
-            {
-                case Enums.DatabaseType.MsSQL:
-                    SqlCommand sc = new SqlCommand(queryText, (SqlConnection)dc);
-                    return new ChanbQuery() { Connection = dc, Reader = sc.ExecuteReader() };
-
-                case Enums.DatabaseType.MySQL:
-                    MySqlCommand my_sc = new MySqlCommand(queryText, (MySqlConnection)dc);
-                    return new ChanbQuery() { Connection = dc, Reader = my_sc.ExecuteReader() };
-
-                default:
-                    return null;
-            }
-        }
-
-        //public static ChanbQuery ExecuteQueryReader(DbCommand query, DbConnection dc)
-        //{
-        //    switch (DatabaseSettings.DbType)
-        //    {
-        //        case Enums.DatabaseType.MsSQL:
-        //        case Enums.DatabaseType.MySQL:
-        //            query.Connection = dc;
-
-        //            return new ChanbQuery() { Connection = dc, Reader = query.ExecuteReader() };
-        //        default:
-        //            return null;
-        //    }
-        //}
-
+   
         public static DbCommand GenerateDbCommand()
         {
             switch (DatabaseSettings.DbType)

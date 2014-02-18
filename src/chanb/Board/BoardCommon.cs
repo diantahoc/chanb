@@ -18,6 +18,8 @@ namespace chanb.Board
 {
     public static class BoardCommon
     {
+
+        private static Random rnd = new Random();
         /// <summary>
         /// Add localisation to the full page template
         /// </summary>
@@ -64,52 +66,54 @@ namespace chanb.Board
         public static WPost GetPostData(int id, DbConnection connection)
         {
             string query = string.Format("SELECT type, time, comment, postername, trip, email, password, parentT, subject, IP, ua, posterID, sticky, locked, mta, hasFile FROM  board  WHERE (id = {0})", id);
-            ChanbQuery qObject = DatabaseEngine.ExecuteQueryReader(query, connection);
 
-            WPost po = null;
-
-            bool has_file = false;
-
-            using (qObject.Reader)
+            using (DbCommand dc = DatabaseEngine.GenerateDbCommand(query, connection))
             {
-                while (qObject.Reader.Read())
+                WPost po = null;
+
+                bool has_file = false;
+
+                using (DbDataReader reader = dc.ExecuteReader())
                 {
-                    if (Convert.IsDBNull(qObject.Reader[0]))
+                    while (reader.Read())
                     {
-                        return null;
-                    }
-                    else
-                    {
-                        po = new WPost()
+                        if (Convert.IsDBNull(reader[0]))
                         {
-                            PostID = id,
-                            Type = (PostType)qObject.Reader.GetInt32(0),
-                            Time = Convert.ToDateTime(ReadParam(qObject.Reader[1])),
-                            Comment = Convert.ToString(ReadParam(qObject.Reader[2])),
-                            Name = Convert.ToString(ReadParam(qObject.Reader[3])),
-                            Trip = Convert.ToString(ReadParam(qObject.Reader[4])),
-                            Email = Convert.ToString(ReadParam(qObject.Reader[5])),
-                            Password = Convert.ToString(ReadParam(qObject.Reader[6])),
-                            Parent = Convert.ToInt32(ReadParam(qObject.Reader[7])),
-                            Subject = Convert.ToString(ReadParam(qObject.Reader[8])),
-                            IP = Convert.ToString(ReadParam(qObject.Reader[9])),
-                            UserAgent = Convert.ToString(ReadParam(qObject.Reader[10])),
-                            PosterID = Convert.ToString(ReadParam(qObject.Reader[11])),
-                            IsSticky = Convert.ToBoolean(ReadParam(qObject.Reader[12])),
-                            IsLocked = Convert.ToBoolean(ReadParam(qObject.Reader[13])),
-                            IsArchived = Convert.ToBoolean(ReadParam(qObject.Reader[14]))
-                        };
-                        has_file = Convert.ToBoolean(qObject.Reader[15]);
+                            return null;
+                        }
+                        else
+                        {
+                            po = new WPost()
+                            {
+                                PostID = id,
+                                Type = (PostType)reader.GetInt32(0),
+                                Time = Convert.ToDateTime(ReadParam(reader[1])),
+                                Comment = Convert.ToString(ReadParam(reader[2])),
+                                Name = Convert.ToString(ReadParam(reader[3])),
+                                Trip = Convert.ToString(ReadParam(reader[4])),
+                                Email = Convert.ToString(ReadParam(reader[5])),
+                                Password = Convert.ToString(ReadParam(reader[6])),
+                                Parent = Convert.ToInt32(ReadParam(reader[7])),
+                                Subject = Convert.ToString(ReadParam(reader[8])),
+                                IP = Convert.ToString(ReadParam(reader[9])),
+                                UserAgent = Convert.ToString(ReadParam(reader[10])),
+                                PosterID = Convert.ToString(ReadParam(reader[11])),
+                                IsSticky = Convert.ToBoolean(ReadParam(reader[12])),
+                                IsLocked = Convert.ToBoolean(ReadParam(reader[13])),
+                                IsArchived = Convert.ToBoolean(ReadParam(reader[14]))
+                            };
+                            has_file = Convert.ToBoolean(reader[15]);
+                        }
                     }
                 }
-            }
 
-            if (has_file)
-            {
-                po.Files = GetPostFiles(id, qObject.Connection);
-            }
+                if (has_file)
+                {
+                    po.Files = GetPostFiles(id, connection);
+                }
 
-            return po;
+                return po;
+            }
         }
 
         public static WPost[] GetThreadData(int id, DbConnection con)
@@ -210,13 +214,13 @@ namespace chanb.Board
                 List<int> final = new List<int>();
                 for (int i = 0; i < count; i++)
                 {
-                    try
-                    {
-                        final.Add(l[startIndex + i]);
-                    }
-                    catch (Exception)
+                    if (startIndex + i > l.Count - 1)
                     {
                         break;
+                    }
+                    else
+                    {
+                        final.Add(l[startIndex + i]);
                     }
                 }
                 return final.ToArray();
@@ -236,17 +240,6 @@ namespace chanb.Board
 
             return GetThreadsIds(startIndex * ApplicationSettings.ThreadPerPage, ApplicationSettings.ThreadPerPage, false, archive, con);
         }
-
-        ///// <summary>
-        ///// Get thread on a page, with last replies and reply count over a single SQL connection.
-        ///// </summary>
-        ///// <param name="page"></param>
-        ///// <param name="archive"></param>
-        ///// <returns></returns>
-        //public static Dictionary<WPost[], ThreadReplies> GetPage(int page, bool archive, DbConnection dc)
-        //{
-
-        //}
 
         public static int GetThreadsCount(bool archive, DbConnection con)
         {
@@ -273,7 +266,7 @@ namespace chanb.Board
 
             using (DbCommand dc = DatabaseEngine.GenerateDbCommand(con))
             {
-                dc.CommandText = "SELECT Count(ID) As T FROM board WHERE (parentT = @id)  AND (hasFile = @f) AND (mta = @mta)";
+                dc.CommandText = "SELECT Count(ID) As T FROM board WHERE (parentT = @id) AND (hasFile = @f) AND (mta = @mta)";
 
                 dc.Parameters.Add(DatabaseEngine.MakeParameter("@mta", po.IsArchived ? 1 : 0, DbType.Int32));
                 dc.Parameters.Add(DatabaseEngine.MakeParameter("@id", po.PostID, DbType.Int32));
@@ -310,44 +303,41 @@ namespace chanb.Board
             switch (DatabaseSettings.DbType)
             {
                 case DatabaseType.MsSQL:
-                    queryText = "SELECT TOP {0} ID FROM board WHERE (parentT = @tid) AND (mta = @mta) ORDER BY ID DESC";
+                    queryText = string.Format("SELECT TOP {0} ID FROM board WHERE (parentT = @tid) AND (mta = @mta) ORDER BY ID DESC", ApplicationSettings.TrailPostsCount);
                     break;
                 case DatabaseType.MySQL:
-                    queryText = "SELECT ID FROM board WHERE (parentT = @tid) AND (mta = @mta) ORDER BY ID DESC LIMIT 0, {0}";
+                    queryText = string.Format("SELECT ID FROM board WHERE (parentT = @tid) AND (mta = @mta) ORDER BY ID DESC LIMIT 0, {0}", ApplicationSettings.TrailPostsCount - 1);
                     break;
                 default:
                     return new WPost[] { };
             }
 
-            queryText = string.Format(queryText, ApplicationSettings.TrailPostsCount);
-
-            DbCommand dc = DatabaseEngine.GenerateDbCommand(queryText, con);
-
-            dc.Parameters.Add(DatabaseEngine.MakeParameter("@tid", thread.PostID, System.Data.DbType.Int32));
-            dc.Parameters.Add(DatabaseEngine.MakeParameter("@mta", thread.IsArchived ? 1 : 0, System.Data.DbType.Int32));
-
-            ChanbQuery q = DatabaseEngine.ExecuteQueryReader(dc);
-
-            List<int> posts_ids = new List<int>();
-
-            List<WPost> posts_list = new List<WPost>();
-
-            using (q.Reader)
+            using (DbCommand dc = DatabaseEngine.GenerateDbCommand(queryText, con))
             {
-                while (q.Reader.Read())
+                dc.Parameters.Add(DatabaseEngine.MakeParameter("@tid", thread.PostID, System.Data.DbType.Int32));
+                dc.Parameters.Add(DatabaseEngine.MakeParameter("@mta", thread.IsArchived ? 1 : 0, System.Data.DbType.Int32));
+
+                List<int> posts_ids = new List<int>();
+
+                List<WPost> posts_list = new List<WPost>();
+
+                using (DbDataReader reader = dc.ExecuteReader())
                 {
-                    posts_ids.Add(q.Reader.GetInt32(0));
+                    while (reader.Read())
+                    {
+                        posts_ids.Add(reader.GetInt32(0));
+                    }
                 }
+
+                foreach (int i in posts_ids)
+                {
+                    posts_list.Add(GetPostData(i, con));
+                }
+
+                posts_list.Reverse();
+
+                return posts_list.ToArray();
             }
-
-            foreach (int i in posts_ids)
-            {
-                posts_list.Add(GetPostData(i, q.Connection));
-            }
-
-            posts_list.Reverse();
-
-            return posts_list.ToArray();
         }
 
         public static int MakeThread(OPData data, HttpPostedFile file, DbConnection con)
@@ -620,9 +610,12 @@ namespace chanb.Board
 
         public static void save_post_file(int postID, HttpPostedFile file, DbConnection con)
         {
-            Random rnd = new Random();
-
             string file_extension = file.FileName.Split('.').Last().ToLower();
+
+            if (Array.IndexOf(ApplicationSettings.DisabledFiles, file_extension) >= 0)
+            {
+                throw new Exception(string.Format("File type '{0}' is disabled", file_extension));
+            }
 
             string file_hash = Common.Misc.MD5(file.InputStream);
 
@@ -700,7 +693,7 @@ namespace chanb.Board
                     }
                     else
                     {
-                        using (System.Drawing.Image rezized = RezizeImage(im))
+                        using (System.Drawing.Image rezized = ImageManipulator.ResizeImage(im))
                         {
                             rezized.Save(thumb_path, format);
                         }
@@ -762,7 +755,7 @@ namespace chanb.Board
                         }
                         else
                         {
-                            using (System.Drawing.Image rezized = RezizeImage(thumb))
+                            using (System.Drawing.Image rezized = ImageManipulator.ResizeImage(thumb))
                             {
                                 rezized.Save(thumb_path, System.Drawing.Imaging.ImageFormat.Png);
                             }
@@ -801,7 +794,7 @@ namespace chanb.Board
                         }
                         else
                         {
-                            using (System.Drawing.Image rezized = RezizeImage(thumb_pdf))
+                            using (System.Drawing.Image rezized = ImageManipulator.ResizeImage(thumb_pdf))
                             {
                                 rezized.Save(thumb_path, System.Drawing.Imaging.ImageFormat.Jpeg);
                             }
@@ -827,15 +820,8 @@ namespace chanb.Board
                     AddFileToDatabase(wpf_pdf, con);
                     break;
                 default:
-                    break;
+                    throw new Exception(string.Format("Unsupported file type '{0}'", file_extension));
             }
-        }
-
-        private static System.Drawing.Image RezizeImage(System.Drawing.Image im)
-        {
-            System.Drawing.Size size = new System.Drawing.Size(250, Convert.ToInt32((im.Height / (im.Width / 250))));
-
-            return im.GetThumbnailImage(size.Width, size.Height, null, System.IntPtr.Zero);
         }
 
         private static void delete_post_from_database(int id, DbConnection con)
@@ -998,6 +984,20 @@ namespace chanb.Board
             return li.ToArray();
         }
 
+        public static void DeleteFileFromDatabase(int id, string[] hashes, DbConnection con)
+        {
+            using (DbCommand dc = Database.DatabaseEngine.GenerateDbCommand("DELETE FROM files WHERE (postID = @postID) AND (md5 = @md5)", con))
+            {
+                dc.Parameters.Add(DatabaseEngine.MakeParameter("@postID", id, DbType.Int32));
+                dc.Parameters.Add(DatabaseEngine.MakeParameter("@md5", "", DbType.String));
+                foreach (string file_h in hashes)
+                {
+                    dc.Parameters["@md5"].Value = file_h;
+                    dc.ExecuteNonQuery();
+                }
+            }
+        }
+
         #endregion
 
         #endregion
@@ -1060,5 +1060,12 @@ namespace chanb.Board
                 dc.ExecuteNonQuery();
             }
         }
+
+        public static string GetCaptchaFullPageBody()
+        {
+            return string.Format("<tr><th>{0}</th><td>{1}</td></tr>", Language.Lang.verification, CaptchaProvider.GetCaptchaBody());
+        }
+
+
     }
 }

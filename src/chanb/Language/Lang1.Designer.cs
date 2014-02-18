@@ -97,6 +97,15 @@ namespace chanb.Language {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Bad password.
+        /// </summary>
+        internal static string badpassword {
+            get {
+                return ResourceManager.GetString("badpassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Bottom.
         /// </summary>
         internal static string bottom {
@@ -138,6 +147,15 @@ namespace chanb.Language {
         internal static string delete {
             get {
                 return ResourceManager.GetString("delete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delete files.
+        /// </summary>
+        internal static string deletefiles {
+            get {
+                return ResourceManager.GetString("deletefiles", resourceCulture);
             }
         }
         
@@ -255,6 +273,15 @@ namespace chanb.Language {
         internal static string noaudiosupport {
             get {
                 return ResourceManager.GetString("noaudiosupport", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No file was selected.
+        /// </summary>
+        internal static string nofileselected {
+            get {
+                return ResourceManager.GetString("nofileselected", resourceCulture);
             }
         }
         
@@ -435,6 +462,15 @@ namespace chanb.Language {
         internal static string verification {
             get {
                 return ResourceManager.GetString("verification", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wrong captcha.
+        /// </summary>
+        internal static string wrongcaptcha {
+            get {
+                return ResourceManager.GetString("wrongcaptcha", resourceCulture);
             }
         }
     }

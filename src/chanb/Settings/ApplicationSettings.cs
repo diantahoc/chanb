@@ -537,5 +537,48 @@ namespace chanb.Settings
                 sr.SetValue("EnchancedThumbGeneration", value);
             }
         }
+
+        public static bool ProgressiveThumbGeneration
+        {
+            get
+            {
+                if (sr.ContainKey("ProgressiveThumbGeneration"))
+                {
+                    return Convert.ToBoolean(sr.GetValue("ProgressiveThumbGeneration"));
+                }
+                else
+                {
+                    sr.SetValue("ProgressiveThumbGeneration", true);
+                    return true;
+                }
+            }
+            set
+            {
+                sr.SetValue("ProgressiveThumbGeneration", value);
+            }
+        }
+
+        public static string[] DisabledFiles
+        {
+            get
+            {
+                if (sr.ContainKey("DisabledFiles"))
+                {
+                    Newtonsoft.Json.Linq.JArray a = (Newtonsoft.Json.Linq.JArray)(sr.GetValue("DisabledFiles"));
+                    List<string> l = new List<string>();
+                    for (int i = 0; i < a.Count; i++) 
+                    {
+                        l.Add(a[i].ToString());
+                    }
+                    return l.ToArray();
+                }
+                else
+                {
+                    string[] data = new string[] { };
+                    sr.SetValue("DisabledFiles", data);
+                    return data;
+                }
+            }
+        }
     }
 }

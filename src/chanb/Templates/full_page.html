@@ -9,7 +9,7 @@
    <!-- <link rel="alternate stylesheet" title="gold" href="{WebRoot}css/gold.css" />-->
 
     <link rel="stylesheet" href="{WebRoot}css/mobile.css" />
-   <!-- <link rel="stylesheet" href="{WebRoot}js/pr/prettify.css" />-->
+
     <link rel="stylesheet" href="{WebRoot}css/pojoaque.css" />
     <link rel="stylesheet" href="{WebRoot}css/jui/jui.css" />
 
@@ -17,8 +17,7 @@
     <script src="{WebRoot}js/extension.js"></script>
     <script src="{WebRoot}js/libs/jquery.min.js"></script>
     <script src="{WebRoot}js/libs/jquery-ui.min.js"></script>
-<!--    <script src="{WebRoot}js/pr/prettify.js"></script>
-    <script src="{WebRoot}js/pr/lang-all.js"></script>-->
+
      <script src="{WebRoot}js/highlight.js"></script>
     <script src="{WebRoot}dscripts.aspx"></script>
     <script>$(document).ready(function () { hljs.initHighlightingOnLoad(); loadStyle(); extension_init(); if (checkforNSFWImages != null) { checkforNSFWImages(); } });</script>
@@ -85,14 +84,7 @@
                         <textarea name="comment" id="commentfield" rows="5" cols="30"></textarea>
                     </td>
                 </tr>
-                <tr class="%captcha show%">
-                    <th>
-                        {lang:verification}
-                    </th>
-                    <td>
-                        {CaptchaHTML}
-                    </td>
-                </tr>
+                {captcha}
                 <tr>
                     <th>
                         {lang:files}
@@ -222,11 +214,7 @@
                         <textarea id="qr_comment" cols="65" rows="15" name="comment" placeholder="{lang:comment}"></textarea>
                     </td>
                 </tr>
-                <tr class="{HideCaptchaRow}">
-                    <td>
-                        {CaptchaQrHTML}
-                    </td>
-                </tr>
+                {captcha}
                 <tr>
                     <td>
                         <input type="button" id="qr_send" onclick="qr('submit')" value="{lang:send}" />

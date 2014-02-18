@@ -32,4 +32,5 @@ namespace chanb.Enums
         Normal,
         High
     }
+
 }

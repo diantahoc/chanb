@@ -10,15 +10,12 @@ namespace chanb.Board
 {
     public static class BanHandler
     {
-
-        public static bool IsIPBanned(string ip, DbConnection connection) 
+        public static bool IsIPBanned(string ip, DbConnection connection)
         {
-            
             BanData data = get_ban_data(ip);
 
             if (data != null)
             {
-
                 if (data.Permanant)
                 {
                     return true;

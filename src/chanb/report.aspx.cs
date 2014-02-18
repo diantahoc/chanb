@@ -60,7 +60,7 @@ namespace chanb
                             }
                             catch (Exception)
                             {
-                              //  this.Response.Write("Unable to report post");
+                                //  this.Response.Write("Unable to report post");
                                 throw;
                             }
                         }
@@ -88,14 +88,11 @@ namespace chanb
 
                 StringBuilder report_page = new StringBuilder(TemplateProvider.ReportPage);
 
-
-
                 report_page.Replace("{lang:report}", Language.Lang.report)
                     .Replace("{lang:reportreason}", Language.Lang.reportreason)
                     .Replace("{ID}", Convert.ToString(this.Request["id"]))
-                    .Replace("{WebRoot}", Settings.Paths.WebRoot);
-
-                report_page.Replace("{ShowCaptchaHTMLClass}", "hide");
+                    .Replace("{notice:wrongcaptcha}", Request["wc"] == "1" ? string.Format("<span class=\"notice\">{0}</span>", Language.Lang.wrongcaptcha) : "")
+                    .Replace("{captcha}", DialogCommon.GetCaptcha_ForDialogs());
 
                 StringBuilder reasons = new StringBuilder();
 

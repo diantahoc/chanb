@@ -49,7 +49,11 @@ namespace chanb
                 //check flood
 
                 //check captcha
-
+                if (!CaptchaProvider.Verifiy(this.Context)) 
+                {
+                    this.Response.Write(Language.Lang.wrongcaptcha);
+                    this.Response.End();
+                }
 
                 //check file sizes
                 for (int i = 0; i < Request.Files.Count; i++)
